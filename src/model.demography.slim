@@ -1,0 +1,65 @@
+initialize() {
+	if (exists("slimgui"))
+	{
+		setSeed(4248359637);
+		defineConstant("L",  51229805);
+		defineConstant("N",  200);
+		defineConstant("tf", 413);
+		defineConstant("ts", c(2,58,77,122,155,248,275,309) );
+		defineConstant("na", 8);
+		defineConstant("i",  1);
+	}
+	initializeSLiMOptions(keepPedigrees=T);
+	initializeMutationRate(0.0);
+	initializeMutationType("m1", 0.5, "f", 0.0);
+	initializeGenomicElementType("g1", m1, 1.0);
+	initializeGenomicElement(g1, 0, L-1);
+	
+	lines = readFile("results/r_map_slim/r_map_chr22_slim.txt");
+	rates = NULL;
+	ends = NULL;
+	for (line in lines)
+	{
+		components = strsplit(line, "\t");
+		ends = c(ends, asInteger(components[0]));
+		rates = c(rates, asFloat(components[1]));
+	}
+	initializeRecombinationRate(rates, ends);
+	
+	initializeTreeSeq();
+}
+1 early() {
+
+	sim.addSubpop("p1", N);
+
+	sim.setValue("count", 0);
+	sim.rescheduleScriptBlock(s1, start=ts[0], end=ts[0]);
+
+	sim.setValue("sumInvNe", 0);
+	sim.rescheduleScriptBlock(s2, start=1, end=tf);
+
+	sim.rescheduleScriptBlock(s3, start=tf, end=tf);
+}
+
+s1 1000 early() {
+	sim.treeSeqRememberIndividuals(p1.sampleIndividuals(1));
+	count = sim.getValue("count");
+	if (count<(na-1)){
+		sim.rescheduleScriptBlock(s1, start=ts[count+1], end=ts[count+1]);
+		sim.setValue("count", count+1);
+	}
+}
+
+s2 late() {
+	parents = unique(sim.subpopulations.individuals.pedigreeParentIDs);
+	k = sapply(parents, "sum(sim.subpopulations.individuals.pedigreeParentIDs == applyValue);");
+	Ne = (2*N-1)/(1+var(k)/2);
+	sim.setValue("sumInvNe", 1/Ne + sim.getValue("sumInvNe") );
+}
+
+s3 late() {
+	hmeanNe = (tf)/sim.getValue("sumInvNe");
+	writeFile(filePath="results/Ne.txt", contents=paste(i+" "+hmeanNe), append=T);
+	sim.treeSeqOutput(path="results/slim"+i+".tree");
+	sim.simulationFinished();
+}
