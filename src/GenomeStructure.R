@@ -70,4 +70,12 @@ length(rates);head(rates);tail(rates)
 (chromosomes)
 (centromeres)
 
+# set positions to start at 0 for SLiM and msprime
 
+positions   <- positions-1
+chromosomes <- chromosomes-1
+centromeres <- centromeres-1
+
+write(positions,file="data/positions.txt",ncolumns=1)
+write(rates,file="data/rates.txt",ncolumns=1)
+write(chromosomes,file="data/chromosomes.txt",ncolumns=1)
