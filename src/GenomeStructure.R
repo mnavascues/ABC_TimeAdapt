@@ -7,25 +7,17 @@ genome_anotation <- read.table("data/ideogram_9606_GCF_000001305.15_850_V1",
                                fill=T,
                                comment.char = "%",
                                row.names = NULL)
-cen_start <- intersect(which(genome_anotation$X.chromosome==1),which(genome_anotation$arm=="p"))
-cen_start <- intersect(cen_start,which(genome_anotation$stain=="acen"))
-cen_start <- genome_anotation$bp_start[cen_start]
-cen_end   <- intersect(which(genome_anotation$X.chromosome==1),which(genome_anotation$arm=="q"))
-cen_end   <- intersect(cen_end,which(genome_anotation$stain=="acen"))
-cen_end   <- genome_anotation$bp_stop[cen_end]
-centromeres <- c(cen_start,cen_end) 
-for (chr in 2:22){
+
+centromeres <- matrix(NA, nrow=22,ncol=2,dimnames=list(paste0("chr",1:22),c("start","end")))
+for (chr in 1:22){
   cen_start <- intersect(which(genome_anotation$X.chromosome==chr),which(genome_anotation$arm=="p"))
   cen_start <- intersect(cen_start,which(genome_anotation$stain=="acen"))
   cen_start <- genome_anotation$bp_start[cen_start]
   cen_end   <- intersect(which(genome_anotation$X.chromosome==chr),which(genome_anotation$arm=="q"))
   cen_end   <- intersect(cen_end,which(genome_anotation$stain=="acen"))
   cen_end   <- genome_anotation$bp_stop[cen_end]
-  centromeres <- rbind(centromeres, c(cen_start,cen_end) )
+  centromeres[chr,] <-  c(cen_start,cen_end)
 }
-colnames(centromeres) <- c("start","end")
-rownames(centromeres) <- paste0("chr",1:22)
-
 (centromeres)
 
 
@@ -38,7 +30,9 @@ positions        <- 1
 rates <- numeric()
 cumulativeLength <- 0.0
 chr<-1
-chromosomes <- 1
+
+chromosomes <- matrix(NA, nrow=22,ncol=2,dimnames=list(paste0("chr",1:22),c("start","end")))
+chromosomes[1,1] <- 1
 for (chr in 1:22){
   centromeres[chr,] <- centromeres[chr,] + cumulativeLength
   
@@ -46,10 +40,10 @@ for (chr in 1:22){
   r_map <- read.table(rec_map_file,header=T)
   positions <- c(positions, cumulativeLength + r_map$Position.bp.)
   cumulativeLength <- cumulativeLength + r_map$Position.bp.[nrow(r_map)]
-  chromosomes <- c(chromosomes, cumulativeLength)
+  chromosomes[chr,2] <- cumulativeLength
   if (chr!=22) {
     positions   <- c(positions, cumulativeLength + 1)
-    chromosomes <- c(chromosomes, cumulativeLength + 1)
+    chromosomes[chr+1,1] <- cumulativeLength + 1
   }
 
   rates     <- c(rates,  HumanGenome$Rec_rate[chr], r_map$Rate.cM.Mb.[1:(nrow(r_map)-1)] * 1e-8)
@@ -78,4 +72,6 @@ centromeres <- centromeres-1
 
 write(positions,file="data/positions.txt",ncolumns=1)
 write(rates,file="data/rates.txt",ncolumns=1)
-write(chromosomes,file="data/chromosomes.txt",ncolumns=1)
+write.table(chromosomes,file="data/chromosomes.txt",col.names=F,row.names=F)
+write.table(centromeres,file="data/centromeres.txt",col.names=F,row.names=F)
+
