@@ -70,8 +70,8 @@ positions   <- positions-1
 chromosomes <- chromosomes-1
 centromeres <- centromeres-1
 
-write(positions,file="data/positions.txt",ncolumns=1)
-write(rates,file="data/rates.txt",ncolumns=1)
+recombination_map <- cbind(positions,rates)
+write.table(recombination_map,file="data/recombination_map.txt",row.names=F)
 write.table(chromosomes,file="data/chromosomes.txt",col.names=F,row.names=F)
 write.table(centromeres,file="data/centromeres.txt",col.names=F,row.names=F)
 
