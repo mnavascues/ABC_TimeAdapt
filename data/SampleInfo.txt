@@ -1,0 +1,22 @@
+sample       age14C  age14Cerror  year  coverage  damageRepair
+Juhoansi1    NA      NA           ?     ?         NA
+Juhoansi2    NA      NA           ?     ?         NA
+Juhoansi3    NA      NA           ?     ?         NA
+...
+JuhoansiX    NA      NA           ?     ?         NA
+BallitoBayA  1980    20           NA    12.9447   TRUE
+BallitoBayB  2110    30           NA    1.247228  TRUE
+Doonside     2110    50           NA    0.012858  FALSE
+StHelena     2330    25           NA    1.1       ?
+Faraoskop    2000    50           NA    2.3       ?
+Kasteelberg  1310    50           NA    0.8       ?
+vaa001       ?       ?            NA    ?         ?
+flo001       6990    30           NA    11.09647  TRUE
+flo002       2970    60           NA    0.227619  FALSE
+flo003       3570    50           NA    11.58128  TRUE
+flo006       9020    30           NA    4.998657  TRUE
+flo010       7295    32           NA    0.130293  FALSE
+flo011       4860    30           NA    22.19364  TRUE
+          
+
+

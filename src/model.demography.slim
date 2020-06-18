@@ -1,12 +1,14 @@
 initialize() {
 	if (exists("slimgui"))
 	{
-		setSeed(4248359637);
+		setSeed(2067579950);
 		defineConstant("L",  51229805);
-		defineConstant("N",  200);
-		defineConstant("tf", 413);
-		defineConstant("ts", c(2,58,77,122,155,248,275,309) );
-		defineConstant("na", 8);
+		defineConstant("N",  c(124, 200, 200, 200,  23, 177, 200, 100) );
+		defineConstant("tc", c(50,  100, 150, 200, 250, 300, 350) );
+		defineConstant("ts", c(16,  95, 109, 192, 254, 281, 314, 322, 329, 353, 378, 400) );
+		defineConstant("ss", c( 1,   1,   1,   1,   1,   1,   1,   2,   2,   1,   1,  12) );
+		defineConstant("np", 8);
+		defineConstant("na", 11);
 		defineConstant("i",  1);
 	}
 	initializeSLiMOptions(keepPedigrees=T);
@@ -29,37 +31,65 @@ initialize() {
 	initializeTreeSeq();
 }
 1 early() {
-
-	sim.addSubpop("p1", N);
-
-	sim.setValue("count", 0);
+	
+	sim.addSubpop("p1", N[0]);
+	
+	// schedule SAMPLING BLOCK
+	sim.setValue("count_sampling", 0);
 	sim.rescheduleScriptBlock(s1, start=ts[0], end=ts[0]);
-
-	sim.setValue("sumInvNe", 0);
-	sim.rescheduleScriptBlock(s2, start=1, end=tf);
-
-	sim.rescheduleScriptBlock(s3, start=tf, end=tf);
+	
+	// schedule DEMOGRAPHY BLOCK
+	sim.setValue("count_demography", 0);
+	sim.rescheduleScriptBlock(s2, start=tc[0], end=tc[0]);
+	
+	// schedule CALCULATE Ne BLOCK
+	sim.setValue("sum_pIBD", rep(0.0,np));
+	sim.rescheduleScriptBlock(s3, start=1, end=ts[na]);
+	
+	// schedule FINISH BLOCK
+	sim.rescheduleScriptBlock(s4, start=ts[na], end=ts[na]);
 }
 
-s1 1000 early() {
-	sim.treeSeqRememberIndividuals(p1.sampleIndividuals(1));
-	count = sim.getValue("count");
+// SAMPLING BLOCK
+s1 1000 late() {
+	count = sim.getValue("count_sampling");
+	sim.treeSeqRememberIndividuals(p1.sampleIndividuals(ss[count]));
 	if (count<(na-1)){
 		sim.rescheduleScriptBlock(s1, start=ts[count+1], end=ts[count+1]);
-		sim.setValue("count", count+1);
 	}
+	sim.setValue("count_sampling", count+1);
+
 }
 
-s2 late() {
+// DEMOGRAPHY BLOCK
+s2 1000 early(){
+	count = sim.getValue("count_demography");
+	p1.setSubpopulationSize(N[count+1]);
+	if (count<(np-2)){
+		sim.rescheduleScriptBlock(s2, start=tc[count+1], end=tc[count+1]);
+	}
+	sim.setValue("count_demography", count+1);
+
+}
+
+// CALCULATE Ne BLOCK
+s3 1000 late() {
+   count = sim.getValue("count_demography");	
 	parents = unique(sim.subpopulations.individuals.pedigreeParentIDs);
 	k = sapply(parents, "sum(sim.subpopulations.individuals.pedigreeParentIDs == applyValue);");
-	Ne = (2*N-1)/(1+var(k)/2);
-	sim.setValue("sumInvNe", 1/Ne + sim.getValue("sumInvNe") );
+	prob = k/p1.individualCount;
+	pIBD = sum(prob*prob*0.25);
+	//Ne=1/pIBD;
+	//Ne = (2*p1.individualCount-1)/(1+var(k)/2);
+	sum_pIBD = sim.getValue("sum_pIBD") ;
+	sum_pIBD[count] = pIBD + sum_pIBD[count];
+	sim.setValue("sum_pIBD", sum_pIBD );
 }
 
-s3 late() {
-	hmeanNe = (tf)/sim.getValue("sumInvNe");
-	writeFile(filePath="results/Ne.txt", contents=paste(i+" "+hmeanNe), append=T);
+// FINISH BLOCK
+s4 1000 late() {
 	sim.treeSeqOutput(path="results/slim"+i+".tree");
+	Ne = 2*(ts[na]/np)/sim.getValue("sum_pIBD");
+	writeFile(filePath="results/Ne.txt", contents=paste(i+" "+paste(Ne)	), append=T);
 	sim.simulationFinished();
 }
