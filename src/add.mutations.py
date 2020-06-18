@@ -5,8 +5,10 @@ import pyslim
 import scipy.stats as st
 
 
-def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1, score_th=30, ratio_th=3):
-    if f_num_reads >= reads_th:
+def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1, score_th=30, ratio_th=3, dr=True, ttratio=2.0/1.0):
+    if dr != True and st.uniform.rvs() < ttratio/(ttratio+1):
+        genotype_call = [-1, -1]
+    elif f_num_reads >= reads_th:
         derived_count = sum(true_genotype)
         p_derived = derived_count / 2. * (1 - error_rate) + (1 - derived_count / 2.) * error_rate
         derived_reads = st.binom.rvs(f_num_reads, p_derived)
