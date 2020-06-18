@@ -1,8 +1,8 @@
 sample             age14C  age14Cerror  year  coverage  damageRepair
-B_Ju_hoan_North-4  NA      NA           2010  40.57     NA
-S_Ju_hoan_North-1  NA      NA           2010  46.49     NA
-S_Ju_hoan_North-2  NA      NA           2010  34.22     NA
-S_Ju_hoan_North-3  NA      NA           2010  37.24     NA
+B_Ju_hoan_North-4  NA      NA           2010  40.57     TRUE
+S_Ju_hoan_North-1  NA      NA           2010  46.49     TRUE
+S_Ju_hoan_North-2  NA      NA           2010  34.22     TRUE
+S_Ju_hoan_North-3  NA      NA           2010  37.24     TRUE
 BallitoBayA        1980    20           NA    12.94     TRUE
 BallitoBayB        2110    30           NA    1.25      TRUE
 Doonside           2110    50           NA    0.01      TRUE
