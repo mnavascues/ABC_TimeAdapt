@@ -96,13 +96,17 @@ positions = []
 locus = 0
 for variant in treesq.variants():
     positions.append(round(variant.position))
+    #print(positions)
     var_genotypes = variant.genotypes
-    print(var_genotypes)
+    #print(var_genotypes)
     num_reads = st.poisson.rvs(mu=coverage, size=n_samples)
-    print(num_reads)
+    #print(num_reads)
     for i in range(0, 2 * n_samples, 2):
-        geno_data[locus, int(i / 2)] = snp_calling(true_genotype=var_genotypes[i:(i + 2)], f_num_reads=num_reads)
+        geno_data[locus, int(i / 2)] = snp_calling(true_genotype=var_genotypes[i:(i + 2)], f_num_reads=num_reads[int(i/2)])
     locus = locus + 1
+
+
+
 
 ac = geno_data.count_alleles()
 pi = allel.sequence_diversity(positions, ac, start=1, stop=1000000)
