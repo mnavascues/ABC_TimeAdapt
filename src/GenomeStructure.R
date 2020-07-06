@@ -31,6 +31,8 @@ rates <- numeric()
 cumulativeLength <- 0.0
 chr<-1
 
+block_size <- 100
+
 chromosomes <- matrix(NA, nrow=22,ncol=2,dimnames=list(paste0("chr",1:22),c("start","end")))
 chromosomes[1,1] <- 1
 for (chr in 1:22){
@@ -38,6 +40,7 @@ for (chr in 1:22){
   
   rec_map_file <- paste0("data/RecombinationMap2010/genetic_map_GRCh37_chr",chr,".txt")
   r_map <- read.table(rec_map_file,header=T)
+  
   positions <- c(positions, cumulativeLength + r_map$Position.bp.)
   cumulativeLength <- cumulativeLength + r_map$Position.bp.[nrow(r_map)]
   chromosomes[chr,2] <- cumulativeLength
@@ -70,8 +73,48 @@ positions   <- positions-1
 chromosomes <- chromosomes-1
 centromeres <- centromeres-1
 
-recombination_map <- cbind(positions,rates)
-write.table(recombination_map,file="data/recombination_map.txt",row.names=F)
+positions_A <- sort(c(chromosomes))
+rates_A <- numeric()
+for (chr in 1:22){
+  rates_A <- c(rates_A,HumanGenome$Rec_rate[chr],0.5)
+}
+recombination_map_A <- data.frame(positions=positions_A,
+                                 rates=rates_A)
+
+dim(recombination_map_A)
+write.table(recombination_map_A,file="data/recombination_map_msprime_A.txt",col.names=F,row.names=F)
+recombination_map_A <- cbind(positions_A[-1],rates_A[-length(rates_A)])
+write.table(recombination_map_A,file="data/recombination_map_slim_A.txt",col.names=F,row.names=F)
+
+
 write.table(chromosomes,file="data/chromosomes.txt",col.names=F,row.names=F)
 write.table(centromeres,file="data/centromeres.txt",col.names=F,row.names=F)
+
+
+
+reference   <- round(log10(rates[1]))
+positions_B <- positions[1]
+rates_B     <- 10^round(log10(rates[1]))
+for (i in 2:length(positions)){
+  print(i)
+  if (round(log10(rates[i]))!=reference){
+    reference <- rates[i]
+    positions_B <- c(positions_B,positions[i])
+    if (rates[i]==0.5){
+      rates_B <- c(rates_B,0.5)
+    }else{
+      rates_B <- c(rates_B,10^round(log10(rates[i])))
+    }
+  }
+}
+
+  recombination_map_B <- data.frame(positions=positions_B,
+                                  rates=rates_B)
+
+dim(recombination_map_B)
+
+dim(recombination_map_B)
+write.table(recombination_map_B,file="data/recombination_map_msprime_B.txt",col.names=F,row.names=F)
+recombination_map_B <- cbind(positions_B[-1],rates_B[-length(rates_B)])
+write.table(recombination_map_B,file="data/recombination_map_slim_B.txt",col.names=F,row.names=F)
 

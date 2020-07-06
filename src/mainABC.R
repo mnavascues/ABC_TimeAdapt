@@ -23,9 +23,8 @@ Sample           <- read_sample_info(sample_info_file)
 # remove centromeres ?
 # length of chromosomes ?
 # transition/transversion ratio ?
-rec_map_file <- paste0("data/RecombinationMap2010/genetic_map_GRCh37_chr22.txt")
-recombination_map <- read.table(rec_map_file,header=T)
-L <- recombination_map$Position.bp.[nrow(recombination_map)]
+chromosomes_limits <- read.table(file="data/chromosomes.txt")
+L <- chromosomes_limits[22,2]
 
 # SET PRIORS
 # rescaled beta distribution as prior for generation length:
@@ -34,8 +33,8 @@ prior_gen_length_shape2  <- 1.465967
 prior_gen_length_min     <- 26
 prior_gen_length_max     <- 30
 # log uniform prior for N (give values in natural scale)
-prior_Ne_min             <- 10
-prior_Ne_max             <- 200
+prior_N_min             <- 10
+prior_N_max             <- 200
 # number of generations to simulate in forward (in SLiM)
 num_of_gen_in_forw_sim   <- 400
 num_of_periods_forw      <- 8
@@ -44,8 +43,8 @@ times_of_change_forw     <- seq(from = num_of_gen_in_forw_sim/num_of_periods_for
                                 by   = num_of_gen_in_forw_sim/num_of_periods_forw)
 
 # write header of files
-Ne_header <- paste("sim",paste0("Ne",seq_len(num_of_periods_forw),collapse = " "))
-write(Ne_header,file="results/Ne.txt",append=F)
+N_header <- paste("sim",paste0("N",seq_len(num_of_periods_forw),collapse = " "))
+write(N_header,file="results/N.txt",append=F)
 
 # calculate probability distribution curves for calibrated age of ancient samples
 # (from 14C ages)
@@ -68,8 +67,8 @@ sim_gen_length  <- rnsbeta(num_of_sims,
 # census population size
 sim_N <- sample_demography_from_prior(num_of_sims,
                                       num_of_periods_forw,
-                                      prior_Ne_min,
-                                      prior_Ne_max)
+                                      prior_N_min,
+                                      prior_N_max)
 
 # mutation rate
 sim_u <- rep(1.25e-08,num_of_sims)
@@ -82,10 +81,12 @@ sim<-1
                                             num_of_gen_in_forw_sim,
                                             cal_age_PDF,
                                             gen_length=sim_gen_length[sim])
-
+  #plot(times_of_change_forw,rep(1,length(times_of_change_forw)),xlim=c(0,num_of_gen_in_forw_sim))
+  #points(sim_sample_time$slim_ts,rep(1,length(sim_sample_time$slim_ts)),col="red")
+  
   # SLiM (forward simulation of last generations) 
   seed.slim <- round(runif(1,0,2^32-1))
-  system2(command="slim",
+    system2(command="slim",
           args=c("-d", paste0("N=\"c("), paste(sim_N[sim,],collapse=","), paste0(")\""),
                  "-d", paste0("tc=\"c("), paste(times_of_change_forw,collapse=","), paste0(")\""),
                  "-d", paste0("ts=\"c("), paste(sim_sample_time$slim_ts,collapse=","), paste0(")\""),
