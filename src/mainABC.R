@@ -15,7 +15,7 @@ set.seed(1234567890)
 
 batch_ID  <- 1 # an integer
 batch_dir <- paste("results",batch_ID,sep="/")
-dir.create(batch_dir)
+dir.create(batch_dir, showWarnings = FALSE)
 
 num_of_sims <- 1
 
