@@ -13,6 +13,10 @@ library(rcarbon)
 source("src/funABC.R")
 set.seed(1234567890)
 
+batch_ID  <- 1 # an integer
+batch_dir <- paste("results",batch_ID,sep="/")
+dir.create(batch_dir)
+
 num_of_sims <- 1
 
 # READ DATA INFO FROM FILE
@@ -43,13 +47,14 @@ times_of_change_forw     <- seq(from = num_of_gen_in_forw_sim/num_of_periods_for
                                 by   = num_of_gen_in_forw_sim/num_of_periods_forw)
 
 # write header of files
-N_header <- paste("sim",paste0("N",seq_len(num_of_periods_forw),collapse = " "))
-write(N_header,file="results/N.txt",append=F)
+N_header <- c("sim",paste0("N",seq_len(num_of_periods_forw)))
+Ne_header <- paste("sim",paste0("Ne",seq_len(num_of_periods_forw),collapse = " "))
+write(Ne_header,file=paste(batch_dir,"Ne.txt",sep="/"),append=F)
 
 # calculate probability distribution curves for calibrated age of ancient samples
 # (from 14C ages)
 cal_age_PDF <- get_sample_cal_age_PDF(Sample)
-saveRDS(cal_age_PDF,file = "results/cal_age_PDF.RDS")
+saveRDS(cal_age_PDF,file = paste(batch_dir,"cal_age_PDF.RDS",sep="/"))
 
 # verify that samples cannot be older than the number of generations simulated in forward
 check_ts_lower_gen_in_for_sim(num_of_gen_in_forw_sim,
@@ -69,6 +74,10 @@ sim_N <- sample_demography_from_prior(num_of_sims,
                                       num_of_periods_forw,
                                       prior_N_min,
                                       prior_N_max)
+
+ref_table_N <- cbind(seq_len(num_of_sims),sim_N)
+colnames(ref_table_N) <- N_header
+saveRDS(ref_table_N,file = paste(batch_dir,"ref_table_N.RDS",sep="/"))
 
 # mutation rate
 sim_u <- rep(1.25e-08,num_of_sims)
@@ -92,14 +101,14 @@ sim<-1
                  "-d", paste0("ts=\"c("), paste(sim_sample_time$slim_ts,collapse=","), paste0(")\""),
                  "-d", paste0("ss=\"c("), paste(rev(sim_sample_time$sample_sizes),collapse=","), paste0(")\""),
                  "-d", paste0("i=", sim),
+                 "-d", paste0("batch_ID=",batch_ID),
                  "-d", paste0("np=", num_of_periods_forw),
                  "-d", paste0("na=", sim_sample_time$na),
                  "-d", paste0("L=", L),
                  "-s", seed.slim,
                  "src/model.demography.slim > /tmp/slimout.txt"))
 
-#}
-
+    #}
 
 
 
