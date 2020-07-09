@@ -4,7 +4,6 @@ import numpy as np
 import pyslim
 import scipy.stats as st
 
-
 def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1, score_th=30, ratio_th=3, dr=True, ttratio=2.0/1.0):
     if dr != True and st.uniform.rvs() < ttratio/(ttratio+1):
         genotype_call = [-1, -1]
@@ -36,6 +35,7 @@ def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1, score_
 
 # i     = int(sys.argv[1])
 i = 1
+batch_ID = 1
 # N     = int(sys.argv[2])
 N = 200
 # mu    = float(sys.argv[3])
@@ -62,12 +62,23 @@ sequencing_error = 0.005
 
 np.random.seed(seed)
 
-recomb_map = msprime.RecombinationMap.read_hapmap("data/RecombinationMap2010/genetic_map_GRCh37_chr22.txt")
+# read recombination map and load it for msprime model
+file_recomb_map = open("data/recombination_map_msprime.txt", "r")
+positions = []
+rates = []
+for line in file_recomb_map:
+    p, r = line.split()
+    positions.append(int(p))
+    rates.append(float(r))
+
+recomb_map = msprime.RecombinationMap(positions=positions, rates=rates, num_loci=positions[-1])
+
+# add demography here
 demogr_event = [msprime.PopulationParametersChange(time=1000, initial_size=300, population_id=0)]
 
 # read tree, recapitate & add mutations
-treesq = pyslim.load("results/slim" + str(i) + ".tree")
-treesq = treesq.recapitate(Ne=N, recombination_map=recomb_map, demographic_events=demogr_event)
+treesq = pyslim.load("results/" + str(batch_ID) + "/slim" + str(i) + ".tree")
+treesq = treesq.recapitate(Ne=N, recombination_map=recomb_map, demographic_events=demogr_event, model="dtwf")
 
 sample_ind = np.random.choice(treesq.individuals_alive_at(ts[0]), ss[0], replace=False)
 for x in range(1, na + 1):
