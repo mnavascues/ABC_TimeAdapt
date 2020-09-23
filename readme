@@ -1,0 +1,3 @@
+requires msprime 0.7.5 (development version at the time of writing this, August 2020)
+
+python3 -m pip install git+https://github.com/tskit-dev/msprime.git

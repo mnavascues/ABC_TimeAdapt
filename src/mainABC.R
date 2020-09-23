@@ -95,7 +95,7 @@ sim<-1
   
   # SLiM (forward simulation of last generations) 
   seed.slim <- round(runif(1,0,2^32-1))
-    system2(command="slim",
+  system2(command="slim",
           args=c("-d", paste0("N=\"c("), paste(sim_N[sim,],collapse=","), paste0(")\""),
                  "-d", paste0("tc=\"c("), paste(times_of_change_forw,collapse=","), paste0(")\""),
                  "-d", paste0("ts=\"c("), paste(sim_sample_time$slim_ts,collapse=","), paste0(")\""),

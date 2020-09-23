@@ -71,7 +71,7 @@ for line in file_recomb_map:
     positions.append(int(p))
     rates.append(float(r))
 
-recomb_map = msprime.RecombinationMap(positions=positions, rates=rates, num_loci=positions[-1])
+recomb_map = msprime.RecombinationMap(positions=positions, rates=rates)#, num_loci=positions[-1])
 
 # add demography here
 demogr_event = [msprime.PopulationParametersChange(time=1000, initial_size=300, population_id=0)]
@@ -124,6 +124,16 @@ for variant in treesq.variants():
 
 ac = geno_data.count_alleles()
 pi = allel.sequence_diversity(positions, ac, start=1, stop=1000000)
+print(pi)
 
 pi_w, windows, n_bases, counts = allel.windowed_diversity(positions, ac, size=100000, start=1, stop=1000000)
 n_obs, minmax, mean, var, skew, kurt = st.describe(pi_w)
+print(n_obs)
+print(minmax)
+print(mean)
+print(var)
+print(skew)
+print(kurt)
+
+
+
