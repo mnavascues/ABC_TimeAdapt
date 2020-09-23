@@ -13,11 +13,15 @@ library(rcarbon)
 source("src/funABC.R")
 set.seed(1234567890)
 
+dir.create("results", showWarnings = FALSE)
+project_name <- "test"
+project_dir <- paste("results",project_name,sep="/")
+dir.create(project_dir, showWarnings = FALSE)
 batch_ID  <- 1 # an integer
-batch_dir <- paste("results",batch_ID,sep="/")
+batch_dir <- paste("results",project_name,batch_ID,sep="/")
 dir.create(batch_dir, showWarnings = FALSE)
 
-num_of_sims <- 1
+num_of_sims <- 3
 
 # READ DATA INFO FROM FILE
 sample_info_file <- "data/SampleInfoTest.txt"
@@ -28,7 +32,7 @@ Sample           <- read_sample_info(sample_info_file)
 # length of chromosomes ?
 # transition/transversion ratio ?
 chromosomes_limits <- read.table(file="data/chromosomes.txt")
-L <- chromosomes_limits[22,2]
+L <- chromosomes_limits[22,2] # total genome length
 
 # SET PRIORS
 # rescaled beta distribution as prior for generation length:
@@ -53,8 +57,12 @@ write(Ne_header,file=paste(batch_dir,"Ne.txt",sep="/"),append=F)
 
 # calculate probability distribution curves for calibrated age of ancient samples
 # (from 14C ages)
-cal_age_PDF <- get_sample_cal_age_PDF(Sample)
-saveRDS(cal_age_PDF,file = paste(batch_dir,"cal_age_PDF.RDS",sep="/"))
+if (file.exists(paste(project_dir,"cal_age_PDF.RDS",sep="/"))){
+  cal_age_PDF <- readRDS(file = paste(project_dir,"cal_age_PDF.RDS",sep="/"))
+}else{
+  cal_age_PDF <- get_sample_cal_age_PDF(Sample)
+  saveRDS(cal_age_PDF,file = paste(project_dir,"cal_age_PDF.RDS",sep="/"))
+}
 
 # verify that samples cannot be older than the number of generations simulated in forward
 check_ts_lower_gen_in_for_sim(num_of_gen_in_forw_sim,
