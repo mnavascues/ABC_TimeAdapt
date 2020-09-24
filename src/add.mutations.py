@@ -1,15 +1,19 @@
+#!/usr/bin/python3.6
+
 import allel
 import msprime
 import numpy as np
 import pyslim
 import scipy.stats as st
 
-# snp_calling function takes perfect simulated data from one locus and adds missing data
-# and error according to the number of reads of the site, error rate of the sequencing
-# technology and, for ancient DNA not sequenced from damage repair (dr) libraries,
+
+# snp_calling function takes perfect simulated data from one locus of one diploid individual and
+# adds missing data and error according to the number of reads of the site, error rate of the
+# sequencing technology and, for ancient DNA not sequenced from damage repair (dr) libraries,
 # creates missing data for transition SNPs (since they cannot be distinguished from aDNA damage)
-def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1, score_th=10, ratio_th=3, dr=True, transversion=True):
-    if dr != True and transversion != True:
+def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1, score_th=10,
+                ratio_th=3, dr=True, transversion=True):
+    if dr is False and transversion is False:
         genotype_call = [-1, -1]
     elif f_num_reads >= reads_th:
         derived_count = sum(true_genotype)
@@ -36,14 +40,15 @@ def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1, score_
         genotype_call = [-1, -1]
     return genotype_call
 
-ttratio=2.0/1.0
+
+ttratio = 2.0/1.0
 # i     = int(sys.argv[1])
 i = 1
 batch_ID = 1
 # N     = int(sys.argv[2])
 N = 200
 # mu    = float(sys.argv[3])
-mu = 5e-9 # 1.25e-08
+mu = 5e-9  # 1.25e-08
 # seed  = int(sys.argv[4])
 seed = 123456789
 # na    = int(sys.argv[6])
@@ -57,9 +62,9 @@ ts = (0,  22,  46,  71,  78,  85, 119, 146, 208, 290, 305, 384)
 #  ss=ss+( int(sys.argv[7+na+x]), )
 ss = (4,  1,  1,  2,  2,  1,  1,  1,  1,  1,  1,  1)
 
-coverage = (40.570000,46.490000,34.220000,37.240000,12.940000,
-            1.250000,0.010000,1.100000,2.300000,0.800000,1.000000,
-            11.096470,0.227619,11.581280,4.998657,0.130293,22.193640)
+coverage = (40.570000, 46.490000, 34.220000, 37.240000, 12.940000,
+            1.250000, 0.010000, 1.100000, 2.300000, 0.800000, 1.000000,
+            11.096470, 0.227619, 11.581280, 4.998657, 0.130293, 22.193640)
 
 
 sequencing_error = 0.005
@@ -75,7 +80,7 @@ for line in file_recomb_map:
     positions.append(int(p))
     rates.append(float(r))
 
-recomb_map = msprime.RecombinationMap(positions=positions, rates=rates)#, num_loci=positions[-1])
+recomb_map = msprime.RecombinationMap(positions=positions, rates=rates)  # num_loci=positions[-1])
 
 # add demography here
 demogr_event = [msprime.PopulationParametersChange(time=1000, initial_size=300, population_id=0)]
@@ -114,17 +119,19 @@ positions = []
 locus = 0
 for variant in treesq.variants():
     positions.append(round(variant.position))
-    #print(positions)
+    # print(positions)
     var_genotypes = variant.genotypes
-    #print(var_genotypes)
+    # print(var_genotypes)
     num_reads = st.poisson.rvs(mu=coverage, size=n_samples)
-    if st.uniform.rvs() < ttratio/(ttratio+1): transversion=False
-    #print(num_reads)
+    transversion_SNP = True
+    if st.uniform.rvs() < ttratio/(ttratio+1):
+        transversion_SNP = False
+    # print(num_reads)
     for i in range(0, 2 * n_samples, 2):
-        geno_data[locus, int(i / 2)] = snp_calling(true_genotype=var_genotypes[i:(i + 2)], f_num_reads=num_reads[int(i/2)],transversion=transversion)
+        geno_data[locus, int(i / 2)] = snp_calling(true_genotype=var_genotypes[i:(i + 2)],
+                                                   f_num_reads=num_reads[int(i/2)],
+                                                   transversion=transversion_SNP)
     locus = locus + 1
-
-
 
 
 ac = geno_data.count_alleles()
@@ -139,6 +146,3 @@ print(mean)
 print(var)
 print(skew)
 print(kurt)
-
-
-
