@@ -86,6 +86,7 @@ sim_N <- sample_demography_from_prior(num_of_sims,
 ref_table_N <- cbind(seq_len(num_of_sims),sim_N)
 colnames(ref_table_N) <- N_header
 saveRDS(ref_table_N,file = paste(batch_dir,"ref_table_N.RDS",sep="/"))
+rm(ref_table_N);gc()
 
 # mutation rate
 sim_u <- rep(1.25e-08,num_of_sims)
