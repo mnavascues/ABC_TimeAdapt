@@ -4,8 +4,12 @@ import numpy as np
 import pyslim
 import scipy.stats as st
 
-def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1, score_th=30, ratio_th=3, dr=True, ttratio=2.0/1.0):
-    if dr != True and st.uniform.rvs() < ttratio/(ttratio+1):
+# snp_calling function takes perfect simulated data from one locus and adds missing data
+# and error according to the number of reads of the site, error rate of the sequencing
+# technology and, for ancient DNA not sequenced from damage repair (dr) libraries,
+# creates missing data for transition SNPs (since they cannot be distinguished from aDNA damage)
+def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1, score_th=10, ratio_th=3, dr=True, transversion=True):
+    if dr != True and transversion != True:
         genotype_call = [-1, -1]
     elif f_num_reads >= reads_th:
         derived_count = sum(true_genotype)
@@ -32,7 +36,7 @@ def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1, score_
         genotype_call = [-1, -1]
     return genotype_call
 
-
+ttratio=2.0/1.0
 # i     = int(sys.argv[1])
 i = 1
 batch_ID = 1
@@ -114,9 +118,10 @@ for variant in treesq.variants():
     var_genotypes = variant.genotypes
     #print(var_genotypes)
     num_reads = st.poisson.rvs(mu=coverage, size=n_samples)
+    if st.uniform.rvs() < ttratio/(ttratio+1): transversion=False
     #print(num_reads)
     for i in range(0, 2 * n_samples, 2):
-        geno_data[locus, int(i / 2)] = snp_calling(true_genotype=var_genotypes[i:(i + 2)], f_num_reads=num_reads[int(i/2)])
+        geno_data[locus, int(i / 2)] = snp_calling(true_genotype=var_genotypes[i:(i + 2)], f_num_reads=num_reads[int(i/2)],transversion=transversion)
     locus = locus + 1
 
 
