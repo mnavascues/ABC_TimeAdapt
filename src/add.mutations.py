@@ -157,5 +157,5 @@ def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1, score_
 
 
 ###########################
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
