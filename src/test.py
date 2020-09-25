@@ -13,8 +13,7 @@ for line in file_recomb_map:
 num_of_chr = 7
 
 recomb_map = msprime.RecombinationMap(positions=positions[0:(num_of_chr*2)],
-                                      rates = rates[0:(num_of_chr*2)],
-                                      num_loci = positions[num_of_chr*2-1])
+                                      rates = rates[0:(num_of_chr*2)])
 
 # read tree, recapitate & add mutations
 treesq = pyslim.load("results/slim_test.tree")
