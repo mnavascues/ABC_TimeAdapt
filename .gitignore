@@ -1,0 +1,7 @@
+.R*
+.idea/
+results/
+src/__pycache__/
+data/RecombinationMap2010/*
+data/recombination_map*
+data/ideogram*
