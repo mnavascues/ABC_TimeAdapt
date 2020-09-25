@@ -21,7 +21,7 @@ batch_ID  <- 1 # an integer
 batch_dir <- paste("results",project_name,batch_ID,sep="/")
 dir.create(batch_dir, showWarnings = FALSE)
 
-num_of_sims <- 3
+num_of_sims <- 1
 
 # READ DATA INFO FROM FILE
 sample_info_file <- "data/SampleInfoTest.txt"
