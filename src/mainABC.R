@@ -111,6 +111,7 @@ sim<-1
                  "-d", paste0("ss=\"c("), paste(rev(sim_sample_time$sample_sizes),collapse=","), paste0(")\""),
                  "-d", paste0("i=", sim),
                  "-d", paste0("batch_ID=",batch_ID),
+                 "-d", paste0("project=\"'",project_name,"'\""),
                  "-d", paste0("np=", num_of_periods_forw),
                  "-d", paste0("na=", sim_sample_time$na),
                  "-d", paste0("L=", L),
