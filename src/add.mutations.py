@@ -5,6 +5,27 @@ import msprime
 import numpy as np
 import pyslim
 import scipy.stats as st
+import pandas as pd
+
+#
+#
+def read_sample_info(sample_info_file="data/SampleInfoTest.csv"):
+    info = pd.read_csv(sample_info_file,skipinitialspace=True)
+    sampleID = info.sampleID
+    age14C = info.age14C
+    age14Cerror = info.age14Cerror
+    ageBCAD = info.year
+    coverage = info.coverage
+    is_ancient = np.isnan(info.year)
+    is_modern = np.isnan(info.age14C)
+    is_dr = info.damageRepair
+    total_ancient = sum(is_ancient)
+    size = len(info)
+    t0 = max(info.year)
+    return sampleID, age14C, age14Cerror, ageBCAD, coverage, is_ancient, is_modern, is_dr, total_ancient, sample_size, t0
+
+
+sampleID, age14C, age14Cerror, ageBCAD, coverage, is_ancient, is_modern, is_dr, total_ancient, sample_size, t0 = read_sample_info()
 
 
 # snp_calling function takes perfect simulated data from one locus of one diploid individual and
