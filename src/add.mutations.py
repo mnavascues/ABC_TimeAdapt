@@ -9,12 +9,13 @@ import pandas as pd
 
 
 def main():
-    # get ve
+    # get
     sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, sample_size, t0 = read_sample_info()
 
     ttratio = 2.0/1.0
     i = 1
     batch_id = 1
+    project = "test"
     N = 200
     mu = 1.25e-08
     seed = 123456789
@@ -22,27 +23,19 @@ def main():
     ts = (0,  22,  46,  71,  78,  85, 119, 146, 208, 290, 305, 384)
     ss = (4,  1,  1,  2,  2,  1,  1,  1,  1,  1,  1,  1)
     sequencing_error = 0.005
-    
+
     np.random.seed(seed)
-    
-    # read recombination map and load it for msprime model
-    file_recomb_map = open("data/recombination_map_msprime.txt", "r")
-    positions = []
-    rates = []
-    for line in file_recomb_map:
-        p, r = line.split()
-        positions.append(int(p))
-        rates.append(float(r))
-    
-    recomb_map = msprime.RecombinationMap(positions=positions, rates=rates)  # num_loci=positions[-1])
-    
+
+    positions, rates = read_recombination_map()
+    recomb_map = msprime.RecombinationMap(positions=positions, rates=rates)
+
     # add demography here
     demogr_event = [msprime.PopulationParametersChange(time=1000, initial_size=300, population_id=0)]
-    
+
     # read tree, recapitate & add mutations
-    treesq = pyslim.load("results/" + str(batch_id) + "/slim" + str(i) + ".tree")
+    treesq = pyslim.load("results/" + project + "/" + str(batch_id) + "/slim" + str(i) + ".tree")
     treesq = treesq.recapitate(Ne=N, recombination_map=recomb_map, demographic_events=demogr_event, model="dtwf")
-    
+
     sample_ind = np.random.choice(treesq.individuals_alive_at(ts[0]), ss[0], replace=False)
     for x in range(1, na + 1):
         sample_ind = np.concatenate([sample_ind, treesq.individuals_alive_at(ts[x])])
@@ -101,11 +94,13 @@ def main():
 
 
 # Read csv file with information on sample. Format of the file:
+# --------------------------------------------------------------------------
 # sampleID,           age14C,  age14Cerror,  year,  coverage,  damageRepair
 # B_Ju_hoan_North-4,  NA,      NA,           2010,  40.57,     TRUE
 # S_Ju_hoan_North-1,  NA,      NA,           2010,  46.49,     TRUE
 # BallitoBayA,        1980,    20,           NA,    12.94,     FALSE
 # BallitoBayB,        2110,    30,           NA,    1.25,      TRUE
+# --------------------------------------------------------------------------
 def read_sample_info(sample_info_file="data/SampleInfoTest.csv"):
     info = pd.read_csv(sample_info_file, skipinitialspace=True)
     sample_id = info.sampleID
@@ -120,6 +115,27 @@ def read_sample_info(sample_info_file="data/SampleInfoTest.csv"):
     sample_size = len(info)
     t0 = max(info.year)
     return sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, sample_size, t0
+
+
+# Read file with positions for start and end of chromosomes and
+# recombination rates for each chromosome. Format:
+# -------------------------------------
+# 0 1.14856e-08
+# 249218992 0.5
+# 249218993 1.10543e-08
+# 492309989 0.5
+# 492309990 1.12796e-08
+# 690184517 0.5
+# -------------------------------------
+def read_recombination_map(recombination_map_file="data/recombination_map_msprime.txt"):
+    file_recomb_map = open(recombination_map_file, "r")
+    positions = []
+    rates = []
+    for line in file_recomb_map:
+        p, r = line.split()
+        positions.append(int(p))
+        rates.append(float(r))
+    return positions, rates
 
 
 # snp_calling function takes perfect simulated data from one locus of one diploid individual and
