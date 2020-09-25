@@ -24,7 +24,7 @@ dir.create(batch_dir, showWarnings = FALSE)
 num_of_sims <- 1
 
 # READ DATA INFO FROM FILE
-sample_info_file <- "data/SampleInfoTest.txt"
+sample_info_file <- "data/SampleInfoTest.csv"
 Sample           <- read_sample_info(sample_info_file)
 
 # GENOME INFO

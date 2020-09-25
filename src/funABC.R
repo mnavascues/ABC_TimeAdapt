@@ -9,7 +9,7 @@
 # 2020
 
 read_sample_info <- function(file="data/SampleInfoTest.csv"){
-  info <- read.table(file,header=T,stringsAsFactors=F,sep = ",")
+  info <- read.table(file,header=T,stringsAsFactors=F,sep = ",",strip.white=T)
   return( list(id            = info$sampleID,
                age14C        = info$age14C,
                age14Cerror   = info$age14Cerror,
