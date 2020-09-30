@@ -4,3 +4,4 @@ results/
 src/__pycache__/
 data/RecombinationMap2010/*
 data/ideogram*
+.Rproj.user
