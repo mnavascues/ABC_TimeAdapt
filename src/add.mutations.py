@@ -5,12 +5,12 @@ import msprime
 import numpy as np
 import pyslim
 import scipy.stats as st
-import pandas as pd
 
 
 def main():
     # get
-    sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, sample_size, t0 = read_sample_info()
+    sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient,\
+    sample_size = read_sample_info(sample_info_file="data/SampleInfoTest.txt")
 
     ttratio = 2.0/1.0
     sim_i = 1
@@ -108,37 +108,62 @@ def main():
     #print(kurt)
 
 
-def read_sample_info(sample_info_file="data/SampleInfoTest.csv"):
+def read_sample_info(sample_info_file="data/SampleInfoTest.txt"):
     '''
     Read csv file with information on sample. Format of the file:
     --------------------------------------------------------------------------
-    sampleID,           age14C,  age14Cerror,  year,  coverage,  damageRepair
-    B_Ju_hoan_North-4,  NA,      NA,           2010,  40.57,     TRUE
-    S_Ju_hoan_North-1,  NA,      NA,           2010,  46.49,     TRUE
-    BallitoBayA,        1980,    20,           NA,    12.94,     FALSE
-    BallitoBayB,        2110,    30,           NA,    1.25,      TRUE
+    sampleID           age14C  age14Cerror  year  coverage  damageRepair
+    B_Ju_hoan_North-4  NA      NA           2010  40.57     TRUE
+    S_Ju_hoan_North-1  NA      NA           2010  46.49     TRUE
+    BallitoBayA        1980    20           NA    12.94     FALSE
+    BallitoBayB        2110    30           NA    1.25      TRUE
     --------------------------------------------------------------------------
 
     :param sample_info_file: path of file
     :return:
     '''
-    info = pd.read_csv(sample_info_file, skipinitialspace=True)
-    sample_id = info.sampleID
-    # age14C = info.age14C
-    # age14Cerror = info.age14Cerror
-    # ageBCAD = info.year
-    coverage = info.coverage
-    is_ancient = np.isnan(info.year)
-    is_modern = np.isnan(info.age14C)
-    is_dr = info.damageRepair
-    total_ancient = sum(is_ancient)
-    sample_size = len(info)
-    t0 = max(info.year)
-    return sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, sample_size, t0
-
-info_file = open("data/SampleInfoTest.txt", "r")
-for line in info_file:
-    line.split()
+    info_file = open(sample_info_file, "r")
+    next(info_file) # header_line = next(info_file) # if header needed
+    sample_id = []
+    # age14C = []
+    # age14Cerror = []
+    # year = []
+    coverage = []
+    is_dr = []
+    is_ancient = []
+    is_modern = []
+    total_ancient = 0
+    sample_size = 0
+    for line in info_file:
+        sample_size = sample_size + 1
+        v1, v2, v3, v4, v5, v6 = line.split()
+        sample_id.append(v1)
+        if v2 == "NA":
+            # age14C.append(float('nan'))
+            is_modern.append(True)
+        else:
+            # age14C.append(float(v2))
+            is_modern.append(False)
+        # if v3=="NA":
+        # age14Cerror.append(float('nan'))
+        # else:
+        # age14Cerror.append(float(v3))
+        if v4 == "NA":
+            # year.append(float('nan'))
+            is_ancient.append(True)
+            total_ancient = total_ancient + 1
+        else:
+            # year.append(int(v4))
+            is_ancient.append(False)
+        coverage.append(float(v5))
+        if (v6 == "FALSE") or (v6 == "F"):
+            is_dr.append(False)
+        elif (v6 == "TRUE") or (v6 == "T"):
+            is_dr.append(True)
+        else:
+            is_dr.append(False)
+    # t0 = max(year)
+    return sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, sample_size
 
 
 def read_recombination_map(recombination_map_file="data/recombination_map_msprime.txt"):
