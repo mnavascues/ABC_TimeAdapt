@@ -5,12 +5,26 @@ import msprime
 import numpy as np
 import pyslim
 import scipy.stats as st
+import sys, getopt
 
+def main(argv):
+    info_file=''
+    try:
+        opts, args = getopt.getopt(argv, "hi:", ["info_file="])
+    except getopt.GetoptError:
+        print('add.mutations.py -i <sample_info_file>')
+        sys.exit(2)
+    print(opts)
+    for opt, arg in opts:
+        if opt == '-h':
+            print('add.mutations.py -i <sample_info_file>')
+            sys.exit()
+        elif opt in ("-i", "--info_file"):
+            info_file = arg
 
-def main():
     # get
     sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient,\
-    sample_size = read_sample_info(sample_info_file="data/SampleInfoTest.txt")
+    sample_size = read_sample_info(sample_info_file=info_file)
 
     ttratio = 2.0/1.0
     sim_i = 1
@@ -271,6 +285,6 @@ def empty_genotype_array(n_loci,n_samples,ploidy = 2):
 
 ###########################
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
 
 
