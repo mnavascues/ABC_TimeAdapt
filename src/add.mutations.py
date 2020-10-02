@@ -5,32 +5,57 @@ import msprime
 import numpy as np
 import pyslim
 import scipy.stats as st
-import sys
-import optparse
+import argparse
 
 def main():
-    parser = optparse.OptionParser()
-    parser.add_option('-i', '--sample_info_file', dest='info_file', help='Text file with sample information '
-                                                                    'organised in the following columns '
-                                                                    '(in this order): '
-                                                                    '\"sampleID age14C age14Cerror year coverage '
-                                                                    'damageRepair\" (and including this header)'
-                                                                    'see data/SampleInfoTest.txt for an example')
-    parser.add_option('-k', '--trans_transv_ratio', dest='ttratio', default=2.0, help='Transition transversion ratio in '
-                                                                         'the studied species. This value is used to '
-                                                                         'filter transition polymorphisms from ancient '
-                                                                         'DNA due to DNA damage. [default: %default]',  type="float")
-    (options, args) = parser.parse_args()
-    if options.info_file is None:
-        print("Missing input file, for usage run: " + sys.argv[0] + " -h")
-        sys.exit(2)
+    parser = argparse.ArgumentParser(description='Gets SLiM tree sequences, recapitates, add mutations '
+                                                 'and calculates summary statistics')
+    parser.add_argument("-i", "--sample_info_file",
+                        dest='info_file',
+                        type=str,
+                        required=True,
+                        help='[type: %(type)s] Text file with sample information organised as in the '
+                             'example below:\n'
+                             '--------------------------------------------------------------------\n'
+                             'sampleID           age14C  age14Cerror  year  coverage  damageRepair\n'
+                             'B_Ju_hoan_North-4  NA      NA           2010  40.57     TRUE\n'
+                             'S_Ju_hoan_North-1  NA      NA           2010  46.49     TRUE\n'
+                             'BallitoBayA        1980    20           NA    12.94     FALSE\n'
+                             'BallitoBayB        2110    30           NA    1.25      TRUE\n'
+                             '--------------------------------------------------------------------')
+
+    parser.add_argument('-k', '--trans_transv_ratio',
+                        dest='ttratio',
+                        default=2.0,
+                        type=float,
+                        help='[type: %(type)s] Transition/transversion ratio in the studied species. '
+                             'This value is used to simulate the '
+                             'filtering of transition polymorphisms from ancient DNA as they are not '
+                             'distinguishable from DNA damage (except for damage repair libraries). '
+                             '[default: %(default)s]')
+    parser.add_argument('-s', '--simulation_number',
+                        dest='sim_i',
+                        required=True,
+                        type=int,
+                        help='[type: %(type)s] Number used to identify the simulation within a batch. '
+                             'It is used as part of the input files (coming from SLiM)')
+    parser.add_argument('-b', '--batch_number',
+                        dest='batch_id',
+                        required=True,
+                        type=int,
+                        help='[type: %(type)s] Number used to identify the batch of simulations. '
+                             'It is used as part of the input files (coming from SLiM)')
+    parser.add_argument('-p', '--project_name',
+                        dest='project',
+                        required=True,
+                        type=str,
+                        help='[type: %(type)s] Name of the project analysis. '
+                             'It is used as direcotory in the path to the input files (coming from SLiM)')
+    options = parser.parse_args()
 
     sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
     sample_size = read_sample_info(sample_info_file=options.info_file)
 
-    sim_i=1
-    batch_id = 1
-    project = "test"
     N = 200
     mu = 1.25e-08
     seed = 123456789
@@ -45,7 +70,7 @@ def main():
     demogr_event = [msprime.PopulationParametersChange(time=1000, initial_size=300, population_id=0)]
 
     # read tree, recapitate & add mutations
-    treesq = pyslim.load("results/" + project + "/" + str(batch_id) + "/slim" + str(sim_i) + ".tree")
+    treesq = pyslim.load("results/" + options.project + "/" + str(options.batch_id) + "/slim" + str(options.sim_i) + ".tree")
     # tree = treesq.first()
     # print(tree.draw(format="unicode"))
 
