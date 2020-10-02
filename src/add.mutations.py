@@ -5,29 +5,30 @@ import msprime
 import numpy as np
 import pyslim
 import scipy.stats as st
-import sys, getopt
+import sys
+import optparse
 
-def main(argv):
-    info_file=''
-    try:
-        opts, args = getopt.getopt(argv, "hi:", ["info_file="])
-    except getopt.GetoptError:
-        print('add.mutations.py -i <sample_info_file>')
+def main():
+    parser = optparse.OptionParser()
+    parser.add_option('-i', '--sample_info_file', dest='info_file', help='Text file with sample information '
+                                                                    'organised in the following columns '
+                                                                    '(in this order): '
+                                                                    '\"sampleID age14C age14Cerror year coverage '
+                                                                    'damageRepair\" (and including this header)'
+                                                                    'see data/SampleInfoTest.txt for an example')
+    parser.add_option('-k', '--trans_transv_ratio', dest='ttratio', default=2.0, help='Transition transversion ratio in '
+                                                                         'the studied species. This value is used to '
+                                                                         'filter transition polymorphisms from ancient '
+                                                                         'DNA due to DNA damage. [default: %default]',  type="float")
+    (options, args) = parser.parse_args()
+    if options.info_file is None:
+        print("Missing input file, for usage run: " + sys.argv[0] + " -h")
         sys.exit(2)
-    print(opts)
-    for opt, arg in opts:
-        if opt == '-h':
-            print('add.mutations.py -i <sample_info_file>')
-            sys.exit()
-        elif opt in ("-i", "--info_file"):
-            info_file = arg
 
-    # get
-    sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient,\
-    sample_size = read_sample_info(sample_info_file=info_file)
+    sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
+    sample_size = read_sample_info(sample_info_file=options.info_file)
 
-    ttratio = 2.0/1.0
-    sim_i = 1
+    sim_i=1
     batch_id = 1
     project = "test"
     N = 200
@@ -90,7 +91,7 @@ def main(argv):
             #print(var_genotypes)
             num_reads = st.poisson.rvs(mu=coverage, size=sample_size)
             transversion_SNP = True
-            if st.uniform.rvs() < ttratio / (ttratio + 1):
+            if st.uniform.rvs() < options.ttratio / (options.ttratio + 1):
                 transversion_SNP = False
             # print(num_reads)
             for i in range(0, 2 * sample_size, 2):
@@ -285,6 +286,6 @@ def empty_genotype_array(n_loci,n_samples,ploidy = 2):
 
 ###########################
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()
 
 
