@@ -13,17 +13,25 @@ import scipy.stats as st
 import argparse
 
 def main():
+    # Get options from command line arguments and info from input file
     options = get_arguments()
     sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
     sample_size = read_sample_info(sample_info_file=options.info_file)
+
+    # initial settings and verifications
     np.random.seed(options.seed)
+    na = len(options.ss)-1
+    if sum(options.ss) != sample_size:
+        msg="Number of samples from command line (sum of ss="+ str(sum(options.ss)) +\
+            ") and number of samples from file (sample_size="+ str(sample_size) +\
+            ") does not match"
+        raise ValueError(msg)
+
+
+
+
 
     N = 200
-    na = 11
-
-    sequencing_error = 0.005
-
-
 
     # add demography here
     demogr_event = [msprime.PopulationParametersChange(time=1000, initial_size=300, population_id=0)]
@@ -77,14 +85,15 @@ def main():
             var_genotypes = variant.genotypes
             #print("--------------------------------")
             #print(var_genotypes)
-            num_reads = st.poisson.rvs(mu=coverage, size=sample_size)
+            num_reads = np.random.poisson(lam=coverage, size=sample_size)
             transversion_SNP = True
-            if st.uniform.rvs() < options.ttratio / (options.ttratio + 1):
+            if np.random.random() < options.ttratio / (options.ttratio + 1):
                 transversion_SNP = False
             # print(num_reads)
             for i in range(0, 2 * sample_size, 2):
                 geno_data[locus, int(i / 2)] = snp_calling(true_genotype=var_genotypes[i:(i + 2)],
                                                            f_num_reads=num_reads[int(i / 2)],
+                                                           error_rate=options.seq_error,
                                                            transversion=transversion_SNP)
             locus = locus + 1
 
@@ -285,6 +294,12 @@ def get_arguments():
                         required=True,
                         type=int,
                         help='[type: %(type)s] Seed for random number generator')
+    parser.add_argument('-e', '--sequencing_error',
+                        dest='seq_error',
+                        default=0.005,
+                        type=float,
+                        help='[type: %(type)s] Sequencing error rate. '
+                             '[default: %(default)s]')
     parser.add_argument("-i", "--sample_info_file",
                         dest='info_file',
                         type=str,
@@ -338,6 +353,11 @@ def get_arguments():
                         nargs='*',
                         help='[type: %(type)s] Sample size, in number of diploid individuals.')
     options = parser.parse_args()
+    if len(options.ts) != len(options.ss):
+        msg="Number of samples (length of ss="+ str(len(options.ss)) +\
+            ") and number of sampling times (length of st="+ str(len(options.ts)) +\
+            ") does not match"
+        raise ValueError(msg)
     return options
 
 ###########################
