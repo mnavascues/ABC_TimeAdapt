@@ -23,7 +23,6 @@ def main():
                              'BallitoBayA        1980    20           NA    12.94     FALSE\n'
                              'BallitoBayB        2110    30           NA    1.25      TRUE\n'
                              '--------------------------------------------------------------------')
-
     parser.add_argument('-k', '--trans_transv_ratio',
                         dest='ttratio',
                         default=2.0,
@@ -51,6 +50,12 @@ def main():
                         type=str,
                         help='[type: %(type)s] Name of the project analysis. '
                              'It is used as direcotory in the path to the input files (coming from SLiM)')
+    parser.add_argument('-t', '--time_samples',
+                        dest='ts',
+                        required=True,
+                        type=int,
+                        nargs='*',
+                        help='[type: %(type)s] Time (backwards) of samples, in generations.')
     options = parser.parse_args()
 
     sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
@@ -60,7 +65,6 @@ def main():
     mu = 1.25e-08
     seed = 123456789
     na = 11
-    ts = (0,  22,  46,  71,  78,  85, 119, 146, 208, 290, 305, 384)
     ss = (4,  1,  1,  2,  2,  1,  1,  1,  1,  1,  1,  1)
     sequencing_error = 0.005
 
@@ -75,9 +79,9 @@ def main():
     # print(tree.draw(format="unicode"))
 
     # simplify tree sequence keeping nodes for the sampled individuals and their roots
-    sample_individuals = np.random.choice(treesq.individuals_alive_at(ts[0]), ss[0], replace=False)
+    sample_individuals = np.random.choice(treesq.individuals_alive_at(options.ts[0]), ss[0], replace=False)
     for x in range(1, na + 1):
-        sample_individuals = np.concatenate([sample_individuals, treesq.individuals_alive_at(ts[x])])
+        sample_individuals = np.concatenate([sample_individuals, treesq.individuals_alive_at(options.ts[x])])
     keep_nodes = []
     for samp_i in sample_individuals:
         keep_nodes.extend(treesq.individual(samp_i).nodes)
