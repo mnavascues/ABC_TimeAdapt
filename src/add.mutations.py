@@ -2,6 +2,8 @@
 
 # python3 src/add.mutations.py -i data/SampleInfoTest.txt -s 1 -b 1 -p test
 # -t 0 22 46 71 78 85 119 146 208 290 305 384
+# -z 4 1 1 2 2 1 1 1 1 1 1 1
+# -d 123456789
 
 import allel
 import msprime
@@ -11,67 +13,18 @@ import scipy.stats as st
 import argparse
 
 def main():
-    parser = argparse.ArgumentParser(description='Gets SLiM tree sequences, recapitates, add mutations '
-                                                 'and calculates summary statistics')
-    parser.add_argument("-i", "--sample_info_file",
-                        dest='info_file',
-                        type=str,
-                        required=True,
-                        help='[type: %(type)s] Text file with sample information organised as in the '
-                             'example below:\n'
-                             '--------------------------------------------------------------------\n'
-                             'sampleID           age14C  age14Cerror  year  coverage  damageRepair\n'
-                             'B_Ju_hoan_North-4  NA      NA           2010  40.57     TRUE\n'
-                             'S_Ju_hoan_North-1  NA      NA           2010  46.49     TRUE\n'
-                             'BallitoBayA        1980    20           NA    12.94     FALSE\n'
-                             'BallitoBayB        2110    30           NA    1.25      TRUE\n'
-                             '--------------------------------------------------------------------')
-    parser.add_argument('-k', '--trans_transv_ratio',
-                        dest='ttratio',
-                        default=2.0,
-                        type=float,
-                        help='[type: %(type)s] Transition/transversion ratio in the studied species. '
-                             'This value is used to simulate the '
-                             'filtering of transition polymorphisms from ancient DNA as they are not '
-                             'distinguishable from DNA damage (except for damage repair libraries). '
-                             '[default: %(default)s]')
-    parser.add_argument('-s', '--simulation_number',
-                        dest='sim_i',
-                        required=True,
-                        type=int,
-                        help='[type: %(type)s] Number used to identify the simulation within a batch. '
-                             'It is used as part of the input files (coming from SLiM)')
-    parser.add_argument('-b', '--batch_number',
-                        dest='batch_id',
-                        required=True,
-                        type=int,
-                        help='[type: %(type)s] Number used to identify the batch of simulations. '
-                             'It is used as part of the input files (coming from SLiM)')
-    parser.add_argument('-p', '--project_name',
-                        dest='project',
-                        required=True,
-                        type=str,
-                        help='[type: %(type)s] Name of the project analysis. '
-                             'It is used as direcotory in the path to the input files (coming from SLiM)')
-    parser.add_argument('-t', '--time_samples',
-                        dest='ts',
-                        required=True,
-                        type=int,
-                        nargs='*',
-                        help='[type: %(type)s] Time (backwards) of samples, in generations.')
-    options = parser.parse_args()
-
+    options = get_arguments()
     sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
     sample_size = read_sample_info(sample_info_file=options.info_file)
+    np.random.seed(options.seed)
 
     N = 200
     mu = 1.25e-08
-    seed = 123456789
     na = 11
-    ss = (4,  1,  1,  2,  2,  1,  1,  1,  1,  1,  1,  1)
+
     sequencing_error = 0.005
 
-    np.random.seed(seed)
+
 
     # add demography here
     demogr_event = [msprime.PopulationParametersChange(time=1000, initial_size=300, population_id=0)]
@@ -82,16 +35,16 @@ def main():
     # print(tree.draw(format="unicode"))
 
     # simplify tree sequence keeping nodes for the sampled individuals and their roots
-    sample_individuals = np.random.choice(treesq.individuals_alive_at(options.ts[0]), ss[0], replace=False)
+    sample_individuals = np.random.choice(treesq.individuals_alive_at(options.ts[0]), options.ss[0], replace=False)
     for x in range(1, na + 1):
         sample_individuals = np.concatenate([sample_individuals, treesq.individuals_alive_at(options.ts[x])])
     keep_nodes = []
     for samp_i in sample_individuals:
         keep_nodes.extend(treesq.individual(samp_i).nodes)
     treesq = treesq.simplify(keep_nodes, keep_input_roots = True)
-    #sample_individuals = chr_arm_treesq.individuals_alive_at(ts[0])
+    #sample_individuals = chr_arm_treesq.individuals_alive_at(options.ts[0])
     #for x in range(1, na + 1):
-    #    sample_individuals = np.concatenate([sample_individuals, chr_arm_treesq.individuals_alive_at(ts[x])])
+    #    sample_individuals = np.concatenate([sample_individuals, chr_arm_treesq.individuals_alive_at(options.ts[x])])
 
     # read genome intervals (e.g. chromosome arms start and end)
     # and recombination rates from file
@@ -99,16 +52,20 @@ def main():
     num_of_genome_intervals = len(start_chr_arm)
 
     # loop over genome intervals: recapitate, mutate, calculate sumstats
+    num_of_genome_intervals = 1
     for gi in range(0, num_of_genome_intervals):
-        genome_interval = np.array([[start_chr_arm[gi], end_chr_arm[gi]]])
+        genome_interval = np.array([[0, 100000]]) # np.array([[start_chr_arm[gi], end_chr_arm[gi]]])
         gi_treesq = treesq.keep_intervals(genome_interval, simplify=False)
         gi_treesq = gi_treesq.ltrim()
         gi_treesq = pyslim.SlimTreeSequence(gi_treesq.rtrim())
         gi_treesq = gi_treesq.recapitate(recombination_rate=rec_rate_chr_arm[0],
                                          Ne=N,
                                          demographic_events=demogr_event,
-                                         model="dtwf")
-        gi_treesq = pyslim.SlimTreeSequence(msprime.mutate(gi_treesq, rate=mu))
+                                         model="dtwf",
+                                         random_seed=np.random.randint(1,2^32-1))
+        gi_treesq = pyslim.SlimTreeSequence(msprime.mutate(gi_treesq,
+                                                           rate=mu,
+                                                           random_seed=np.random.randint(1,2^32-1)))
 
         geno_data = empty_genotype_array(n_loci=gi_treesq.num_mutations,
                                          n_samples=sample_size,
@@ -315,6 +272,68 @@ def empty_genotype_array(n_loci,n_samples,ploidy = 2):
     empty_ga = allel.GenotypeArray(np.full((n_loci, n_samples, ploidy), -1), dtype='i1')
     return empty_ga
 
+def get_arguments():
+    parser = argparse.ArgumentParser(description='Gets SLiM tree sequences, recapitates, add mutations '
+                                                 'and calculates summary statistics')
+    parser.add_argument("-i", "--sample_info_file",
+                        dest='info_file',
+                        type=str,
+                        required=True,
+                        help='[type: %(type)s] Text file with sample information organised as in the '
+                             'example below:\n'
+                             '--------------------------------------------------------------------\n'
+                             'sampleID           age14C  age14Cerror  year  coverage  damageRepair\n'
+                             'B_Ju_hoan_North-4  NA      NA           2010  40.57     TRUE\n'
+                             'S_Ju_hoan_North-1  NA      NA           2010  46.49     TRUE\n'
+                             'BallitoBayA        1980    20           NA    12.94     FALSE\n'
+                             'BallitoBayB        2110    30           NA    1.25      TRUE\n'
+                             '--------------------------------------------------------------------')
+    parser.add_argument('-k', '--trans_transv_ratio',
+                        dest='ttratio',
+                        default=2.0,
+                        type=float,
+                        help='[type: %(type)s] Transition/transversion ratio in the studied species. '
+                             'This value is used to simulate the '
+                             'filtering of transition polymorphisms from ancient DNA as they are not '
+                             'distinguishable from DNA damage (except for damage repair libraries). '
+                             '[default: %(default)s]')
+    parser.add_argument('-s', '--simulation_number',
+                        dest='sim_i',
+                        required=True,
+                        type=int,
+                        help='[type: %(type)s] Number used to identify the simulation within a batch. '
+                             'It is used as part of the input files (coming from SLiM)')
+    parser.add_argument('-b', '--batch_number',
+                        dest='batch_id',
+                        required=True,
+                        type=int,
+                        help='[type: %(type)s] Number used to identify the batch of simulations. '
+                             'It is used as part of the input files (coming from SLiM)')
+    parser.add_argument('-p', '--project_name',
+                        dest='project',
+                        required=True,
+                        type=str,
+                        help='[type: %(type)s] Name of the project analysis. '
+                             'It is used as direcotory in the path to the input files (coming from SLiM)')
+    parser.add_argument('-t', '--time_samples',
+                        dest='ts',
+                        required=True,
+                        type=int,
+                        nargs='*',
+                        help='[type: %(type)s] Time (backwards) of samples, in generations.')
+    parser.add_argument('-z', '--sample_size',
+                        dest='ss',
+                        required=True,
+                        type=int,
+                        nargs='*',
+                        help='[type: %(type)s] Sample size, in number of diploid individuals.')
+    parser.add_argument('-d', '--seed',
+                        dest='seed',
+                        required=True,
+                        type=int,
+                        help='[type: %(type)s] Seed for random number generator')
+    options = parser.parse_args()
+    return options
 
 ###########################
 if __name__ == "__main__":
