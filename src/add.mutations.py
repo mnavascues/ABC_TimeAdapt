@@ -1,5 +1,8 @@
 #!/usr/bin/python3.6
 
+# python3 src/add.mutations.py -i data/SampleInfoTest.txt -s 1 -b 1 -p test
+# -t 0 22 46 71 78 85 119 146 208 290 305 384
+
 import allel
 import msprime
 import numpy as np
