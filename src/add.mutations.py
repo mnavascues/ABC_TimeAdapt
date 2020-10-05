@@ -19,7 +19,6 @@ def main():
     np.random.seed(options.seed)
 
     N = 200
-    mu = 1.25e-08
     na = 11
 
     sequencing_error = 0.005
@@ -64,7 +63,7 @@ def main():
                                          model="dtwf",
                                          random_seed=np.random.randint(1,2^32-1))
         gi_treesq = pyslim.SlimTreeSequence(msprime.mutate(gi_treesq,
-                                                           rate=mu,
+                                                           rate=options.mu,
                                                            random_seed=np.random.randint(1,2^32-1)))
 
         geno_data = empty_genotype_array(n_loci=gi_treesq.num_mutations,
@@ -275,6 +274,17 @@ def empty_genotype_array(n_loci,n_samples,ploidy = 2):
 def get_arguments():
     parser = argparse.ArgumentParser(description='Gets SLiM tree sequences, recapitates, add mutations '
                                                  'and calculates summary statistics')
+    parser.add_argument('-b', '--batch_number',
+                        dest='batch_id',
+                        required=True,
+                        type=int,
+                        help='[type: %(type)s] Number used to identify the batch of simulations. '
+                             'It is used as part of the input files (coming from SLiM)')
+    parser.add_argument('-d', '--seed',
+                        dest='seed',
+                        required=True,
+                        type=int,
+                        help='[type: %(type)s] Seed for random number generator')
     parser.add_argument("-i", "--sample_info_file",
                         dest='info_file',
                         type=str,
@@ -297,41 +307,36 @@ def get_arguments():
                              'filtering of transition polymorphisms from ancient DNA as they are not '
                              'distinguishable from DNA damage (except for damage repair libraries). '
                              '[default: %(default)s]')
-    parser.add_argument('-s', '--simulation_number',
-                        dest='sim_i',
-                        required=True,
-                        type=int,
-                        help='[type: %(type)s] Number used to identify the simulation within a batch. '
-                             'It is used as part of the input files (coming from SLiM)')
-    parser.add_argument('-b', '--batch_number',
-                        dest='batch_id',
-                        required=True,
-                        type=int,
-                        help='[type: %(type)s] Number used to identify the batch of simulations. '
-                             'It is used as part of the input files (coming from SLiM)')
     parser.add_argument('-p', '--project_name',
                         dest='project',
                         required=True,
                         type=str,
                         help='[type: %(type)s] Name of the project analysis. '
                              'It is used as direcotory in the path to the input files (coming from SLiM)')
+    parser.add_argument('-s', '--simulation_number',
+                        dest='sim_i',
+                        required=True,
+                        type=int,
+                        help='[type: %(type)s] Number used to identify the simulation within a batch. '
+                             'It is used as part of the input files (coming from SLiM)')
     parser.add_argument('-t', '--time_samples',
                         dest='ts',
                         required=True,
                         type=int,
                         nargs='*',
                         help='[type: %(type)s] Time (backwards) of samples, in generations.')
+    parser.add_argument('-u', '--mutation_rate',
+                        dest='mu',
+                        default=1.25e-08,
+                        type=float,
+                        help='[type: %(type)s] Mutation rate per bp. '
+                             '[default: %(default)s]')
     parser.add_argument('-z', '--sample_size',
                         dest='ss',
                         required=True,
                         type=int,
                         nargs='*',
                         help='[type: %(type)s] Sample size, in number of diploid individuals.')
-    parser.add_argument('-d', '--seed',
-                        dest='seed',
-                        required=True,
-                        type=int,
-                        help='[type: %(type)s] Seed for random number generator')
     options = parser.parse_args()
     return options
 
