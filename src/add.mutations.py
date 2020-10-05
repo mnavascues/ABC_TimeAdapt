@@ -3,7 +3,7 @@
 # python3 src/add.mutations.py -i data/SampleInfoTest.txt -s 1 -b 1 -p test
 # -t 0 22 46 71 78 85 119 146 208 290 305 384
 # -z 4 1 1 2 2 1 1 1 1 1 1 1
-# -d 123456789
+# -d 123456789 -n 200
 
 import allel
 import msprime
@@ -24,7 +24,7 @@ def main():
     if sum(options.ss) != sample_size:
         msg="Number of samples from command line (sum of ss="+ str(sum(options.ss)) +\
             ") and number of samples from file (sample_size="+ str(sample_size) +\
-            ") does not match"
+            ") do not match"
         raise ValueError(msg)
 
     # add demography here
@@ -353,7 +353,7 @@ def get_arguments():
     if len(options.ts) != len(options.ss):
         msg="Number of samples (length of ss="+ str(len(options.ss)) +\
             ") and number of sampling times (length of st="+ str(len(options.ts)) +\
-            ") does not match"
+            ") do not match"
         raise ValueError(msg)
     return options
 
