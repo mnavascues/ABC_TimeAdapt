@@ -74,7 +74,7 @@ sample_ages_from_prior <- function(Sample,
     s<-c(s,sum(ages_sim==age))
   }
   
-  return(list(na           = sum(a!=0),       # number of ancient samples
+  return(list(na           = sum(a!=0),       # number of non-present sample times
               t_max        = t_max,
               slim_ts      = sort(t_max-a),   # time of samples in SLiM
               msprime_ts   = a,               # time of samples in tree sequences  
