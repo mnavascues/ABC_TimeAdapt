@@ -65,31 +65,11 @@ def main():
         gi_treesq = pyslim.SlimTreeSequence(msprime.mutate(gi_treesq,
                                                            rate=options.mu,
                                                            random_seed=np.random.randint(1,2^32-1)))
-
-        geno_data = empty_genotype_array(n_loci=gi_treesq.num_mutations,
-                                         n_samples=sample_size,
-                                         ploidy=2)
-        positions = []
-        locus = 0
-        for variant in gi_treesq.variants():
-            positions.append(round(variant.position))
-            #print(positions)
-            var_genotypes = variant.genotypes
-            #print("--------------------------------")
-            #print(var_genotypes)
-            num_reads = np.random.poisson(lam=coverage, size=sample_size)
-            transversion_SNP = True
-            if np.random.random() < options.ttratio / (options.ttratio + 1):
-                transversion_SNP = False
-            # print(num_reads)
-            for i in range(0, 2 * sample_size, 2):
-                geno_data[locus, int(i / 2)] = snp_calling(true_genotype=var_genotypes[i:(i + 2)],
-                                                           f_num_reads=num_reads[int(i / 2)],
-                                                           error_rate=options.seq_error,
-                                                           transversion=transversion_SNP)
-            locus = locus + 1
-
-
+        geno_data, positions = sequencing(ts=gi_treesq,
+                                          ssize=sample_size,
+                                          ttr=options.ttratio,
+                                          seq_error=options.seq_error,
+                                          cov=coverage)
 
         ac = geno_data.count_alleles()
         pi = allel.mean_pairwise_difference(ac)
@@ -271,6 +251,38 @@ def empty_genotype_array(n_loci,n_samples,ploidy = 2):
     '''
     empty_ga = allel.GenotypeArray(np.full((n_loci, n_samples, ploidy), -1), dtype='i1')
     return empty_ga
+
+def sequencing(ts,ssize,ttr,seq_error,cov):
+    if len(cov) != ssize:
+        msg="Number of coverage values (length="+ str(len(cov)) +\
+            ") and number of samples (ssize="+ str(ssize) +\
+            ") do not match"
+        raise ValueError(msg)
+
+    geno_data = empty_genotype_array(n_loci=ts.num_mutations,
+                                     n_samples=ssize,
+                                     ploidy=2)
+    positions = []
+    locus = 0
+    for variant in ts.variants():
+        positions.append(round(variant.position))
+        # print(positions)
+        var_genotypes = variant.genotypes
+        # print("--------------------------------")
+        # print(var_genotypes)
+        num_reads = np.random.poisson(lam=cov, size=ssize)
+        transversion_SNP = True
+        if np.random.random() < ttr / (ttr + 1):
+            transversion_SNP = False
+        # print(num_reads)
+        for i in range(0, 2 * ssize, 2):
+            geno_data[locus, int(i / 2)] = snp_calling(true_genotype=var_genotypes[i:(i + 2)],
+                                                       f_num_reads=num_reads[int(i / 2)],
+                                                       error_rate=seq_error,
+                                                       transversion=transversion_SNP)
+        locus = locus + 1
+    return geno_data, positions
+
 
 def get_arguments():
     parser = argparse.ArgumentParser(description='Gets SLiM tree sequences, recapitates, add mutations '
