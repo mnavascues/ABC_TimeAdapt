@@ -124,12 +124,6 @@ sim<-1
 
 # python (RECAPITATION + MUTATION + SEQUENCING + SUMSTATS)
 seed.pyslim <- round(runif(1,0,2^32-1))
-#system2(command="python3",
-#        args=c("src/add.mutations.py",
-#               i, N[i], mu[i], seed.pyslim, n0, na, ts,
-#               " > /tmp/pyslimout.txt"))
-  
-
 system2(command="python3",
         args=c("src/add.mutations.py",
                "-i", sample_info_file,
