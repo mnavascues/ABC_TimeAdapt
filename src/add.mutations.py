@@ -27,16 +27,10 @@ def main():
             ") does not match"
         raise ValueError(msg)
 
-
-
-
-
-    N = 200
-
     # add demography here
-    demogr_event = [msprime.PopulationParametersChange(time=1000, initial_size=300, population_id=0)]
+    # demogr_event = [msprime.PopulationParametersChange(time=1000, initial_size=300, population_id=0)]
 
-    # read tree, recapitate & add mutations
+    # read tree sequence from SLiM output file
     treesq = pyslim.load("results/" + options.project + "/" + str(options.batch_id) + "/slim" + str(options.sim_i) + ".tree")
     # tree = treesq.first()
     # print(tree.draw(format="unicode"))
@@ -49,9 +43,6 @@ def main():
     for samp_i in sample_individuals:
         keep_nodes.extend(treesq.individual(samp_i).nodes)
     treesq = treesq.simplify(keep_nodes, keep_input_roots = True)
-    #sample_individuals = chr_arm_treesq.individuals_alive_at(options.ts[0])
-    #for x in range(1, na + 1):
-    #    sample_individuals = np.concatenate([sample_individuals, chr_arm_treesq.individuals_alive_at(options.ts[x])])
 
     # read genome intervals (e.g. chromosome arms start and end)
     # and recombination rates from file
@@ -59,15 +50,16 @@ def main():
     num_of_genome_intervals = len(start_chr_arm)
 
     # loop over genome intervals: recapitate, mutate, calculate sumstats
-    num_of_genome_intervals = 1
+    num_of_genome_intervals = 1 # KEEP THIS LINE ONLY FOR TEST
     for gi in range(0, num_of_genome_intervals):
-        genome_interval = np.array([[0, 100000]]) # np.array([[start_chr_arm[gi], end_chr_arm[gi]]])
+        genome_interval = np.array([[start_chr_arm[gi], end_chr_arm[gi]]])
+        genome_interval = np.array([[0, 100000]]) # KEEP THIS LINE ONLY FOR TEST
         gi_treesq = treesq.keep_intervals(genome_interval, simplify=False)
         gi_treesq = gi_treesq.ltrim()
         gi_treesq = pyslim.SlimTreeSequence(gi_treesq.rtrim())
         gi_treesq = gi_treesq.recapitate(recombination_rate=rec_rate_chr_arm[0],
-                                         Ne=N,
-                                         demographic_events=demogr_event,
+                                         Ne=options.ne,
+                                         # demographic_events=demogr_event,
                                          model="dtwf",
                                          random_seed=np.random.randint(1,2^32-1))
         gi_treesq = pyslim.SlimTreeSequence(msprime.mutate(gi_treesq,
@@ -322,6 +314,11 @@ def get_arguments():
                              'filtering of transition polymorphisms from ancient DNA as they are not '
                              'distinguishable from DNA damage (except for damage repair libraries). '
                              '[default: %(default)s]')
+    parser.add_argument('-n', '--effective_population_size',
+                        dest='ne',
+                        required=True,
+                        type=int,
+                        help='[type: %(type)s] Effective population size used for recapitation.')
     parser.add_argument('-p', '--project_name',
                         dest='project',
                         required=True,
