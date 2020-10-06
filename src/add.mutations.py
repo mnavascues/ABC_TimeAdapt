@@ -347,7 +347,7 @@ def get_arguments():
                         required=True,
                         type=str,
                         help='[type: %(type)s] Name of the project analysis. '
-                             'It is used as direcotory in the path to the input files (coming from SLiM)')
+                             'It is used as directory in the path to the input files (coming from SLiM)')
     parser.add_argument('-s', '--simulation_number',
                         dest='sim_i',
                         required=True,
