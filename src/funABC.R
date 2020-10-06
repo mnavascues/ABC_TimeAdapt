@@ -10,6 +10,7 @@
 
 read_sample_info <- function(file="data/SampleInfoTest.txt"){
   info <- read.table(file,header=T,stringsAsFactors=F,strip.white=T)
+  # TODO add verification of header
   return( list(id            = info$sampleID,
                age14C        = info$age14C,
                age14Cerror   = info$age14Cerror,
