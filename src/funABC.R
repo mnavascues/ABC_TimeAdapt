@@ -26,19 +26,35 @@ read_sample_info <- function(file="data/SampleInfoTest.txt"){
 
 read_genome_info <- function(file="data/genome_test.txt"){
   info <- read.table(genome_info_file,header=T)
+  # TODO add verification of header
   number_of_chromosomes <- nrow(info)
   rec_map_SLiM_rates <- numeric()
   rec_map_SLiM_ends <- numeric()
+  genome_interval_start <- numeric()
+  genome_interval_end <- numeric()
+  genome_interval_rate <- numeric()
   for (chr in seq_len(number_of_chromosomes)){
     rec_map_SLiM_rates <- c(rec_map_SLiM_rates, info$recombination_rate[chr], 0.5)
     rec_map_SLiM_ends  <- c(rec_map_SLiM_ends, 
                             info$chromosome_end[chr], 
                             info$chromosome_end[chr]+1)
+    genome_interval_start <- c(genome_interval_start,
+                               info$chromosome_start[chr],
+                               info$centromere_end[chr])
+    genome_interval_end <- c(genome_interval_end,
+                             info$centromere_start[chr],
+                             info$chromosome_end[chr])
+    genome_interval_rate <- c(genome_interval_rate,
+                              info$recombination_rate[chr],
+                              info$recombination_rate[chr])
   }
-  rec_map_SLiM <- 
   return( list(number_of_chromosomes = number_of_chromosomes,
-               L                     = info$chromosome_end[number_of_chromosomes], # total genome length
-               rec_map_SLiM   = cbind(ends=rec_map_SLiM_ends,rates=rec_map_SLiM_rates) ) )
+               L = info$chromosome_end[number_of_chromosomes], # total genome length
+               rec_map_SLiM = cbind(ends=rec_map_SLiM_ends,
+                                    rates=rec_map_SLiM_rates),
+               genome_intervals = cbind(start=genome_interval_start,
+                                        end=genome_interval_end,
+                                        rate=genome_interval_rate)) )
 }
 
 
