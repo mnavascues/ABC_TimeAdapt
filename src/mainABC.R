@@ -11,7 +11,7 @@ library(abcrf)
 library(extraDistr)
 library(rcarbon)
 source("src/funABC.R")
-set.seed(1234567890)
+set.seed(24564555)
 
 dir.create("results", showWarnings = FALSE)
 project_name <- "test"
@@ -21,14 +21,15 @@ batch_ID  <- 1 # an integer
 batch_dir <- paste("results",project_name,batch_ID,sep="/")
 dir.create(batch_dir, showWarnings = FALSE)
 
-num_of_sims <- 1
+quiet <- FALSE
+num_of_sims <- 10
 
 # READ DATA INFO FROM FILE
 sample_info_file <- "data/SampleInfoTest.txt"
 Sample           <- read_sample_info(sample_info_file)
 
 # GENOME INFO
-# remove centromeres ?
+# remove centromeres ?  
 # length of chromosomes ?
 # transition/transversion ratio ?
 chromosomes_limits <- read.table(file="data/chromosomes.txt")
@@ -91,9 +92,9 @@ rm(ref_table_N);gc()
 # mutation rate
 sim_u <- rep(1.25e-08,num_of_sims)
 
-sim<-1
-#for (sim in seq_len(num_of_sims)){
-  
+#sim<-1
+for (sim in seq_len(num_of_sims)){
+  if (!quiet) cat(paste("\n\nSimulation",sim,"\n----------------------------------\n"))
   # simulate ages of aDNA from their calibrated age distribution
   sim_sample_time <- sample_ages_from_prior(Sample,
                                             num_of_gen_in_forw_sim,
