@@ -253,14 +253,14 @@ def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1, score_
     return genotype_call
 
 
-def empty_genotype_array(n_loci,n_samples,ploidy = 2):
+def empty_genotype_array(n_loci,n_samples,ploidy = 2,allele = -1):
     '''
     Creates a genotype array with all values as missing (-1) for a given number
     of samples, loci and ploidy
 
     :return: empty_ga
     '''
-    empty_ga = allel.GenotypeArray(np.full((n_loci, n_samples, ploidy), -1), dtype='i1')
+    empty_ga = allel.GenotypeArray(np.full((n_loci, n_samples, ploidy), allele), dtype='i1')
     return empty_ga
 
 def sequencing(ts,ssize,ttr,seq_error,cov):
