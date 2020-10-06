@@ -12,24 +12,27 @@ initialize() {
 		defineConstant("i",  1);
 		defineConstant("batch_ID", 1);
 		defineConstant("project","test");
+		defineConstant("ends", c(249218991,249218992,492309988,492309989,690184516,690184517,881213161,
+		                         881213162,1061928971,1061928972,1232980287,1232980288,1392107061,
+		                         1392107062,1538408217,1538408218,1679518196,1679518197,1815021889,
+		                         1815021890,1949967411,1949967412,2083746207,2083746208,2198853203,
+		                         2198853204,2306141580,2306141581,2408647688,2408647689,2498811276,
+		                         2498811277,2579856545,2579856546,2657871725,2657871726,2716968885,
+		                         2716968886,2779918330,2779918331,2828018485,2828018486,2879248290,
+		                         2879248291));
+    defineConstant("rates", c(1.14856E-08, 0.5,1.10543E-08, 0.5,1.12796E-08, 0.5,1.12312E-08, 0.5,
+                              1.12809E-08, 0.5,1.12229E-08, 0.5,1.17646E-08, 0.5,1.14785E-08, 0.5,
+                              1.17807E-08, 0.5,1.33651E-08, 0.5,1.17193E-08, 0.5,1.30502E-08, 0.5,
+                              1.09149E-08, 0.5,1.11973E-08, 0.5,1.38358E-08, 0.5,1.48346E-08, 0.5,
+                              1.58249E-08, 0.5,1.5076E-08, 0.5,1.82201E-08, 0.5,1.71783E-08, 0.5,
+                              1.30452E-08, 0.5,1.4445E-08, 0.5));
 	}
 	initializeSLiMOptions(keepPedigrees=T);
 	initializeMutationRate(0.0);
 	initializeMutationType("m1", 0.5, "f", 0.0);
 	initializeGenomicElementType("g1", m1, 1.0);
 	initializeGenomicElement(g1, 0, L);
-	
-	lines = readFile("data/recombination_map_slim.txt");
-	rates = NULL;
-	ends = NULL;
-	for (line in lines)
-	{
-		components = strsplit(line, " ");
-		ends = c(ends, asInteger(components[0]));
-		rates = c(rates, asFloat(components[1]));
-	}
 	initializeRecombinationRate(rates, ends);
-	
 	initializeTreeSeq();
 }
 1 early() {

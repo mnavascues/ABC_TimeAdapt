@@ -23,6 +23,27 @@ read_sample_info <- function(file="data/SampleInfoTest.txt"){
                t0            = max(info$year,na.rm=T) ) )
 }
 
+read_genome_info <- function(file="data/genome_test.txt"){
+  info <- read.table(genome_info_file,header=T)
+  number_of_chromosomes <- nrow(info)
+  rec_map_SLiM_rates <- numeric()
+  rec_map_SLiM_ends <- numeric()
+  for (chr in seq_len(number_of_chromosomes)){
+    rec_map_SLiM_rates <- c(rec_map_SLiM_rates, info$recombination_rate[chr], 0.5)
+    rec_map_SLiM_ends  <- c(rec_map_SLiM_ends, 
+                            info$chromosome_end[chr], 
+                            info$chromosome_end[chr]+1)
+  }
+  rec_map_SLiM <- 
+  return( list(number_of_chromosomes = number_of_chromosomes,
+               L                     = info$chromosome_end[number_of_chromosomes], # total genome length
+               rec_map_SLiM   = cbind(ends=rec_map_SLiM_ends,rates=rec_map_SLiM_rates) ) )
+}
+
+
+
+
+
 get_sample_cal_age_PDF <- function(Sample,calibration_curve='shcal13'){
   cal_age_PDF <- vector("list",Sample$size)
   for (k in which(Sample$is_ancient)){

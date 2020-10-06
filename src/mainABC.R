@@ -32,8 +32,9 @@ Sample           <- read_sample_info(sample_info_file)
 # remove centromeres ?  
 # length of chromosomes ?
 # transition/transversion ratio ?
-chromosomes_limits <- read.table(file="data/chromosomes.txt")
-L <- chromosomes_limits[22,2] # total genome length
+genome_info_file <- "data/genome_test.txt"
+Genome <- read_genome_info(genome_info_file)
+
 
 # SET PRIORS
 # rescaled beta distribution as prior for generation length:
@@ -115,7 +116,9 @@ for (sim in seq_len(num_of_sims)){
                  "-d", paste0("project=\"'",project_name,"'\""),
                  "-d", paste0("np=", num_of_periods_forw),
                  "-d", paste0("na=", sim_sample_time$na),
-                 "-d", paste0("L=", L),
+                 "-d", paste0("L=", Genome$L),
+                 "-d", paste0("ends=\"c("), paste(Genome$rec_map_SLiM[,1],collapse=","), paste0(")\""),
+                 "-d", paste0("rates=\"c("), paste(Genome$rec_map_SLiM[,2],collapse=","), paste0(")\""),
                  "-s", seed.slim,
                  "src/model.demography.slim > /tmp/slimout.txt"))
 
