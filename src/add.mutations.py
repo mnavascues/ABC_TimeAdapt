@@ -129,6 +129,7 @@ def read_sample_info(sample_info_file="data/SampleInfoTest.txt"):
     is_modern = []
     total_ancient = 0
     sample_size = 0
+    # TODO: check for blank lines at the end of the file
     for line in info_file:
         sample_size = sample_size + 1
         v1, v2, v3, v4, v5, v6 = line.split()
@@ -187,23 +188,29 @@ def read_recombination_map(recombination_map_file="data/recombination_map_msprim
     return positions, rates
 
 
-def read_genome_intervals(genome_intervals_file="data/genome_intervals.txt"):
+def read_genome_intervals(genome_info_file="data/genome_test.txt"):
     '''
     read file with information on the starting position and end position of
     each chromosome arm (centromeres removed)
 
-    :param genome_intervals_file:
+    :param genome_info_file:
     :return:
     '''
-    file_genome_intervals = open(genome_intervals_file, "r")
+    genome_file = open(genome_info_file, "r")
+    next(genome_file) # header_line = next(info_file) # if header needed
     start = []
     end = []
     rates = []
-    for line in file_genome_intervals:
-        v1, v2, v3 = line.split()
-        start.append(int(v1))
-        end.append(int(v2))
-        rates.append(float(v3))
+    for line in genome_file:
+        #print(line.split())
+        v1, v2, v3, v4, v5, v6 = line.split()
+        start.append(int(v2))
+        start.append(int(v5))
+        end.append(int(v4))
+        end.append(int(v3))
+        rates.append(float(v6))
+        rates.append(float(v6))
+        # TODO: check for blank lines at the end of the file
     return start, end, rates
 
 
@@ -315,6 +322,20 @@ def get_arguments():
                         type=float,
                         help='[type: %(type)s] Sequencing error rate. '
                              '[default: %(default)s]')
+    parser.add_argument("-g", "--genome_info_file",
+                        dest='genome_file',
+                        type=str,
+                        required=True,
+                        help='[type: %(type)s] Text file with genome information organised as in the '
+                             'example below:\n'
+                             '--------------------------------------------------------------------\n'
+                             'ID chromosome_start chromosome_end centromere_start centromere_end recombination_rate\n'
+                             'chr1	0	249218991	121700000	125099999	1.15E-08\n'
+                             'chr2	249218992	492309988	341018992	345218991	1.11E-08\n'
+                             'chr3	492309989	690184516	580109989	586309988	1.13E-08\n'
+                             'chr4	690184517	881213161	738384517	741984516	1.12E-08\n'
+                             'chr5	881213162	1061928971	927313162	932613161	1.13E-08\n'
+                             '--------------------------------------------------------------------')
     parser.add_argument("-i", "--sample_info_file",
                         dest='info_file',
                         type=str,

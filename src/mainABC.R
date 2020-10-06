@@ -127,6 +127,7 @@ for (sim in seq_len(num_of_sims)){
   system2(command="python3",
           args=c("src/add.mutations.py",
                  "-i", sample_info_file,
+                 "-g", genome_info_file,
                  "-s", sim,
                  "-b", batch_ID,
                  "-p", project_name,
