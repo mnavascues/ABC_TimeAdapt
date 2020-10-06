@@ -1,4 +1,4 @@
-ID	chromosome_start	chromosome_end	centromere_start	centormere_end	recombination_rate
+ID	chromosome_start	chromosome_end	centromere_start	centromere_end	recombination_rate
 chr1	0	249218991	121700000	125099999	1.14856E-08
 chr2	249218992	492309988	341018992	345218991	1.10543E-08
 chr3	492309989	690184516	580109989	586309988	1.12796E-08
