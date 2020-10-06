@@ -22,7 +22,7 @@ batch_dir <- paste("results",project_name,batch_ID,sep="/")
 dir.create(batch_dir, showWarnings = FALSE)
 
 quiet <- FALSE
-num_of_sims <- 10
+num_of_sims <- 3
 
 # READ DATA INFO FROM FILE
 sample_info_file <- "data/SampleInfoTest.txt"
