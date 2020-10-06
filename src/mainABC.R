@@ -119,21 +119,18 @@ for (sim in seq_len(num_of_sims)){
                  "-s", seed.slim,
                  "src/model.demography.slim > /tmp/slimout.txt"))
 
-    #}
+  # python (RECAPITATION + MUTATION + SEQUENCING + SUMSTATS)
+  seed.pyslim <- round(runif(1,0,2^32-1))
+  system2(command="python3",
+          args=c("src/add.mutations.py",
+                 "-i", sample_info_file,
+                 "-s", sim,
+                 "-b", batch_ID,
+                 "-p", project_name,
+                 "-t", sim_sample_time$msprime_ts,
+                 "-z", sim_sample_time$sample_sizes,
+                 "-d", seed.pyslim,
+                 "-n", sim_N[sim,1],
+                 "-u", sim_u[sim]))
 
-
-
-# python (RECAPITATION + MUTATION + SEQUENCING + SUMSTATS)
-seed.pyslim <- round(runif(1,0,2^32-1))
-system2(command="python3",
-        args=c("src/add.mutations.py",
-               "-i", sample_info_file,
-               "-s", sim,
-               "-b", batch_ID,
-               "-p", project_name,
-               "-t", sim_sample_time$msprime_ts,
-               "-z", sim_sample_time$sample_sizes,
-               "-d", seed.pyslim,
-               "-n", sim_N[sim,1],
-               "-u", sim_u[sim]))
-               
+}# end loop simulations     
