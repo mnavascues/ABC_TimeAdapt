@@ -65,17 +65,28 @@ def main():
         gi_treesq = pyslim.SlimTreeSequence(msprime.mutate(gi_treesq,
                                                            rate=options.mu,
                                                            random_seed=np.random.randint(1,2^32-1)))
-        geno_data, positions = sequencing(ts=gi_treesq,
-                                          ssize=sample_size,
-                                          ttr=options.ttratio,
-                                          seq_error=options.seq_error,
-                                          cov=coverage)
+        #
+        print("Number of mutations "+str(gi_treesq.num_mutations))
+        if gi_treesq.num_mutations==0:
+            print("No mutations")
+            # TODO: Create empty sumstats
+        else:
+            geno_data, positions = sequencing(ts=gi_treesq,
+                                              ssize=sample_size,
+                                              ttr=options.ttratio,
+                                              seq_error=options.seq_error,
+                                              cov=coverage)
 
-        ac = geno_data.count_alleles()
-        pi = allel.mean_pairwise_difference(ac)
-        n_obs, minmax, mean, var, skew, kurt = st.describe(pi)
-        print("Mean pw diff= " + str(mean) + " for genome interval " + str(gi))
-
+            #print("Genotype data matrix:")
+            #print(geno_data)
+            ac = geno_data.count_alleles()
+            #print("Allele count=\n"+str(ac))
+            pi = allel.mean_pairwise_difference(ac)
+            if gi_treesq.num_mutations == 1:
+                mean = pi
+            else:
+                n_obs, minmax, mean, var, skew, kurt = st.describe(pi)
+            print("Mean pw diff= " + str(mean) + " for genome interval " + str(gi))
 
 
     #ac = geno_data.count_alleles()
