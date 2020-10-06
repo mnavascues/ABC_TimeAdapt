@@ -48,12 +48,12 @@ def main():
     # and recombination rates from file
     start_chr_arm, end_chr_arm, rec_rate_chr_arm = read_genome_intervals()
     num_of_genome_intervals = len(start_chr_arm)
+    #num_of_genome_intervals = 1 # KEEP THIS LINE ONLY FOR TEST
 
     # loop over genome intervals: recapitate, mutate, calculate sumstats
-    num_of_genome_intervals = 1 # KEEP THIS LINE ONLY FOR TEST
     for gi in range(0, num_of_genome_intervals):
         genome_interval = np.array([[start_chr_arm[gi], end_chr_arm[gi]]])
-        genome_interval = np.array([[0, 100000]]) # KEEP THIS LINE ONLY FOR TEST
+        #genome_interval = np.array([[0, 100000]]) # KEEP THIS LINE ONLY FOR TEST
         gi_treesq = treesq.keep_intervals(genome_interval, simplify=False)
         gi_treesq = gi_treesq.ltrim()
         gi_treesq = pyslim.SlimTreeSequence(gi_treesq.rtrim())
