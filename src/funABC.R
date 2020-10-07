@@ -59,6 +59,29 @@ get_arguments <- function(){
                      nargs = 4,
                      type = "numeric",
                      short = "-l")
+  ap <- add_argument(parser = ap,
+                     arg = "--population_size_prior_params",
+                     help = paste0("Minimum and maximum, for a loguniform ",
+                                   "distribution used as a prior for population size"),
+                     nargs = 2,
+                     type = "numeric",
+                     short = "-n")
+  ap <- add_argument(parser = ap,
+                     arg = "--num_of_gen_in_forw_sim",
+                     help = paste0("Number of generations to run in forward (SLiM). ",
+                                   "It must be big enough as to cover the whole range of ",
+                                   "possible ages for samples."),
+                     type = "integer",
+                     short = "-f")
+  ap <- add_argument(parser = ap,
+                     arg = "--num_of_periods_forw",
+                     help = paste0("Number of periods with different parameter values ",
+                                   "during the simulation forward (SLiM)."),
+                     type = "integer",
+                     short = "-w")
+  
+  
+  
   if(! interactive()){
     argv <- parse_args(ap)
   }else{
@@ -67,7 +90,10 @@ get_arguments <- function(){
                              "-s", "3",                       # num_of_sims
                              "-i", "data/SampleInfoTest.txt", # sample_info_file
                              "-g", "data/genome_test.txt",    # genome_info_file
-                             "-l", "2","1.465967","26","30"   # generation_length_prior_params
+                             "-l", "2","1.465967","26","30",  # generation_length_prior_params
+                             "-n", "10","200",                # population_size_prior_params 
+                             "-f", "400",                     # num_of_gen_in_forw_sim
+                             "-w", "8"                       # num_of_periods_forw
                              ))
   }
   if (!argv$quiet){
@@ -87,6 +113,11 @@ print_arguments <- function(argv){
   write(paste0("Genome input file: ",argv$genome_info_file), stdout())
   write(paste0("Generation lenght prior parameters (sh1 sh2 min max): ",
                paste0(argv$generation_length_prior_params, collapse=" ")), stdout())
+  write(paste0("Population size prior parameters (min max): ",
+               paste0(argv$population_size_prior_params, collapse=" ")), stdout())
+  write(paste0("Generations in forward simulation: ",argv$num_of_gen_in_forw_sim), stdout())
+  write(paste0("Number of periods in forward simulation: ",argv$num_of_periods_forw), stdout())
+  #write(paste0("Parameter: ",argv$param), stdout())
   #write(paste0("Parameter: ",argv$param), stdout())
   #write(paste0("Parameter: ",argv$param), stdout())
   #write(paste0("Parameter: ",argv$param), stdout())

@@ -32,20 +32,14 @@ dir.create(batch_dir, showWarnings = FALSE)
 Sample <- read_sample_info(argv$sample_info_file)
 Genome <- read_genome_info(argv$genome_info_file)
 
-
-# log uniform prior for N (give values in natural scale)
-prior_N_min             <- 10
-prior_N_max             <- 200
 # number of generations to simulate in forward (in SLiM)
-num_of_gen_in_forw_sim   <- 400
-num_of_periods_forw      <- 8
-times_of_change_forw     <- seq(from = num_of_gen_in_forw_sim/num_of_periods_forw,
-                                to   = num_of_gen_in_forw_sim-1,
-                                by   = num_of_gen_in_forw_sim/num_of_periods_forw)
+times_of_change_forw     <- seq(from = argv$num_of_gen_in_forw_sim/argv$num_of_periods_forw,
+                                to   = argv$num_of_gen_in_forw_sim-1,
+                                by   = argv$num_of_gen_in_forw_sim/argv$num_of_periods_forw)
 
 # write header of files
-N_header <- c("sim",paste0("N",seq_len(num_of_periods_forw)))
-Ne_header <- paste("sim",paste0("Ne",seq_len(num_of_periods_forw),collapse = " "))
+N_header <- c("sim",paste0("N",seq_len(argv$num_of_periods_forw)))
+Ne_header <- paste("sim",paste0("Ne",seq_len(argv$num_of_periods_forw),collapse = " "))
 write(Ne_header,file=paste(batch_dir,"Ne.txt",sep="/"),append=F)
 
 # calculate probability distribution curves for calibrated age of ancient samples
@@ -58,7 +52,7 @@ if (file.exists(paste(project_dir,"cal_age_PDF.RDS",sep="/"))){
 }
 
 # verify that samples cannot be older than the number of generations simulated in forward
-check_ts_lower_gen_in_for_sim(num_of_gen_in_forw_sim,
+check_ts_lower_gen_in_for_sim(argv$num_of_gen_in_forw_sim,
                               Sample,
                               cal_age_PDF,
                               argv$generation_length_prior_params[3])
@@ -72,9 +66,9 @@ sim_gen_length  <- rnsbeta(argv$num_of_sims,
                            argv$generation_length_prior_params[4])
 # census population size
 sim_N <- sample_demography_from_prior(argv$num_of_sims,
-                                      num_of_periods_forw,
-                                      prior_N_min,
-                                      prior_N_max)
+                                      argv$num_of_periods_forw,
+                                      argv$population_size_prior_params[1],
+                                      argv$population_size_prior_params[2])
 
 ref_table_N <- cbind(seq_len(argv$num_of_sims),sim_N)
 colnames(ref_table_N) <- N_header
@@ -89,10 +83,10 @@ for (sim in seq_len(argv$num_of_sims)){
   if (!argv$quiet) cat(paste("\n\nSimulation",sim,"\n----------------------------------\n"))
   # simulate ages of aDNA from their calibrated age distribution
   sim_sample_time <- sample_ages_from_prior(Sample,
-                                            num_of_gen_in_forw_sim,
+                                            argv$num_of_gen_in_forw_sim,
                                             cal_age_PDF,
                                             gen_length=sim_gen_length[sim])
-  #plot(times_of_change_forw,rep(1,length(times_of_change_forw)),xlim=c(0,num_of_gen_in_forw_sim))
+  #plot(times_of_change_forw,rep(1,length(times_of_change_forw)),xlim=c(0,argv$num_of_gen_in_forw_sim))
   #points(sim_sample_time$slim_ts,rep(1,length(sim_sample_time$slim_ts)),col="red")
   
   # SLiM (forward simulation of last generations) 
@@ -105,7 +99,7 @@ for (sim in seq_len(argv$num_of_sims)){
                  "-d", paste0("i=", sim),
                  "-d", paste0("batch_ID=",argv$batch_ID),
                  "-d", paste0("project=\"'",argv$project_name,"'\""),
-                 "-d", paste0("np=", num_of_periods_forw),
+                 "-d", paste0("np=", argv$num_of_periods_forw),
                  "-d", paste0("na=", sim_sample_time$na),
                  "-d", paste0("L=", Genome$L),
                  "-d", paste0("ends=\"c("), paste(Genome$rec_map_SLiM[,1],collapse=","), paste0(")\""),
