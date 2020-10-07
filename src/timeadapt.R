@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 # Approximate Bayesian Computation inference 
 # from ancient and modern DNA (NGS data)
 # assuming a single continuous population
