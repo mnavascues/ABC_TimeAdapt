@@ -130,9 +130,10 @@ check_ts_lower_gen_in_for_sim <- function(num_of_gen_in_for_sim,
   ts <- BPtoBCAD(ts)
   ts <- round(abs(ts-Sample$t0)/prior_gen_length_min)
   ts <- ts+2
-  if(ts > num_of_gen_in_for_sim) stop("It is necessary to simulate more generations in
-forward to include all possible ages of samples")
-  return(ts <= num_of_gen_in_for_sim)
+  if (ts > num_of_gen_in_for_sim){
+    write(paste0("ERROR: It is necessary to simulate more generations ",
+                 "in forward to include all possible ages of samples"), stderr())
+    quit("no", status=1)  }
 }
 
 
