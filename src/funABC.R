@@ -70,7 +70,7 @@ read_sample_info <- function(file="data/SampleInfoTest.txt"){
 }
 
 read_genome_info <- function(file="data/genome_test.txt"){
-  info <- read.table(genome_info_file,header=T)
+  info <- read.table(file,header=T)
   # TODO add verification of header
   number_of_chromosomes <- nrow(info)
   rec_map_SLiM_rates <- numeric()
