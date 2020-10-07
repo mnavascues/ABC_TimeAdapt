@@ -13,38 +13,85 @@ get_arguments <- function(){
                                       "for joint inference of demography and selection ",
                                       "from temporal population genomic data."))
   ap <- add_argument(parser = ap,
-                     arg = "--seed",
-                     help="Seed for random number generator",
-                     default = 1234567890,
-                     type = "numeric",
-                     short = "-d")
-  ap <- add_argument(parser = ap,
                      arg = "--project_name",
                      help=paste0("Name of the project analysis. It is used as directory ",
                                  "in the path to the output files"),
                      default = "test",
-                     type = "char",
+                     type = "character",
                      short = "-p")
-  ap <- add_argument(parser = ap,
-                     arg = "--batch_ID",
-                     help=paste0("Number used to identify the batch of simulations. ",
-                                 "It is used as part of the output file names"),
-                     default = 1,
-                     type = "integer",
-                     short = "-b")
   ap <- add_argument(parser = ap,
                      arg = "--quiet",
                      help=paste0("Run on quiet mode."),
                      default = FALSE,
                      short = "-q")
-  
-  
-  argv <- parse_args(ap)
+  ap <- add_argument(parser = ap,
+                     arg = "--seed",
+                     help="Seed for random number generator",
+                     type = "numeric",
+                     short = "-d")
+  ap <- add_argument(parser = ap,
+                     arg = "--batch_ID",
+                     help=paste0("Number used to identify the batch of simulations. ",
+                                 "It is used as part of the output file names"),
+                     type = "integer",
+                     short = "-b")
+  ap <- add_argument(parser = ap,
+                     arg = "--num_of_sims",
+                     help = paste0("Number of simulations to run."),
+                     type = "integer",
+                     short = "-s")
+  ap <- add_argument(parser = ap,
+                     arg = "--sample_info_file",
+                     help = paste0("Text file with sample information organised as in ",
+                                   "the example file in data folder (SampleInfoTest.txt)"),
+                     type = "character",
+                     short = "-i")
+  ap <- add_argument(parser = ap,
+                     arg = "--genome_info_file",
+                     help = paste0("Text file with genome information organised as in ",
+                                   "the example file in data folder (genome_test.txt)"),
+                     type = "character",
+                     short = "-g")
+  ap <- add_argument(parser = ap,
+                     arg = "--generation_length_prior_params",
+                     help = paste0("Shape 1, shape 2, minimum and maximum, for a rescaled ",
+                                   "beta distribution used as a prior for generation length"),
+                     nargs = 4,
+                     type = "numeric",
+                     short = "-l")
+  if(! interactive()){
+    argv <- parse_args(ap)
+  }else{
+    argv <- parse_args(ap, c("-d", "1234567890",              # seed
+                             "-b", "1",                       # batch_ID
+                             "-s", "3",                       # num_of_sims
+                             "-i", "data/SampleInfoTest.txt", # sample_info_file
+                             "-g", "data/genome_test.txt",    # genome_info_file
+                             "-l", "2","1.465967","26","30"   # generation_length_prior_params
+                             ))
+  }
+  if (!argv$quiet){
+    print(ap)
+    print_arguments(argv)
+  }
   return(argv)
 }
 
 
-
+print_arguments <- function(argv){
+  write(paste0("Seed: ",argv$seed), stdout())
+  write(paste0("Project: ",argv$project_name), stdout())
+  write(paste0("Batch: ",argv$batch_ID), stdout())
+  write(paste0("Number of simulations: ",argv$num_of_sims), stdout())
+  write(paste0("Sample input file: ",argv$sample_info_file), stdout())
+  write(paste0("Genome input file: ",argv$genome_info_file), stdout())
+  write(paste0("Generation lenght prior parameters (sh1 sh2 min max): ",
+               paste0(argv$generation_length_prior_params, collapse=" ")), stdout())
+  #write(paste0("Parameter: ",argv$param), stdout())
+  #write(paste0("Parameter: ",argv$param), stdout())
+  #write(paste0("Parameter: ",argv$param), stdout())
+  #write(paste0("Parameter: ",argv$param), stdout())
+}
 
 
 
