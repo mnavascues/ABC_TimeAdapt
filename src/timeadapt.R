@@ -15,37 +15,24 @@ library(extraDistr, quietly=TRUE)
 library(rcarbon, quietly=TRUE)
 source("src/funABC.R")
 
+# read arguments from command line (gets default values in interactive)
 argv <- get_arguments()
 
-
-
+# set seed for random number generator
 set.seed(argv$seed)
+
+# create results directory
 dir.create("results", showWarnings = FALSE)
 project_dir <- paste("results",argv$project_name,sep="/")
 dir.create(project_dir, showWarnings = FALSE)
 batch_dir <- paste("results",argv$project_name,argv$batch_ID,sep="/")
 dir.create(batch_dir, showWarnings = FALSE)
 
-num_of_sims <- 3
-
-# READ DATA INFO FROM FILE
-sample_info_file <- "data/SampleInfoTest.txt"
-Sample           <- read_sample_info(sample_info_file)
-
-# GENOME INFO
-# remove centromeres ?  
-# length of chromosomes ?
-# transition/transversion ratio ?
-genome_info_file <- "data/genome_test.txt"
-Genome <- read_genome_info(genome_info_file)
+# read smaple and genome information from tables in text files
+Sample <- read_sample_info(argv$sample_info_file)
+Genome <- read_genome_info(argv$genome_info_file)
 
 
-# SET PRIORS
-# rescaled beta distribution as prior for generation length:
-prior_gen_length_shape1  <- 2
-prior_gen_length_shape2  <- 1.465967
-prior_gen_length_min     <- 26
-prior_gen_length_max     <- 30
 # log uniform prior for N (give values in natural scale)
 prior_N_min             <- 10
 prior_N_max             <- 200
@@ -74,31 +61,31 @@ if (file.exists(paste(project_dir,"cal_age_PDF.RDS",sep="/"))){
 check_ts_lower_gen_in_for_sim(num_of_gen_in_forw_sim,
                               Sample,
                               cal_age_PDF,
-                              prior_gen_length_min)
+                              argv$generation_length_prior_params[3])
 
 # SAMPLE FROM PRIORS  
 # Generation length = generation interval in years
-sim_gen_length  <- rnsbeta(num_of_sims,
-                           prior_gen_length_shape1,
-                           prior_gen_length_shape2,
-                           prior_gen_length_min,
-                           prior_gen_length_max)
+sim_gen_length  <- rnsbeta(argv$num_of_sims,
+                           argv$generation_length_prior_params[1],
+                           argv$generation_length_prior_params[2],
+                           argv$generation_length_prior_params[3],
+                           argv$generation_length_prior_params[4])
 # census population size
-sim_N <- sample_demography_from_prior(num_of_sims,
+sim_N <- sample_demography_from_prior(argv$num_of_sims,
                                       num_of_periods_forw,
                                       prior_N_min,
                                       prior_N_max)
 
-ref_table_N <- cbind(seq_len(num_of_sims),sim_N)
+ref_table_N <- cbind(seq_len(argv$num_of_sims),sim_N)
 colnames(ref_table_N) <- N_header
 saveRDS(ref_table_N,file = paste(batch_dir,"ref_table_N.RDS",sep="/"))
-rm(ref_table_N);gc()
+rm(ref_table_N); gc_out<-gc(verbose=FALSE)
 
 # mutation rate
-sim_u <- rep(1.25e-08,num_of_sims)
+sim_u <- rep(1.25e-08,argv$num_of_sims)
 
 #sim<-1
-for (sim in seq_len(num_of_sims)){
+for (sim in seq_len(argv$num_of_sims)){
   if (!argv$quiet) cat(paste("\n\nSimulation",sim,"\n----------------------------------\n"))
   # simulate ages of aDNA from their calibrated age distribution
   sim_sample_time <- sample_ages_from_prior(Sample,
@@ -130,8 +117,8 @@ for (sim in seq_len(num_of_sims)){
   seed.pyslim <- round(runif(1,0,2^32-1))
   system2(command="python3",
           args=c("src/add.mutations.py",
-                 "-i", sample_info_file,
-                 "-g", genome_info_file,
+                 "-i", argv$sample_info_file,
+                 "-g", argv$genome_info_file,
                  "-s", sim,
                  "-b", argv$batch_ID,
                  "-p", argv$project_name,
