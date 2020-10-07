@@ -7,21 +7,23 @@
 # Uppsala universitet & INRAE
 # 2020
 
-library(abcrf)
-library(extraDistr)
-library(rcarbon)
+library(argparser, quietly=TRUE)
+library(abcrf, quietly=TRUE)
+library(extraDistr, quietly=TRUE)
+library(rcarbon, quietly=TRUE)
 source("src/funABC.R")
-set.seed(24564555)
 
+argv <- get_arguments()
+
+
+
+set.seed(argv$seed)
 dir.create("results", showWarnings = FALSE)
-project_name <- "test"
-project_dir <- paste("results",project_name,sep="/")
+project_dir <- paste("results",argv$project_name,sep="/")
 dir.create(project_dir, showWarnings = FALSE)
-batch_ID  <- 1 # an integer
-batch_dir <- paste("results",project_name,batch_ID,sep="/")
+batch_dir <- paste("results",argv$project_name,argv$batch_ID,sep="/")
 dir.create(batch_dir, showWarnings = FALSE)
 
-quiet <- FALSE
 num_of_sims <- 3
 
 # READ DATA INFO FROM FILE
@@ -95,7 +97,7 @@ sim_u <- rep(1.25e-08,num_of_sims)
 
 #sim<-1
 for (sim in seq_len(num_of_sims)){
-  if (!quiet) cat(paste("\n\nSimulation",sim,"\n----------------------------------\n"))
+  if (!argv$quiet) cat(paste("\n\nSimulation",sim,"\n----------------------------------\n"))
   # simulate ages of aDNA from their calibrated age distribution
   sim_sample_time <- sample_ages_from_prior(Sample,
                                             num_of_gen_in_forw_sim,
@@ -112,8 +114,8 @@ for (sim in seq_len(num_of_sims)){
                  "-d", paste0("ts=\"c("), paste(sim_sample_time$slim_ts,collapse=","), paste0(")\""),
                  "-d", paste0("ss=\"c("), paste(rev(sim_sample_time$sample_sizes),collapse=","), paste0(")\""),
                  "-d", paste0("i=", sim),
-                 "-d", paste0("batch_ID=",batch_ID),
-                 "-d", paste0("project=\"'",project_name,"'\""),
+                 "-d", paste0("batch_ID=",argv$batch_ID),
+                 "-d", paste0("project=\"'",argv$project_name,"'\""),
                  "-d", paste0("np=", num_of_periods_forw),
                  "-d", paste0("na=", sim_sample_time$na),
                  "-d", paste0("L=", Genome$L),
@@ -129,8 +131,8 @@ for (sim in seq_len(num_of_sims)){
                  "-i", sample_info_file,
                  "-g", genome_info_file,
                  "-s", sim,
-                 "-b", batch_ID,
-                 "-p", project_name,
+                 "-b", argv$batch_ID,
+                 "-p", argv$project_name,
                  "-t", sim_sample_time$msprime_ts,
                  "-z", sim_sample_time$sample_sizes,
                  "-d", seed.pyslim,

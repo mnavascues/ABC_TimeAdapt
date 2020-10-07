@@ -8,6 +8,51 @@
 # Uppsala universitet & INRAE
 # 2020
 
+get_arguments <- function(){
+  ap <- arg_parser(description=paste0("Approximate Bayesian computation analysis ",
+                                      "for joint inference of demography and selection ",
+                                      "from temporal population genomic data."))
+  ap <- add_argument(parser = ap,
+                     arg = "--seed",
+                     help="Seed for random number generator",
+                     default = 1234567890,
+                     type = "numeric",
+                     short = "-d")
+  ap <- add_argument(parser = ap,
+                     arg = "--project_name",
+                     help=paste0("Name of the project analysis. It is used as directory ",
+                                 "in the path to the output files"),
+                     default = "test",
+                     type = "char",
+                     short = "-p")
+  ap <- add_argument(parser = ap,
+                     arg = "--batch_ID",
+                     help=paste0("Number used to identify the batch of simulations. ",
+                                 "It is used as part of the output file names"),
+                     default = 1,
+                     type = "integer",
+                     short = "-b")
+  ap <- add_argument(parser = ap,
+                     arg = "--quiet",
+                     help=paste0("Run on quiet mode."),
+                     default = FALSE,
+                     short = "-q")
+  
+  
+  argv <- parse_args(ap)
+  return(argv)
+}
+
+
+
+
+
+
+
+
+
+
+
 read_sample_info <- function(file="data/SampleInfoTest.txt"){
   info <- read.table(file,header=T,stringsAsFactors=F,strip.white=T)
   # TODO add verification of header
