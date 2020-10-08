@@ -230,7 +230,7 @@ sample_ages_from_prior <- function(Sample,
   # transform to generations before "present" (present=year of most recent sample)
   ages_sim <- round(abs(ages_sim-Sample$t0)/gen_length)
 
-  chrono_order <- Sample$id[order(ages_sim)]
+  chrono_order <- order(ages_sim)-1 # Sample$id[order(ages_sim)]
   a <- sort(as.numeric(levels(as.factor(ages_sim))))
   s <- numeric()
   for (age in a){
