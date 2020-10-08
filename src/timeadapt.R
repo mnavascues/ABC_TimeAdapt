@@ -18,6 +18,16 @@ library(extraDistr, quietly=TRUE)
 library(rcarbon, quietly=TRUE)
 source("src/fun.R")
 
+# write header
+write("\n\n",stdout())
+write("###############################",stdout())
+write("# TimeAdapt                   #",stdout())
+write("# by Miguel Navascués         #",stdout())
+write("# Uppsala universitet & INRAE #",stdout())
+write("# miguel.navascues@inrae.fr   #",stdout())
+write("###############################",stdout())
+write("\n",stdout())
+
 # read arguments from command line (gets default values in interactive)
 argv <- get_arguments()
 
