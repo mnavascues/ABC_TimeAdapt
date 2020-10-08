@@ -21,24 +21,20 @@ source("src/fun.R")
 # read arguments from command line (gets default values in interactive)
 argv <- get_arguments()
 
-
 # write header
-write("\n\n",stdout())
-write("###############################",stdout())
-write("# TimeAdapt                   #",stdout())
-write("# by Miguel Navascués         #",stdout())
-write("# Uppsala universitet & INRAE #",stdout())
-write("# miguel.navascues@inrae.fr   #",stdout())
-write("###############################",stdout())
-write("\n",stdout())
-
+if (!interactive() & !argv$quiet){
+  write("\n\n",stdout())
+  write("###############################",stdout())
+  write("# TimeAdapt                   #",stdout())
+  write("# by Miguel Navascués         #",stdout())
+  write("# Uppsala universitet & INRAE #",stdout())
+  write("# miguel.navascues@inrae.fr   #",stdout())
+  write("###############################",stdout())
+  write("\n",stdout())
+}
 
 # set seed for random number generator
 set.seed(argv$seed)
-
-
-
-
 
 # create results directory
 dir.create("results", showWarnings = FALSE)
