@@ -16,7 +16,8 @@ def main():
     # Get options from command line arguments and info from input file
     options = get_arguments()
     sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
-    sample_size = read_sample_info(sample_info_file=options.info_file)
+    sample_size, group_levels, groups = read_sample_info(sample_info_file=options.info_file)
+    # print(groups)
 
     # initial settings and verifications
     np.random.seed(options.seed)
@@ -129,9 +130,12 @@ def read_sample_info(sample_info_file="data/SampleInfoTest.txt"):
     total_ancient = 0
     sample_size = 0
     # TODO: check for blank lines at the end of the file
+    first_line = True
     for line in info_file:
         sample_size = sample_size + 1
-        v1, v2, v3, v4, v5, v6 = line.split()
+        v1, v2, v3, v4, v5, v6, v7 = line.split()
+        if (first_line):
+            group_levels = len(v7)
         sample_id.append(v1)
         if v2 == "NA":
             # age14C.append(float('nan'))
@@ -157,8 +161,21 @@ def read_sample_info(sample_info_file="data/SampleInfoTest.txt"):
             is_dr.append(True)
         else:
             is_dr.append(False)
+        first_line = False
+    info_file.seek(0)
+    next(info_file)
+    groups = np.full((group_levels,sample_size),0,"int")
+    sample_counter = 0
+    for line in info_file:
+        v1, v2, v3, v4, v5, v6, v7 = line.split()
+        for level in range(0,group_levels):
+            groups[level,sample_counter] = v7[level]
+        sample_counter = sample_counter + 1
+
     # t0 = max(year)
-    return sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, sample_size
+
+    return sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient,\
+           sample_size, group_levels, groups
 
 
 def read_recombination_map(recombination_map_file="data/recombination_map_msprime.txt"):
