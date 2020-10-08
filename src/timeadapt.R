@@ -93,7 +93,7 @@ saveRDS(ref_table_N,file = paste(batch_dir,"ref_table_N.RDS",sep="/"))
 rm(ref_table_N); gc_out<-gc(verbose=FALSE)
 
 # mutation rate
-sim_u <- rep(1.25e-08,argv$num_of_sims)
+sim_u <- rep(5e-08,argv$num_of_sims) #rep(1.25e-08,argv$num_of_sims)
 
 #sim<-1
 for (sim in seq_len(argv$num_of_sims)){
