@@ -108,8 +108,7 @@ for (sim in seq_len(argv$num_of_sims)){
   
   # SLiM (forward simulation of last generations) 
   seed_slim <- round(runif(1,0,2^32-1))
-  system2(command="slim",
-          args=c("-d", paste0("N=\"c("), paste(sim_N[sim,],collapse=","), paste0(")\""),
+  args_slim <- c("-d", paste0("N=\"c("), paste(sim_N[sim,],collapse=","), paste0(")\""),
                  "-d", paste0("tc=\"c("), paste(times_of_change_forw,collapse=","), paste0(")\""),
                  "-d", paste0("ts=\"c("), paste(sim_sample_time$slim_ts,collapse=","), paste0(")\""),
                  "-d", paste0("ss=\"c("), paste(rev(sim_sample_time$sample_sizes),collapse=","), paste0(")\""),
@@ -122,21 +121,24 @@ for (sim in seq_len(argv$num_of_sims)){
                  "-d", paste0("ends=\"c("), paste(Genome$rec_map_SLiM[,1],collapse=","), paste0(")\""),
                  "-d", paste0("rates=\"c("), paste(Genome$rec_map_SLiM[,2],collapse=","), paste0(")\""),
                  "-s", seed_slim,
-                 "src/model.demography.slim > /tmp/slimout.txt"))
+                 "src/model.demography.slim > /tmp/slimout.txt")
+  system2(command="slim", args=args_slim)
+  write(paste("slim",paste(args_slim,collapse=" ")), stdout())
 
   # python (RECAPITATION + MUTATION + SEQUENCING + SUMSTATS)
   seed_pyslim <- round(runif(1,0,2^32-1))
-  system2(command="python3",
-          args=c("src/add.mutations.py",
-                 "-i", argv$sample_info_file,
-                 "-g", argv$genome_info_file,
-                 "-s", sim,
-                 "-b", argv$batch_ID,
-                 "-p", argv$project_name,
-                 "-t", sim_sample_time$msprime_ts,
-                 "-z", sim_sample_time$sample_sizes,
-                 "-d", seed_pyslim,
-                 "-n", sim_N[sim,1],
-                 "-u", sim_u[sim]))
-
+  args_pyslim <- c("src/add.mutations.py",
+                   "-i", argv$sample_info_file,
+                   "-g", argv$genome_info_file,
+                   "-s", sim,
+                   "-b", argv$batch_ID,
+                   "-p", argv$project_name,
+                   "-t", sim_sample_time$msprime_ts,
+                   "-z", sim_sample_time$sample_sizes,
+                   "-d", seed_pyslim,
+                   "-n", sim_N[sim,1],
+                   "-u", sim_u[sim])
+  system2(command = "python3", args = args_pyslim)
+  write(paste("python3",paste(args_pyslim,collapse=" ")), stdout())
+  
 }# end loop simulations     
