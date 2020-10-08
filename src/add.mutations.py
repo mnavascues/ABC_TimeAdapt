@@ -106,11 +106,11 @@ def read_sample_info(sample_info_file="data/SampleInfoTest.txt"):
     '''
     Read csv file with information on sample. Format of the file:
     --------------------------------------------------------------------------
-    sampleID           age14C  age14Cerror  year  coverage  damageRepair
-    B_Ju_hoan_North-4  NA      NA           2010  40.57     TRUE
-    S_Ju_hoan_North-1  NA      NA           2010  46.49     TRUE
-    BallitoBayA        1980    20           NA    12.94     FALSE
-    BallitoBayB        2110    30           NA    1.25      TRUE
+    sampleID           age14C  age14Cerror  year  coverage  damageRepair  group
+    B_Ju_hoan_North-4  NA      NA           2010  40.57     TRUE          00
+    S_Ju_hoan_North-1  NA      NA           2010  46.49     TRUE          00
+    BallitoBayA        1980    20           NA    12.94     FALSE         11
+    BallitoBayB        2110    30           NA    1.25      TRUE          12
     --------------------------------------------------------------------------
 
     :param sample_info_file: path of file
