@@ -18,6 +18,10 @@ library(extraDistr, quietly=TRUE)
 library(rcarbon, quietly=TRUE)
 source("src/fun.R")
 
+# read arguments from command line (gets default values in interactive)
+argv <- get_arguments()
+
+
 # write header
 write("\n\n",stdout())
 write("###############################",stdout())
@@ -28,8 +32,6 @@ write("# miguel.navascues@inrae.fr   #",stdout())
 write("###############################",stdout())
 write("\n",stdout())
 
-# read arguments from command line (gets default values in interactive)
-argv <- get_arguments()
 
 # set seed for random number generator
 set.seed(argv$seed)
