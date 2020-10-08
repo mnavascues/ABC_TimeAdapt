@@ -12,7 +12,7 @@ Kasteelberg        1310    50           NA    0.8       FALSE         111
 vaa001             500     40           NA    1         FALSE         111
 flo001             6990    30           NA    11.09647  TRUE          123
 flo002             2970    60           NA    0.227619  FALSE         112
-flo003             3570    50           NA    11.58128  TRUE          121
-flo006             9020    30           NA    4.998657  TRUE          122
-flo010             7295    32           NA    0.130293  FALSE         122
-flo011             4860    30           NA    22.19364  TRUE          122
+flo003             3570    50           NA    11.58128  TRUE          122
+flo006             9020    30           NA    4.998657  TRUE          123
+flo010             7295    32           NA    0.130293  FALSE         123
+flo011             4860    30           NA    22.19364  TRUE          123
