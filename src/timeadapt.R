@@ -13,7 +13,7 @@ library(argparser, quietly=TRUE)
 library(abcrf, quietly=TRUE)
 library(extraDistr, quietly=TRUE)
 library(rcarbon, quietly=TRUE)
-source("src/funABC.R")
+source("src/fun.R")
 
 # read arguments from command line (gets default values in interactive)
 argv <- get_arguments()
