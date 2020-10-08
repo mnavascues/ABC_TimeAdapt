@@ -52,6 +52,7 @@ def main():
 
     # loop over genome intervals: recapitate, mutate, calculate sumstats
     for gi in range(0, num_of_genome_intervals):
+        length_interval = end_chr_arm[gi] - start_chr_arm[gi]
         genome_interval = np.array([[start_chr_arm[gi], end_chr_arm[gi]]])
         #genome_interval = np.array([[0, 100000]]) # KEEP THIS LINE ONLY FOR TEST
         gi_treesq = treesq.keep_intervals(genome_interval, simplify=False)
@@ -81,12 +82,10 @@ def main():
             #print(geno_data)
             ac = geno_data.count_alleles()
             #print("Allele count=\n"+str(ac))
-            pi = allel.mean_pairwise_difference(ac)
-            if gi_treesq.num_mutations == 1:
-                mean = pi
-            else:
-                n_obs, minmax, mean, var, skew, kurt = st.describe(pi)
-            print("Mean pw diff= " + str(mean) + " for genome interval " + str(gi))
+            pi = allel.mean_pairwise_difference(ac)/length_interval
+            mean_pi = sum(pi)/length_interval
+
+            print("pi = " + str(mean_pi) + " for genome interval " + str(gi))
 
 
     #ac = geno_data.count_alleles()
