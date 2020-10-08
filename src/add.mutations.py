@@ -379,6 +379,14 @@ def get_arguments():
                         required=True,
                         type=int,
                         help='[type: %(type)s] Effective population size used for recapitation.')
+    parser.add_argument('-o', '--sample_order',
+                        dest='sample_order',
+                        required=True,
+                        type=int,
+                        nargs='*',
+                        help='[type: %(type)s] Sample chronological order in the simulation '
+                             '(tree sequence). It will be different from the order in the sample '
+                             'information file.')
     parser.add_argument('-p', '--project_name',
                         dest='project',
                         required=True,

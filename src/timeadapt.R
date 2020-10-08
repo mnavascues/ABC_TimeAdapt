@@ -133,6 +133,7 @@ for (sim in seq_len(argv$num_of_sims)){
                    "-p", argv$project_name,
                    "-t", sim_sample_time$msprime_ts,
                    "-z", sim_sample_time$sample_sizes,
+                   "-o", sim_sample_time$chrono_order,
                    "-d", seed_pyslim,
                    "-n", sim_N[sim,1],
                    "-u", sim_u[sim])
