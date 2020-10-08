@@ -107,7 +107,7 @@ for (sim in seq_len(argv$num_of_sims)){
   #points(sim_sample_time$slim_ts,rep(1,length(sim_sample_time$slim_ts)),col="red")
   
   # SLiM (forward simulation of last generations) 
-  seed.slim <- round(runif(1,0,2^32-1))
+  seed_slim <- round(runif(1,0,2^32-1))
   system2(command="slim",
           args=c("-d", paste0("N=\"c("), paste(sim_N[sim,],collapse=","), paste0(")\""),
                  "-d", paste0("tc=\"c("), paste(times_of_change_forw,collapse=","), paste0(")\""),
@@ -121,11 +121,11 @@ for (sim in seq_len(argv$num_of_sims)){
                  "-d", paste0("L=", Genome$L),
                  "-d", paste0("ends=\"c("), paste(Genome$rec_map_SLiM[,1],collapse=","), paste0(")\""),
                  "-d", paste0("rates=\"c("), paste(Genome$rec_map_SLiM[,2],collapse=","), paste0(")\""),
-                 "-s", seed.slim,
+                 "-s", seed_slim,
                  "src/model.demography.slim > /tmp/slimout.txt"))
 
   # python (RECAPITATION + MUTATION + SEQUENCING + SUMSTATS)
-  seed.pyslim <- round(runif(1,0,2^32-1))
+  seed_pyslim <- round(runif(1,0,2^32-1))
   system2(command="python3",
           args=c("src/add.mutations.py",
                  "-i", argv$sample_info_file,
@@ -135,7 +135,7 @@ for (sim in seq_len(argv$num_of_sims)){
                  "-p", argv$project_name,
                  "-t", sim_sample_time$msprime_ts,
                  "-z", sim_sample_time$sample_sizes,
-                 "-d", seed.pyslim,
+                 "-d", seed_pyslim,
                  "-n", sim_N[sim,1],
                  "-u", sim_u[sim]))
 
