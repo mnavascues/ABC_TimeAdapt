@@ -196,7 +196,7 @@ def empty_genotype_array(n_loci,n_samples,ploidy = 2,allele = -1):
     empty_ga = allel.GenotypeArray(np.full((n_loci, n_samples, ploidy), allele), dtype='i1')
     return empty_ga
 
-def sequencing(ts,ssize,ttr,seq_error,cov):
+def sequencing(ts,ssize,ttr,seq_error,dr,cov):
     if len(cov) != ssize:
         msg="Number of coverage values (length="+ str(len(cov)) +\
             ") and number of samples (ssize="+ str(ssize) +\
@@ -223,12 +223,13 @@ def sequencing(ts,ssize,ttr,seq_error,cov):
             geno_data[locus, int(i / 2)] = snp_calling(true_genotype=var_genotypes[i:(i + 2)],
                                                        f_num_reads=num_reads[int(i / 2)],
                                                        error_rate=seq_error,
+                                                       dr=dr[int(i / 2)],
                                                        transversion=transversion_SNP)
         locus = locus + 1
     return geno_data, positions
 
 
-def get_arguments():
+def get_arguments(interactive=False):
     parser = argparse.ArgumentParser(description='Gets SLiM tree sequences, recapitates, add mutations '
                                                  'and calculates summary statistics')
     parser.add_argument('-b', '--batch_number',
