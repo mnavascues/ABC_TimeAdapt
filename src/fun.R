@@ -87,7 +87,7 @@ get_arguments <- function(){
   }else{
     argv <- parse_args(ap, c("-d", "1234567890",              # seed
                              "-b", "1",                       # batch_ID
-                             "-s", "3",                       # num_of_sims
+                             "-s", "1",                       # num_of_sims
                              "-i", "data/SampleInfoTest.txt", # sample_info_file
                              "-g", "data/genome_test.txt",    # genome_info_file
                              "-l", "2","1.465967","26","30",  # generation_length_prior_params
