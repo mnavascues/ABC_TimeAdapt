@@ -328,7 +328,20 @@ def get_arguments(interactive=False):
                         type=int,
                         nargs='*',
                         help='[type: %(type)s] Sample size, in number of diploid individuals.')
-    options = parser.parse_args()
+    if interactive:
+        options = parser.parse_args(['-i', 'data/SampleInfoTest.txt',
+                                     '-g', 'data/genome_test.txt',
+                                     '-s', '1',
+                                     '-b', '1',
+                                     '-p', 'test',
+                                     '-t', '0','22','46','71','78','85','119','146','208','290','305','384',
+                                     '-z', '4','1','1','2','2','1','1','1','1','1','1','1',
+                                     '-o', '0','1','2','3','10','9','4','8','5','6','7','12','13','16','11','15','14',
+                                     '-d', '1762431206',
+                                     '-n', '124',
+                                     '-u', '5e-08'])
+    else:
+        options = parser.parse_args()
     if len(options.ts) != len(options.ss):
         msg="Number of samples (length of ss="+ str(len(options.ss)) +\
             ") and number of sampling times (length of st="+ str(len(options.ts)) +\
@@ -336,7 +349,114 @@ def get_arguments(interactive=False):
         raise ValueError(msg)
     return options
 
-###########################
+############################################################################################################
+############################################################################################################
+def main():
+    # Get options from command line arguments and info from input file
+    options = get_arguments()
+    options = get_arguments(interactive=True)
+    sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
+    sample_size, group_levels, groups = read_sample_info(sample_info_file=options.info_file)
+    # print(groups)
+
+    # initial settings and verifications
+    np.random.seed(options.seed)
+    na = len(options.ss) - 1
+    if sum(options.ss) != sample_size:
+        msg = "Number of samples from command line (sum of ss=" + str(sum(options.ss)) + \
+              ") and number of samples from file (sample_size=" + str(sample_size) + \
+              ") do not match"
+        raise ValueError(msg)
+
+    # add demography here
+    # demogr_event = [msprime.PopulationParametersChange(time=1000, initial_size=300, population_id=0)]
+
+    # read tree sequence from SLiM output file
+    treesq = pyslim.load(
+        "results/" + options.project + "/" + str(options.batch_id) + "/slim" + str(options.sim_i) + ".tree")
+    # tree = treesq.first()
+    # print(tree.draw(format="unicode"))
+
+    # simplify tree sequence keeping nodes for the sampled individuals and their roots
+    sample_individuals = np.random.choice(treesq.individuals_alive_at(options.ts[0]),
+                                          options.ss[0], replace=False)
+    sample_individuals.sort()
+    for x in range(1, na + 1):
+        sample_individuals = np.concatenate([sample_individuals, treesq.individuals_alive_at(options.ts[x])])
+    keep_nodes = []
+    for samp_i in sample_individuals:
+        keep_nodes.extend(treesq.individual(samp_i).nodes)
+    treesq = treesq.simplify(keep_nodes, keep_input_roots=True)
+
+    # read genome intervals (e.g. chromosome arms start and end)
+    # and recombination rates from file
+    start_chr_arm, end_chr_arm, rec_rate_chr_arm = read_genome_intervals()
+    num_of_genome_intervals = len(start_chr_arm)
+    # num_of_genome_intervals = 1 # KEEP THIS LINE ONLY FOR TEST
+
+    # loop over genome intervals: recapitate, mutate, calculate sumstats
+    for gi in range(0, num_of_genome_intervals):
+        length_interval = end_chr_arm[gi] - start_chr_arm[gi]
+        genome_interval = np.array([[start_chr_arm[gi], end_chr_arm[gi]]])
+        # genome_interval = np.array([[0, 100000]]) # KEEP THIS LINE ONLY FOR TEST
+        gi_treesq = treesq.keep_intervals(genome_interval, simplify=False)
+        gi_treesq = gi_treesq.ltrim()
+        gi_treesq = pyslim.SlimTreeSequence(gi_treesq.rtrim())
+        gi_treesq = gi_treesq.recapitate(recombination_rate=rec_rate_chr_arm[0],
+                                         Ne=options.ne,
+                                         # demographic_events=demogr_event,
+                                         model="dtwf",
+                                         random_seed=np.random.randint(1, 2 ^ 32 - 1))
+        gi_treesq = pyslim.SlimTreeSequence(msprime.mutate(gi_treesq,
+                                                           rate=options.mu,
+                                                           random_seed=np.random.randint(1, 2 ^ 32 - 1)))
+        #
+        #sample_individuals = np.empty(0,dtype=int)
+        #for x in range(0, na + 1):
+        #    sample_individuals = np.concatenate([sample_individuals, gi_treesq.individuals_alive_at(options.ts[x])])
+        #for ind in sample_individuals:
+        #    print(gi_treesq.individual(ind))
+
+        chrono_order_coverage = [coverage[i] for i in options.sample_order]
+        chrono_order_is_dr = [is_dr[i] for i in options.sample_order]
+
+        print("Number of mutations " + str(gi_treesq.num_mutations))
+        if gi_treesq.num_mutations == 0:
+            print("No mutations")
+            # TODO: Create empty sumstats
+        else:
+            geno_data, positions = sequencing(ts=gi_treesq,
+                                              ssize=sample_size,
+                                              ttr=options.ttratio,
+                                              seq_error=options.seq_error,
+                                              dr=chrono_order_is_dr,
+                                              cov=chrono_order_coverage)
+
+            # print("Genotype data matrix:")
+            # print(geno_data)
+            ac = geno_data.count_alleles()
+            # print("Allele count=\n"+str(ac))
+            pi = allel.mean_pairwise_difference(ac) / length_interval
+            mean_pi = sum(pi) / length_interval
+
+            print("pi = " + str(mean_pi) + " for genome interval " + str(gi))
+
+    # ac = geno_data.count_alleles()
+    # pi = allel.sequence_diversity(positions, ac, start=1, stop=1000000)
+    # print(pi)
+
+    # pi_w, windows, n_bases, counts = allel.windowed_diversity(positions, ac, size=100000, start=1, stop=1000000)
+    # n_obs, minmax, mean, var, skew, kurt = st.describe(pi_w)
+    # print(n_obs)
+    # print(minmax)
+    # print(mean)
+    # print(var)
+    # print(skew)
+    # print(kurt)
+
+
+############################################################################################################
+############################################################################################################
 if __name__ == "__main__":
     main()
 
