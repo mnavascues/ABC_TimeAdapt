@@ -28,7 +28,7 @@ def read_sample_info(sample_info_file="data/SampleInfoTest.txt"):
     :return:
     '''
     info_file = open(sample_info_file, "r")
-    next(info_file) # header_line = next(info_file) # if header needed
+    next(info_file)  # header_line = next(info_file) # if header needed
     sample_id = []
     # age14C = []
     # age14Cerror = []
@@ -41,10 +41,11 @@ def read_sample_info(sample_info_file="data/SampleInfoTest.txt"):
     sample_size = 0
     # TODO: check for blank lines at the end of the file
     first_line = True
+    group_levels = 1
     for line in info_file:
         sample_size = sample_size + 1
         v1, v2, v3, v4, v5, v6, v7 = line.split()
-        if (first_line):
+        if first_line:
             group_levels = len(v7)
         sample_id.append(v1)
         if v2 == "NA":
@@ -74,12 +75,12 @@ def read_sample_info(sample_info_file="data/SampleInfoTest.txt"):
         first_line = False
     info_file.seek(0)
     next(info_file)
-    groups = np.full((group_levels,sample_size),0,"int")
+    groups = np.full((group_levels, sample_size), 0, "int")
     sample_counter = 0
     for line in info_file:
         v1, v2, v3, v4, v5, v6, v7 = line.split()
-        for level in range(0,group_levels):
-            groups[level,sample_counter] = v7[level]
+        for level in range(0, group_levels):
+            groups[level, sample_counter] = v7[level]
         sample_counter = sample_counter + 1
 
     # t0 = max(year)
@@ -128,7 +129,7 @@ def read_genome_intervals(genome_info_file="data/genome_test.txt"):
     end = []
     rates = []
     for line in genome_file:
-        #print(line.split())
+        # print(line.split())
         v1, v2, v3, v4, v5, v6 = line.split()
         start.append(int(v2))
         start.append(int(v5))
@@ -186,7 +187,7 @@ def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1, score_
     return genotype_call
 
 
-def empty_genotype_array(n_loci,n_samples,ploidy = 2,allele = -1):
+def empty_genotype_array(n_loci, n_samples, ploidy = 2, allele = -1):
     '''
     Creates a genotype array with all values as missing (-1) for a given number
     of samples, loci and ploidy
@@ -196,7 +197,8 @@ def empty_genotype_array(n_loci,n_samples,ploidy = 2,allele = -1):
     empty_ga = allel.GenotypeArray(np.full((n_loci, n_samples, ploidy), allele), dtype='i1')
     return empty_ga
 
-def sequencing(ts,ssize,ttr,seq_error,dr,cov):
+
+def sequencing(ts, ssize, ttr, seq_error, dr, cov):
     if len(cov) != ssize:
         msg="Number of coverage values (length="+ str(len(cov)) +\
             ") and number of samples (ssize="+ str(ssize) +\
@@ -343,18 +345,19 @@ def get_arguments(interactive=False):
     else:
         options = parser.parse_args()
     if len(options.ts) != len(options.ss):
-        msg="Number of samples (length of ss="+ str(len(options.ss)) +\
-            ") and number of sampling times (length of st="+ str(len(options.ts)) +\
-            ") do not match"
+        msg = "Number of samples (length of ss=" + str(len(options.ss)) +\
+              ") and number of sampling times (length of st=" + str(len(options.ts)) +\
+              ") do not match"
         raise ValueError(msg)
     return options
+
 
 ############################################################################################################
 ############################################################################################################
 def main():
     # Get options from command line arguments and info from input file
     options = get_arguments()
-    options = get_arguments(interactive=True)
+    # options = get_arguments(interactive=True)
     sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
     sample_size, group_levels, groups = read_sample_info(sample_info_file=options.info_file)
     # print(groups)
@@ -367,6 +370,22 @@ def main():
               ") and number of samples from file (sample_size=" + str(sample_size) + \
               ") do not match"
         raise ValueError(msg)
+
+    chrono_order_coverage = [coverage[i] for i in options.sample_order]
+    chrono_order_is_dr = [is_dr[i] for i in options.sample_order]
+
+    chrono_order_groups = np.zeros([group_levels, sample_size], dtype='int')
+    groups_in_level = {}
+    num_of_pair_comparisons = 0
+    number_of_groups = np.zeros(group_levels, dtype='int')
+    total_number_of_groups = 0
+    for lev in range(0, group_levels):
+        chrono_order_groups[lev] = [groups[lev][i] for i in options.sample_order]
+        number_of_groups[lev] = len(np.unique(groups[lev]))
+        total_number_of_groups += number_of_groups[lev]
+        num_of_pair_comparisons += int((number_of_groups[lev] * (number_of_groups[lev]-1))/2)
+        for g in range(0, number_of_groups[lev]):
+            groups_in_level['level'+str(lev)+'group'+str(g)] = np.where(chrono_order_groups[lev] == g)[0]
 
     # add demography here
     # demogr_event = [msprime.PopulationParametersChange(time=1000, initial_size=300, population_id=0)]
@@ -411,14 +430,11 @@ def main():
                                                            rate=options.mu,
                                                            random_seed=np.random.randint(1, 2 ^ 32 - 1)))
         #
-        #sample_individuals = np.empty(0,dtype=int)
-        #for x in range(0, na + 1):
+        # sample_individuals = np.empty(0,dtype=int)
+        # for x in range(0, na + 1):
         #    sample_individuals = np.concatenate([sample_individuals, gi_treesq.individuals_alive_at(options.ts[x])])
-        #for ind in sample_individuals:
+        # for ind in sample_individuals:
         #    print(gi_treesq.individual(ind))
-
-        chrono_order_coverage = [coverage[i] for i in options.sample_order]
-        chrono_order_is_dr = [is_dr[i] for i in options.sample_order]
 
         print("Number of mutations " + str(gi_treesq.num_mutations))
         if gi_treesq.num_mutations == 0:
@@ -434,30 +450,37 @@ def main():
 
             # print("Genotype data matrix:")
             # print(geno_data)
-            ac = geno_data.count_alleles()
+            allele_counts = geno_data.count_alleles()
             # print("Allele count=\n"+str(ac))
-            pi = allel.mean_pairwise_difference(ac) / length_interval
-            mean_pi = sum(pi) / length_interval
+            # TODO : make a function to calculate single sample summary stats, call it here and below
+            pi_per_lg = allel.sequence_diversity(positions, allele_counts,
+                                                 start=1,
+                                                 stop=length_interval)
+            he_per_site = allel.mean_pairwise_difference(allele_counts)
+            pi_per_window, windows, n_bases,\
+            n_sites = allel.windowed_diversity(positions, allele_counts,
+                                                 size=50000,
+                                                 start=1,
+                                                 stop=length_interval)
+            allele_counts_per_group = {}
+            for lev in range(0, group_levels):
+                for g in range(0, number_of_groups[lev]):
+                    allele_counts_per_group['level' + str(lev) + 'group' + str(g)] = \
+                        geno_data.count_alleles(subpop=groups_in_level['level' + str(lev) + 'group' + str(g)])
+                    # TODO : call here function for single sample sumstats
 
-            print("pi = " + str(mean_pi) + " for genome interval " + str(gi))
+            for lev in range(0, group_levels):
+                for g in range(0, number_of_groups[lev]):
+                    for h in range(g+1, number_of_groups[lev]):
+                        gr1 = allele_counts_per_group['level' + str(lev) + 'group' + str(g)]
+                        gr2 = allele_counts_per_group['level' + str(lev) + 'group' + str(h)]
+                        pairwise_diff = allel.mean_pairwise_difference_between(gr1, gr2)
+                        # print("Level: " + str(lev) + ". Groups: " + str(g) + " " + str(h) +
+                        #      ". Pairwise difference: " + str(pairwise_diff))
 
-    # ac = geno_data.count_alleles()
-    # pi = allel.sequence_diversity(positions, ac, start=1, stop=1000000)
-    # print(pi)
-
-    # pi_w, windows, n_bases, counts = allel.windowed_diversity(positions, ac, size=100000, start=1, stop=1000000)
-    # n_obs, minmax, mean, var, skew, kurt = st.describe(pi_w)
-    # print(n_obs)
-    # print(minmax)
-    # print(mean)
-    # print(var)
-    # print(skew)
-    # print(kurt)
-
+# n_obs, minmax, mean, var, skew, kurt = st.describe(pi_w)
 
 ############################################################################################################
 ############################################################################################################
 if __name__ == "__main__":
     main()
-
-
