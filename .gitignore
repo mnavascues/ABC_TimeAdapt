@@ -1,6 +1,7 @@
 .R*
 .idea/
 results/
+intermediate_files/
 src/__pycache__/
 data/RecombinationMap2010/*
 data/ideogram*
