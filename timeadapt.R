@@ -9,8 +9,8 @@
 # Uppsala universitet & INRAE
 # 2020
 
-# src/timeadapt.R -h
-# src/timeadapt.R -p test -q T -d 1234567890 -b 1 -s 1 -i data/SampleInfoTest.txt -g data/genome_test.txt -l 2 1.4 26 30 -n 10 200 -f 400 -w 8
+# Rscript timeadapt.R -h
+# Rscript timeadapt.R -p test -q T -d 1234567890 -b 1 -s 1 -i data/SampleInfoTest.txt -g data/genome_test.txt -l 2 1.4 26 30 -n 10 200 -f 400 -w 8
 
 library(argparser, quietly=TRUE)
 library(abcrf, quietly=TRUE)
