@@ -125,7 +125,7 @@ for (sim in seq_len(argv$num_of_sims)){
 
   # python (RECAPITATION + MUTATION + SEQUENCING + SUMSTATS)
   seed_pyslim <- round(runif(1,0,2^32-1))
-  args_pyslim <- c("src/add.mutations.py",
+  args_pyslim <- c("timeadapt.py",
                    "-i", argv$sample_info_file,
                    "-g", argv$genome_info_file,
                    "-s", sim,
