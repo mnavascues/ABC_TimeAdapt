@@ -1,0 +1,2 @@
+msprime==0.7.4
+pyslim==0.403
