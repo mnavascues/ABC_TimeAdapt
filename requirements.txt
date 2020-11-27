@@ -1,2 +1,6 @@
+allel
+argparse
 msprime==0.7.4
+numpy
 pyslim==0.403
+scipy
