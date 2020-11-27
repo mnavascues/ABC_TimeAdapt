@@ -9,3 +9,4 @@ data/ideogram*
 src/Old/*
 data/Old/*
 README.html
+.snakemake/
