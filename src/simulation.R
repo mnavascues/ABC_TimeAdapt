@@ -24,3 +24,6 @@ if (!interactive() & !argv$quiet){
   write("\n",stdout())
 }
 
+# set seed for random number generator
+set.seed(argv$seed)
+
