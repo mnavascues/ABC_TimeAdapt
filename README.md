@@ -26,3 +26,10 @@ $ conda activate timeadaptenv
 $ pip install -r requirements.txt 
 $ Rscript requirements.R
 ```
+
+yml file created via:
+
+```shell
+$ conda env export > timeadaptenv.yml
+```
+
