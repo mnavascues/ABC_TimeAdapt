@@ -27,3 +27,11 @@ if (!interactive() & !argv$quiet){
 # set seed for random number generator
 set.seed(argv$seed)
 
+# create results directory
+dir.create("results", showWarnings = FALSE)
+project_dir <- paste("results",argv$project_name,sep="/")
+dir.create(project_dir, showWarnings = FALSE)
+batch_dir <- paste("results",argv$project_name,argv$batch_ID,sep="/")
+dir.create(batch_dir, showWarnings = FALSE)
+
+

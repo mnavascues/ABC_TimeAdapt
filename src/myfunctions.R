@@ -16,12 +16,27 @@ get_arguments <- function(){
                      arg = "--seed",
                      help = "Seed for random number generator ",
                      type = "numeric",
-                     short = "-d")  
+                     short = "-d")
+  ap <- add_argument(parser = ap,
+                     arg = "--project_name",
+                     help=paste0("Name of the project analysis. It is used as directory ",
+                                 "in the path to the output files"),
+                     default = "test",
+                     type = "character",
+                     short = "-p")
+  ap <- add_argument(parser = ap,
+                     arg = "--batch_ID",
+                     help=paste0("Number used to identify the batch of simulations. ",
+                                 "It is used as part of the output file names"),
+                     type = "integer",
+                     short = "-b")  
   if(! interactive()){
     argv <- parse_args(ap)
   }else{
-    argv <- parse_args(ap, c("-q", "FALSE", # quiet
-                             "-d", "1234567890" # seed
+    argv <- parse_args(ap, c("-q", "FALSE",      # quiet
+                             "-d", "1234567890", # seed
+                             "-p", "test",       # project
+                             "-b", "1"           # batch_ID
                              ))
   }
   if (!argv$quiet){
@@ -34,4 +49,6 @@ get_arguments <- function(){
 print_arguments <- function(argv){
   write(paste0("Quiet: ",argv$quiet), stdout())
   write(paste0("Seed: ",argv$seed), stdout())
+  write(paste0("Project: ",argv$project_name), stdout())
+  write(paste0("Batch: ",argv$batch_ID), stdout())
 }
