@@ -12,4 +12,4 @@ rule simulation:
 
 # run tests
 rule test:
-    shell: 'Rscript tests/testthat/test_myfunctions.R'
+    shell: 'Rscript -e "library(testthat);  test_file(\'tests/testthat/test_myfunctions.R\')"'
