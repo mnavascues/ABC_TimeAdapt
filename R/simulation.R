@@ -6,7 +6,7 @@
 # 2020
 
 library(argparser, quietly=TRUE)
-source("src/myfunctions.R")
+source("R/myfunctions.R")
 
 # read arguments from command line (gets default values in interactive)
 argv <- get_arguments()
@@ -35,7 +35,8 @@ batch_dir <- paste("results",argv$project_name,argv$batch_ID,sep="/")
 dir.create(batch_dir, showWarnings = FALSE)
 
 # read smaple and genome information from tables in text files
-#Sample <- read_sample_info(argv$sample_info_file)
+Sample <- read_sample_info(argv$sample_info_file)
+if (!argv$quiet) cat("Sample:\n");(Sample)
 #Genome <- read_genome_info(argv$genome_info_file)
 
 

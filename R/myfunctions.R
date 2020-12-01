@@ -43,9 +43,9 @@ get_arguments <- function(){
                      type = "character",
                      short = "-g")
   if(! interactive()){
-    argv <- parse_args(ap)
+    f_argv <- parse_args(ap)
   }else{
-    argv <- parse_args(ap, c("-q", "FALSE",                     # quiet
+    f_argv <- parse_args(ap, c("-q", "FALSE",                     # quiet
                              "-d", "1234567890",                # seed
                              "-p", "test",                      # project_name
                              "-b", "1",                         # batch_ID
@@ -53,18 +53,38 @@ get_arguments <- function(){
                              "-g", "data/genome_info_test.txt"  # genome_info_file
                              ))
   }
-  if (!argv$quiet){
+  if (!f_argv$quiet){
     print(ap)
-    print_arguments(argv)
+    print_arguments(f_argv)
   }
-  return(argv)
+  return(f_argv)
 }
 
-print_arguments <- function(argv){
-  write(paste0("Quiet: ",argv$quiet), stdout())
-  write(paste0("Seed: ",argv$seed), stdout())
-  write(paste0("Project: ",argv$project_name), stdout())
-  write(paste0("Batch: ",argv$batch_ID), stdout())
-  write(paste0("Sample file: ",argv$sample_info_file), stdout())
-  write(paste0("Genome file: ",argv$genome_info_file), stdout())
+print_arguments <- function(f_argv){
+  write(paste0("Quiet: ",f_argv$quiet), stdout())
+  write(paste0("Seed: ",f_argv$seed), stdout())
+  write(paste0("Project: ",f_argv$project_name), stdout())
+  write(paste0("Batch: ",f_argv$batch_ID), stdout())
+  write(paste0("Sample file: ",f_argv$sample_info_file), stdout())
+  write(paste0("Genome file: ",f_argv$genome_info_file), stdout())
 }
+
+
+
+
+read_sample_info <- function(file="data/sample_info_test.txt"){
+  info <- read.table(file,header=T,stringsAsFactors=F,strip.white=T)
+  # TODO add verification of header
+  return( list(id            = info$sampleID,
+               age14C        = info$age14C,
+               age14Cerror   = info$age14Cerror,
+               ageBCAD       = info$year, 
+               coverage      = info$coverage,
+               is_modern     = !is.na(info$year), 
+               is_ancient    = !is.na(info$age14C),
+               is_dr         = info$damageRepair,
+               total_ancient = sum(!is.na(info$age14C)),
+               size          = nrow(info),
+               t0            = max(info$year,na.rm=T) ) )
+}
+

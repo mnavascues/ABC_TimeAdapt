@@ -1,0 +1,16 @@
+library(testthat, quietly=TRUE)
+source("R/myfunctions.R")
+
+test_that("Verify types of variables", {
+  expect_equal(is.character(read_sample_info()$id), TRUE)
+  expect_equal(is.numeric(read_sample_info()$age14C), TRUE)
+  expect_equal(is.numeric(read_sample_info()$age14Cerror), TRUE)
+  expect_equal(is.numeric(read_sample_info()$ageBCAD), TRUE)
+  expect_equal(is.numeric(read_sample_info()$coverage), TRUE)
+  expect_equal(is.logical(read_sample_info()$is_modern), TRUE)
+  expect_equal(is.logical(read_sample_info()$is_ancient), TRUE)
+  expect_equal(is.logical(read_sample_info()$is_dr), TRUE)
+  expect_equal(is.numeric(read_sample_info()$total_ancient), TRUE)
+  expect_equal(is.numeric(read_sample_info()$size), TRUE)
+  expect_equal(is.numeric(read_sample_info()$t0), TRUE)
+})
