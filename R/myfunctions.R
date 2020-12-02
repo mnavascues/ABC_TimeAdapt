@@ -70,10 +70,18 @@ print_arguments <- function(f_argv){
 }
 
 
-
+verify_file_header <- function(expected_header,file_header){
+  missing=!is.element(expected_header,file_header)
+  if (any(missing)){
+    stop(paste("Missing columns in input file:",expected_header[missing]))
+  } 
+}
 
 read_sample_info <- function(file="data/sample_info_test.txt"){
   info <- read.table(file,header=T,stringsAsFactors=F,strip.white=T)
+  expected_header <- c("sampleID","age14C","age14Cerror","year","coverage","damageRepair","groups")
+  verify_file_header(expected_header, file_header = colnames(info))
+  
   # TODO add verification of header
   return( list(id            = info$sampleID,
                age14C        = info$age14C,
