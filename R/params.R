@@ -116,11 +116,11 @@ for (sim in seq_len(argv$num_of_sims)){
                          " -d ", paste0("ends=\"c("), paste(Genome$rec_map_SLiM[,1],collapse=","), paste0(")\""),
                          " -d ", paste0("rates=\"c("), paste(Genome$rec_map_SLiM[,2],collapse=","), paste0(")\""),
                          " -s ", seed_slim,
-                         " src/model.demography.slim > /tmp/slimout.txt")
+                         " slim/simulation.slim > /tmp/slimout.txt")
   write(command_slim, file = paste0(batch_dir,"/slim_",sim,".sh"))
 
   # write command line for pyslim
-  command_pyslim <- paste("python3", "timeadapt.py",
+  command_pyslim <- paste("python3", "python/timeadapt.py",
                            "-i", argv$sample_info_file,
                            "-g", argv$genome_info_file,
                            "-s", sim,
@@ -133,7 +133,6 @@ for (sim in seq_len(argv$num_of_sims)){
                            "-n", sim_N[sim,1],
                            "-u", sim_u[sim])
   write(command_pyslim, file = paste0(batch_dir,"/pyslim_",sim,".sh"))
-  
-  
+
 }
 
