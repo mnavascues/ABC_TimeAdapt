@@ -17,9 +17,9 @@ mut_rate_prior_sd = 0.5
 
 
 # simulate from prior using SLiM
-rule simulation:
+rule params:
     input:
-        simR='R/simulation.R'
+        simR='R/params.R'
     shell: 'Rscript {input.simR}             \
                     -q F                     \
                     -d {seed}                \

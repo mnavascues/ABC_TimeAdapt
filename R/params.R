@@ -97,5 +97,43 @@ for (sim in seq_len(argv$num_of_sims)){
                                             argv$num_of_gen_in_forw_sim,
                                             cal_age_PDF,
                                             gen_length=sim_gen_length[sim])
+  # sample seeds for SLiM and pyslim
+  seed_slim <- round(runif(1,0,2^32-1))
+  seed_pyslim <- round(runif(1,0,2^32-1))
+  
+  # write command line for SLiM
+  command_slim <- paste0("slim ",
+                         " -d ", paste0("N=\"c("), paste(sim_N[sim,],collapse=","), paste0(")\""),
+                         " -d ", paste0("tc=\"c("), paste(times_of_change_forw,collapse=","), paste0(")\""),
+                         " -d ", paste0("ts=\"c("), paste(sim_sample_time$slim_ts,collapse=","), paste0(")\""),
+                         " -d ", paste0("ss=\"c("), paste(rev(sim_sample_time$sample_sizes),collapse=","), paste0(")\""),
+                         " -d ", paste0("i=", sim),
+                         " -d ", paste0("batch_ID=",argv$batch_ID),
+                         " -d ", paste0("project=\"'",argv$project_name,"'\""),
+                         " -d ", paste0("np=", argv$num_of_periods_forw),
+                         " -d ", paste0("na=", sim_sample_time$na),
+                         " -d ", paste0("L=", Genome$L),
+                         " -d ", paste0("ends=\"c("), paste(Genome$rec_map_SLiM[,1],collapse=","), paste0(")\""),
+                         " -d ", paste0("rates=\"c("), paste(Genome$rec_map_SLiM[,2],collapse=","), paste0(")\""),
+                         " -s ", seed_slim,
+                         " src/model.demography.slim > /tmp/slimout.txt")
+  write(command_slim, file = paste0(batch_dir,"/slim_",sim,".sh"))
+
+  # write command line for pyslim
+  command_pyslim <- paste("python3", "timeadapt.py",
+                           "-i", argv$sample_info_file,
+                           "-g", argv$genome_info_file,
+                           "-s", sim,
+                           "-b", argv$batch_ID,
+                           "-p", argv$project_name,
+                           "-t", paste(sim_sample_time$msprime_ts, collapse=" "),
+                           "-z", paste(sim_sample_time$sample_sizes, collapse=" "),
+                           "-o", paste(sim_sample_time$chrono_order, collapse=" "),
+                           "-d", seed_pyslim,
+                           "-n", sim_N[sim,1],
+                           "-u", sim_u[sim])
+  write(command_pyslim, file = paste0(batch_dir,"/pyslim_",sim,".sh"))
+  
+  
 }
 
