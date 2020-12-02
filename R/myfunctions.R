@@ -250,6 +250,8 @@ sample_ages_from_prior <- function(Sample,
                                    cal_age_PDF,
                                    gen_length){
   
+  # TODO: modify so it can get samples with only modern DNA
+  
   ages_sim <- array(NA,Sample$size)
   t_max <- num_of_gen_in_for_sim
   for (k in which(Sample$is_ancient)){
