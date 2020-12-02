@@ -14,4 +14,9 @@ test_that("Verify type in sample info file", {
   expect_true(is.numeric(info$size))
   expect_true(is.numeric(info$t0))
 })
+
+test_that("Verify header sends error when missing coloumn", {
+  expect_error(verify_file_header(c("a","b"),c("a")))
+  expect_error(verify_file_header(c("c"),c("a")))
+  expect_error(verify_file_header(c("c"),character()))
 })
