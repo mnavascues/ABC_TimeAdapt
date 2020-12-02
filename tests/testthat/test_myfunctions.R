@@ -25,4 +25,5 @@ context("Sample from priors")
 
 # sample_N_trajectory()
 # sample_demography_from_prior()
+# sample_ages_from_prior()
 

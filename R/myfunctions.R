@@ -242,3 +242,37 @@ sample_demography_from_prior <- function(num_of_sims,
   return(sim_N)
 }
 
+
+
+
+sample_ages_from_prior <- function(Sample,
+                                   num_of_gen_in_for_sim,
+                                   cal_age_PDF,
+                                   gen_length){
+  
+  ages_sim <- array(NA,Sample$size)
+  t_max <- num_of_gen_in_for_sim
+  for (k in which(Sample$is_ancient)){
+    # sample from PDF of calibrated ages (BP) and transform to year (BC or AD)
+    ages_sim[k] <- BPtoBCAD(sample(cal_age_PDF[[k]]$calBP,1,prob = cal_age_PDF[[k]]$PrDens))
+  }
+  ages_sim[Sample$is_modern] <- Sample$ageBCAD[Sample$is_modern]
+  # transform to generations before "present" (present=year of most recent sample)
+  ages_sim <- round(abs(ages_sim-Sample$t0)/gen_length)
+  
+  chrono_order <- order(ages_sim)-1 # Sample$id[order(ages_sim)]
+  a <- sort(as.numeric(levels(as.factor(ages_sim))))
+  s <- numeric()
+  for (age in a){
+    s<-c(s,sum(ages_sim==age))
+  }
+  
+  return(list(na           = sum(a!=0),       # number of non-present sample times
+              t_max        = t_max,
+              slim_ts      = sort(t_max-a),   # time of samples in SLiM
+              msprime_ts   = a,               # time of samples in tree sequences  
+              sample_sizes = s,               # sample size per generation
+              chrono_order = chrono_order ) ) # chronological order of samples
+  
+  
+}

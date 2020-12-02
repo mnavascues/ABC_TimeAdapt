@@ -90,3 +90,12 @@ sim_u <- rlnorm(argv$num_of_sims,
                 log(argv$mutation_rate_prior_params[1]),
                 argv$mutation_rate_prior_params[2])
 
+for (sim in seq_len(argv$num_of_sims)){
+  if (!argv$quiet) cat(paste("\n\nSimulation",sim,"\n----------------------------------\n"))
+  # simulate ages of aDNA from their calibrated age distribution
+  sim_sample_time <- sample_ages_from_prior(Sample,
+                                            argv$num_of_gen_in_forw_sim,
+                                            cal_age_PDF,
+                                            gen_length=sim_gen_length[sim])
+}
+
