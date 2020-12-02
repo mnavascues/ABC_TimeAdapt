@@ -138,6 +138,8 @@ def main():
                         pairwise_diff = allel.mean_pairwise_difference_between(gr1, gr2)
                         # print("Level: " + str(lev) + ". Groups: " + str(g) + " " + str(h) +
                         #      ". Pairwise difference: " + str(pairwise_diff))
+                        
+    outfile=open("results/" + options.project + "/" + str(options.batch_id) + "/stats_" + str(options.sim_i) + ".txt","w")
 
 # n_obs, minmax, mean, var, skew, kurt = st.describe(pi_w)
 
