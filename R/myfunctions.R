@@ -42,16 +42,31 @@ get_arguments <- function(){
                                    "the example file in data folder (genome_info_test.txt)"),
                      type = "character",
                      short = "-g")
+  ap <- add_argument(parser = ap,
+                     arg = "--num_of_gen_in_forw_sim",
+                     help = paste0("Number of generations to run in forward (SLiM). ",
+                                   "It must be big enough as to cover the whole range of ",
+                                   "possible ages for samples."),
+                     type = "integer",
+                     short = "-f")
+  ap <- add_argument(parser = ap,
+                     arg = "--num_of_periods_forw",
+                     help = paste0("Number of periods with different parameter values ",
+                                   "during the simulation forward (SLiM)."),
+                     type = "integer",
+                     short = "-w")
   if(! interactive()){
     f_argv <- parse_args(ap)
   }else{
     f_argv <- parse_args(ap, c("-q", "FALSE",                     # quiet
-                             "-d", "1234567890",                # seed
-                             "-p", "test",                      # project_name
-                             "-b", "1",                         # batch_ID
-                             "-i", "data/sample_info_test.txt", # sample_info_file
-                             "-g", "data/genome_info_test.txt"  # genome_info_file
-                             ))
+                               "-d", "1234567890",                # seed
+                               "-p", "test",                      # project_name
+                               "-b", "1",                         # batch_ID
+                               "-i", "data/sample_info_test.txt", # sample_info_file
+                               "-g", "data/genome_info_test.txt", # genome_info_file
+                               "-f", "400",                       # num_of_gen_in_forw_sim
+                               "-w", "8"                          # num_of_periods_forw
+                               ))
   }
   if (!f_argv$quiet){
     print(ap)
@@ -67,6 +82,9 @@ print_arguments <- function(f_argv){
   write(paste0("Batch: ",f_argv$batch_ID), stdout())
   write(paste0("Sample file: ",f_argv$sample_info_file), stdout())
   write(paste0("Genome file: ",f_argv$genome_info_file), stdout())
+  write(paste0("Generations in forward: ",f_argv$num_of_gen_in_forw_sim), stdout())
+  write(paste0("Number of periods in forward: ",f_argv$num_of_periods_forw), stdout())
+  
 }
 
 

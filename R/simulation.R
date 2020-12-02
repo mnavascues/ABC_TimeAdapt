@@ -34,10 +34,14 @@ dir.create(project_dir, showWarnings = FALSE)
 batch_dir <- paste("results",argv$project_name,argv$batch_ID,sep="/")
 dir.create(batch_dir, showWarnings = FALSE)
 
-# read smaple and genome information from tables in text files
+# read sample and genome information from tables in text files
 Sample <- read_sample_info(argv$sample_info_file)
 if (!argv$quiet) cat("Sample:\n");(Sample)
 Genome <- read_genome_info(argv$genome_info_file)
 if (!argv$quiet) cat("Genome:\n");(Genome)
 
-
+# number of generations to simulate in forward (in SLiM)
+times_of_change_forw     <- seq(from = argv$num_of_gen_in_forw_sim/argv$num_of_periods_forw,
+                                to   = argv$num_of_gen_in_forw_sim-1,
+                                by   = argv$num_of_gen_in_forw_sim/argv$num_of_periods_forw)
+if (!argv$quiet) cat("Periods in forward:\n");(times_of_change_forw)
