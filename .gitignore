@@ -2,7 +2,7 @@
 .idea/
 results/
 intermediate_files/
-src/__pycache__/
+python/__pycache__/
 data/RecombinationMap2010/*
 data/ideogram*
 .Rproj.user
