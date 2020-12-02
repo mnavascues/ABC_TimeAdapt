@@ -1,7 +1,9 @@
-# TimeAdapt
+# TimeAdapt - myfunctions.R
 # Miguel Navascués
 # Uppsala universitet & INRAE
 # 2020
+
+library(rcarbon, quietly=TRUE)
 
 get_arguments <- function(){
   ap <- arg_parser(description = paste0("Approximate Bayesian computation analysis ",

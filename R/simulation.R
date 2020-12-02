@@ -1,12 +1,11 @@
 #!/usr/bin/env Rscript
 
-# TimeAdapt
+# TimeAdapt - simulation.R
 # Miguel Navascués
 # Uppsala universitet & INRAE
 # 2020
 
 library(argparser, quietly=TRUE)
-library(rcarbon, quietly=TRUE)
 source("R/myfunctions.R")
 
 # read arguments from command line (gets default values in interactive)
