@@ -5,12 +5,12 @@ TimeAdapt makes a joint inference of demography and selection from longitudinal 
 ### Requirements
 
 - Python 3.8.5
-  - allel
+  - scikit-allel 1.3.2
   - argparse
   - msprime 0.7.4
   - numpy
   - pyslim 0.403
-  - scipy
+  - scipy 1.5.4
 - R 3.6.3
   - abcrf 1.8.1
   - argparser 0.6
