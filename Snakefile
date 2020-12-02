@@ -22,10 +22,8 @@ rule params:
     input:
         simR='R/params.R'
     output:
-        slim_command=expand('results/{project_name}/{batch}/slim_{sims}.sh',
-                             project_name=project_name,
-                             batch=batch,
-                             sims=sims)
+        slim_command=expand('results/{p}/{b}/slim_{s}.sh',p=project_name,b=batch,s=sims),
+        pyslim_command=expand('results/{p}/{b}/pyslim_{s}.sh',p=project_name,b=batch,s=sims)
     shell: 'Rscript {input.simR}             \
                     -q TRUE                  \
                     -d {seed}                \
@@ -50,12 +48,22 @@ rule slim:
     shell:
         'bash {input}'
 
+# simulate with msprime (via pyslim) aNd calculate summary stats
+rule pyslim:
+    input:
+        pyslim_command='results/{p}/{b}/pyslim_{s}.sh',
+        slim_trees='results/{p}/{b}/slim{s}.tree'
+    output:
+        'results/{p}/{b}/stats_{s}.txt'
+    threads: 4
+    shell:
+        'bash {input.pyslim_command}'
+
+
 rule all:
     input:
-       slim_trees = expand('results/{p}/{b}/slim{s}.tree',
-                           p=project_name,
-                           b=batch,
-                           s=sims)
+       slim_trees = expand('results/{p}/{b}/slim{s}.tree',p=project_name,b=batch,s=sims),
+       sim_stats = expand('results/{p}/{b}/stats_{s}.txt',p=project_name,b=batch,s=sims)
    
 
 # run tests
