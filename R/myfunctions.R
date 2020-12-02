@@ -94,32 +94,45 @@ print_arguments <- function(f_argv){
   write(paste0("Genome file: ",f_argv$genome_info_file), stdout())
   write(paste0("Generations in forward: ",f_argv$num_of_gen_in_forw_sim), stdout())
   write(paste0("Number of periods in forward: ",f_argv$num_of_periods_forw), stdout())
+  write(paste0("Prior parameters for generation length: ",f_argv$generation_length_prior_params), stdout())
   
 }
 
 
-verify_file_header <- function(expected_header,file_header){
+check_file_header <- function(expected_header,file_header){
   missing=!is.element(expected_header,file_header)
   if (any(missing)){
     stop(paste("Missing columns in input file:",expected_header[missing]))
-  } 
+  }
+  return(TRUE)
 }
 
 read_sample_info <- function(file="data/sample_info_test.txt"){
   info <- read.table(file,header=T,stringsAsFactors=F,strip.white=T)
   expected_header <- c("sampleID","age14C","age14Cerror","year","coverage","damageRepair","groups")
-  verify_file_header(expected_header, file_header = colnames(info))
-  return( list(id            = info$sampleID,
-               age14C        = info$age14C,
-               age14Cerror   = info$age14Cerror,
-               ageBCAD       = info$year, 
-               coverage      = info$coverage,
-               is_modern     = !is.na(info$year), 
-               is_ancient    = !is.na(info$age14C),
-               is_dr         = info$damageRepair,
-               total_ancient = sum(!is.na(info$age14C)),
-               size          = nrow(info),
-               t0            = max(info$year,na.rm=T) ) )
+  if(check_file_header(expected_header, file_header = colnames(info))){
+    if(all(is.character(info$sampleID),
+           is.numeric(info$age14C),
+           is.numeric(info$age14Cerror),
+           is.numeric(info$year),
+           is.numeric(info$coverage),
+           is.logical(info$damageRepair))){
+      return( list(id            = info$sampleID,
+                   age14C        = info$age14C,
+                   age14Cerror   = info$age14Cerror,
+                   ageBCAD       = info$year, 
+                   coverage      = info$coverage,
+                   is_modern     = !is.na(info$year), 
+                   is_ancient    = !is.na(info$age14C),
+                   is_dr         = info$damageRepair,
+                   total_ancient = sum(!is.na(info$age14C)),
+                   size          = nrow(info),
+                   t0            = max(info$year,na.rm=T) ) )
+    }
+    stop(paste("Wrong data type in file:",file))
+  }else{
+    quit("no",status=10)
+  }
 }
 
 
@@ -127,22 +140,23 @@ read_genome_info <- function(file="data/genome_info_test.txt"){
   info <- read.table(file,header=T)
   #expected_header <- c("ID","chromosome_start","chromosome_end","centromere_start","centromere_end","recombination_rate")
   expected_header <- c("chromosome_end","recombination_rate") # for the moment these are the only columns used
-  verify_file_header(expected_header, file_header = colnames(info))
-
-  number_of_chromosomes <- nrow(info)
-  rec_map_SLiM_rates <- numeric()
-  rec_map_SLiM_ends <- numeric()
-  for (chr in seq_len(number_of_chromosomes)){
-    rec_map_SLiM_rates <- c(rec_map_SLiM_rates, info$recombination_rate[chr], 0.5)
-    rec_map_SLiM_ends  <- c(rec_map_SLiM_ends, 
-                            info$chromosome_end[chr], 
-                            info$chromosome_end[chr]+1)
+  if(check_file_header(expected_header, file_header = colnames(info))){
+    number_of_chromosomes <- nrow(info)
+    rec_map_SLiM_rates <- numeric()
+    rec_map_SLiM_ends <- numeric()
+    for (chr in seq_len(number_of_chromosomes)){
+      rec_map_SLiM_rates <- c(rec_map_SLiM_rates, info$recombination_rate[chr], 0.5)
+      rec_map_SLiM_ends  <- c(rec_map_SLiM_ends, 
+                              info$chromosome_end[chr], 
+                              info$chromosome_end[chr]+1)
+    }
+    return( list(number_of_chromosomes = number_of_chromosomes,
+                 L = info$chromosome_end[number_of_chromosomes], # total genome length
+                 rec_map_SLiM = cbind(ends=rec_map_SLiM_ends,
+                                      rates=rec_map_SLiM_rates) ))
+  }else{
+    quit("no",status=20)
   }
-  return( list(number_of_chromosomes = number_of_chromosomes,
-               L = info$chromosome_end[number_of_chromosomes], # total genome length
-               rec_map_SLiM = cbind(ends=rec_map_SLiM_ends,
-                                    rates=rec_map_SLiM_rates)
-  ) )
 }
 
 
