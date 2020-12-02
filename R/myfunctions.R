@@ -115,7 +115,8 @@ read_sample_info <- function(file="data/sample_info_test.txt"){
 
 read_genome_info <- function(file="data/genome_info_test.txt"){
   info <- read.table(file,header=T)
-  expected_header <- c("ID","chromosome_start","chromosome_end","centromere_start","centromere_end","recombination_rate")
+  #expected_header <- c("ID","chromosome_start","chromosome_end","centromere_start","centromere_end","recombination_rate")
+  expected_header <- c("chromosome_end","recombination_rate") # for the moment these are the only columns used
   verify_file_header(expected_header, file_header = colnames(info))
 
   number_of_chromosomes <- nrow(info)
