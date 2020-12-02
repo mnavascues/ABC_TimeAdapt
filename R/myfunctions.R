@@ -64,6 +64,11 @@ get_arguments <- function(){
                      nargs = 4,
                      type = "numeric",
                      short = "-l")
+  ap <- add_argument(parser = ap,
+                     arg = "--num_of_sims",
+                     help = paste0("Number of simulations to run."),
+                     type = "integer",
+                     short = "-s")
   if(! interactive()){
     f_argv <- parse_args(ap)
   }else{
@@ -75,7 +80,8 @@ get_arguments <- function(){
                                "-g", "data/genome_info_test.txt", # genome_info_file
                                "-f", "400",                       # num_of_gen_in_forw_sim
                                "-w", "8",                         # num_of_periods_forw
-                               "-l", "2 1.4 26 30"                # generation_length_prior_params
+                               "-l", "2","1.465967","26","30",    # generation_length_prior_params
+                               "-s", "3"                          # num_of_sims
                                ))
   }
   if (!f_argv$quiet){
@@ -95,7 +101,7 @@ print_arguments <- function(f_argv){
   write(paste0("Generations in forward: ",f_argv$num_of_gen_in_forw_sim), stdout())
   write(paste0("Number of periods in forward: ",f_argv$num_of_periods_forw), stdout())
   write(paste0("Prior parameters for generation length: ",f_argv$generation_length_prior_params), stdout())
-  
+  write(paste0("Number of simulations: ",f_argv$num_of_sims), stdout())
 }
 
 

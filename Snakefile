@@ -6,9 +6,10 @@ genome_file = "data/genome_info_test.txt"
 generations_forward = 400
 periods_forward = 8
 gen_len_prior_sh1 = 2
-gen_len_prior_sh2 = 1.4
+gen_len_prior_sh2 = 1.465967
 gen_len_prior_min = 26
 gen_len_prior_max = 30
+num_of_sims = 3
 
 # simulate from prior using SLiM
 rule simulation:
@@ -23,7 +24,8 @@ rule simulation:
                     -g {genome_file}         \
                     -f {generations_forward} \
                     -w {periods_forward}     \
-                    -l {gen_len_prior_sh1} {gen_len_prior_sh2} {gen_len_prior_min} {gen_len_prior_max}'
+                    -l {gen_len_prior_sh1} {gen_len_prior_sh2} {gen_len_prior_min} {gen_len_prior_max}\
+                    -s {num_of_sims}'
 
 # run tests
 rule test:

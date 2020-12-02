@@ -6,6 +6,7 @@
 # 2020
 
 library(argparser, quietly=TRUE)
+library(extraDistr, quietly=TRUE)
 source("R/myfunctions.R")
 
 # read arguments from command line (gets default values in interactive)
@@ -72,4 +73,11 @@ if(check_ts_lower_gen_in_for_sim(argv$num_of_gen_in_forw_sim,
   quit("no",status=30)
 } 
 
+# SAMPLE FROM PRIORS  
+# Generation length = generation interval in years
+sim_gen_length  <- rnsbeta(argv$num_of_sims,
+                           argv$generation_length_prior_params[1],
+                           argv$generation_length_prior_params[2],
+                           argv$generation_length_prior_params[3],
+                           argv$generation_length_prior_params[4])
 
