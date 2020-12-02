@@ -15,13 +15,19 @@ pop_size_prior_max = 200
 mut_rate_prior_mean = "0.00000005"
 mut_rate_prior_sd = 0.5
 
+sims = range(1,num_of_sims+1)
 
-# simulate from prior using SLiM
+# read parameters and sample from priors
 rule params:
     input:
         simR='R/params.R'
+    output:
+        slim_command=expand('results/{project_name}/{batch}/slim_{sims}.sh',
+                             project_name=project_name,
+                             batch=batch,
+                             sims=sims)
     shell: 'Rscript {input.simR}             \
-                    -q F                     \
+                    -q TRUE                  \
                     -d {seed}                \
                     -p {project_name}        \
                     -b {batch}               \
@@ -33,6 +39,24 @@ rule params:
                     -s {num_of_sims}         \
                     -n {pop_size_prior_min} {pop_size_prior_max}\
                     -u {mut_rate_prior_mean} {mut_rate_prior_sd}'
+
+# simulate with SLiM
+rule slim:
+    input:
+        'results/{p}/{b}/slim_{s}.sh'
+    output:
+        'results/{p}/{b}/slim{s}.tree'
+    threads: 4
+    shell:
+        'bash {input}'
+
+rule all:
+    input:
+       slim_trees = expand('results/{p}/{b}/slim{s}.tree',
+                           p=project_name,
+                           b=batch,
+                           s=sims)
+   
 
 # run tests
 rule test:
