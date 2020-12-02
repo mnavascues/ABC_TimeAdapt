@@ -37,6 +37,7 @@ dir.create(batch_dir, showWarnings = FALSE)
 # read smaple and genome information from tables in text files
 Sample <- read_sample_info(argv$sample_info_file)
 if (!argv$quiet) cat("Sample:\n");(Sample)
-#Genome <- read_genome_info(argv$genome_info_file)
+Genome <- read_genome_info(argv$genome_info_file)
+if (!argv$quiet) cat("Genome:\n");(Genome)
 
 
