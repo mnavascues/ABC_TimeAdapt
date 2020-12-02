@@ -10,6 +10,9 @@ gen_len_prior_sh2 = 1.465967
 gen_len_prior_min = 26
 gen_len_prior_max = 30
 num_of_sims = 3
+pop_size_prior_min = 10
+pop_size_prior_max = 200
+
 
 # simulate from prior using SLiM
 rule simulation:
@@ -25,7 +28,8 @@ rule simulation:
                     -f {generations_forward} \
                     -w {periods_forward}     \
                     -l {gen_len_prior_sh1} {gen_len_prior_sh2} {gen_len_prior_min} {gen_len_prior_max}\
-                    -s {num_of_sims}'
+                    -s {num_of_sims}         \
+                    -n {pop_size_prior_min} {pop_size_prior_max}'
 
 # run tests
 rule test:

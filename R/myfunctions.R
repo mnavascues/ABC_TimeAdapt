@@ -69,6 +69,13 @@ get_arguments <- function(){
                      help = paste0("Number of simulations to run."),
                      type = "integer",
                      short = "-s")
+  ap <- add_argument(parser = ap,
+                     arg = "--population_size_prior_params",
+                     help = paste0("Minimum and maximum, for a loguniform ",
+                                   "distribution used as a prior for population size"),
+                     nargs = 2,
+                     type = "numeric",
+                     short = "-n")
   if(! interactive()){
     f_argv <- parse_args(ap)
   }else{
@@ -81,7 +88,8 @@ get_arguments <- function(){
                                "-f", "400",                       # num_of_gen_in_forw_sim
                                "-w", "8",                         # num_of_periods_forw
                                "-l", "2","1.465967","26","30",    # generation_length_prior_params
-                               "-s", "3"                          # num_of_sims
+                               "-s", "3",                         # num_of_sims
+                               "-n", "10","200"                   # population_size_prior_params
                                ))
   }
   if (!f_argv$quiet){
@@ -100,8 +108,9 @@ print_arguments <- function(f_argv){
   write(paste0("Genome file: ",f_argv$genome_info_file), stdout())
   write(paste0("Generations in forward: ",f_argv$num_of_gen_in_forw_sim), stdout())
   write(paste0("Number of periods in forward: ",f_argv$num_of_periods_forw), stdout())
-  write(paste0("Prior parameters for generation length: ",f_argv$generation_length_prior_params), stdout())
+  write(paste0("Parameters for generation length prior: ",f_argv$generation_length_prior_params), stdout())
   write(paste0("Number of simulations: ",f_argv$num_of_sims), stdout())
+  write(paste0("Parameters for poplation size prior: ",f_argv$population_size_prior_params), stdout())
 }
 
 
@@ -200,3 +209,25 @@ check_ts_lower_gen_in_for_sim <- function(num_of_gen_in_for_sim,
   return(TRUE)
 }
 
+sample_N_trajectory <- function(num_of_periods_forw,
+                                prior_N_min,
+                                prior_N_max){
+  row_sim_N<-array(NA,num_of_periods_forw)
+  row_sim_N[1] <-exp(runif(1,log(prior_N_min),log(prior_N_max)))
+  for (i in 2:num_of_periods_forw){
+    alpha <- runif(1,-1,1)
+    row_sim_N[i] <- 10^max(min(log10(row_sim_N[i-1])+alpha,log10(prior_N_max)),log10(prior_N_min))
+  }
+  return(round(row_sim_N))
+}
+
+sample_demography_from_prior <- function(num_of_sims,
+                                         num_of_periods_forw,
+                                         prior_N_min,
+                                         prior_N_max){
+  
+  sim_N <- t(replicate(num_of_sims,sample_N_trajectory(num_of_periods_forw,
+                                                       prior_N_min,
+                                                       prior_N_max)))
+  return(sim_N)
+}

@@ -80,4 +80,9 @@ sim_gen_length  <- rnsbeta(argv$num_of_sims,
                            argv$generation_length_prior_params[2],
                            argv$generation_length_prior_params[3],
                            argv$generation_length_prior_params[4])
+# census population size
+sim_N <- sample_demography_from_prior(argv$num_of_sims,
+                                      argv$num_of_periods_forw,
+                                      argv$population_size_prior_params[1],
+                                      argv$population_size_prior_params[2])
 
