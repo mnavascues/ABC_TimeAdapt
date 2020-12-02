@@ -50,12 +50,26 @@ if (!argv$quiet) cat("Periods in forward:\n");(times_of_change_forw)
 # (from 14C ages)
 if(any(Sample$is_ancient)){
   if (file.exists(paste(project_dir,"cal_age_PDF.RDS",sep="/"))){
-    message("RDS file exists: importing calibrated age PDF")
+    if (!argv$quiet) cat("RDS file exists: importing calibrated age PDF\n")
     cal_age_PDF <- readRDS(file = paste(project_dir,"cal_age_PDF.RDS",sep="/"))
   }else{
-    message("RDS file does not exists: calculating calibrated age PDF")
+    if (!argv$quiet) cat("RDS file does not exists: calculating calibrated age PDF\n")
     cal_age_PDF <- get_sample_cal_age_PDF(Sample)
     saveRDS(cal_age_PDF,file = paste(project_dir,"cal_age_PDF.RDS",sep="/"))
   }  
+}else{
+  cal_age_PDF <- NULL
 }
+
+
+# verify that samples cannot be older than the number of generations simulated in forward
+if(check_ts_lower_gen_in_for_sim(argv$num_of_gen_in_forw_sim,
+                                 Sample,
+                                 cal_age_PDF,
+                                 argv$generation_length_prior_params[3])){
+  if (!argv$quiet) cat("Length of simulation forward OK\n")
+}else{
+  quit("no",status=30)
+} 
+
 
