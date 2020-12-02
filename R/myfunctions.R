@@ -6,9 +6,10 @@
 library(rcarbon, quietly=TRUE)
 
 get_arguments <- function(){
-  ap <- arg_parser(description = paste0("Approximate Bayesian computation analysis ",
-                                        "for joint inference of demography and selection ",
-                                        "from temporal population genomic data."))
+  ap <- arg_parser(description = paste("Approximate Bayesian computation analysis",
+                                       "for joint inference of demography and selection",
+                                       "from temporal population genomic data.",
+                                       "Reading sample info and sampling parameters from priors"))
   ap <- add_argument(parser = ap,
                      arg = "--quiet",
                      help = paste0("Run on quiet mode."),
@@ -231,3 +232,4 @@ sample_demography_from_prior <- function(num_of_sims,
                                                        prior_N_max)))
   return(sim_N)
 }
+
