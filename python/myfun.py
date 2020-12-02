@@ -3,7 +3,7 @@ import scipy.stats as st
 import allel
 import argparse
 
-def read_sample_info(sample_info_file="data/SampleInfoTest.txt"):
+def read_sample_info(sample_info_file="data/sample_info_test.txt"):
     '''
     Read csv file with information on sample. Format of the file:
     --------------------------------------------------------------------------
@@ -105,7 +105,7 @@ def read_recombination_map(recombination_map_file="data/recombination_map_msprim
     return positions, rates
 
 
-def read_genome_intervals(genome_info_file="data/genome_test.txt"):
+def read_genome_intervals(genome_info_file="data/genome_info_test.txt"):
     '''
     read file with information on the starting position and end position of
     each chromosome arm (centromeres removed)
