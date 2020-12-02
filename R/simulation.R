@@ -6,6 +6,7 @@
 # 2020
 
 library(argparser, quietly=TRUE)
+library(rcarbon, quietly=TRUE)
 source("R/myfunctions.R")
 
 # read arguments from command line (gets default values in interactive)
@@ -45,3 +46,17 @@ times_of_change_forw     <- seq(from = argv$num_of_gen_in_forw_sim/argv$num_of_p
                                 to   = argv$num_of_gen_in_forw_sim-1,
                                 by   = argv$num_of_gen_in_forw_sim/argv$num_of_periods_forw)
 if (!argv$quiet) cat("Periods in forward:\n");(times_of_change_forw)
+
+# calculate probability distribution curves for calibrated age of ancient samples
+# (from 14C ages)
+if(any(Sample$is_ancient)){
+  if (file.exists(paste(project_dir,"cal_age_PDF.RDS",sep="/"))){
+    message("RDS file exists: importing calibrated age PDF")
+    cal_age_PDF <- readRDS(file = paste(project_dir,"cal_age_PDF.RDS",sep="/"))
+  }else{
+    message("RDS file does not exists: calculating calibrated age PDF")
+    cal_age_PDF <- get_sample_cal_age_PDF(Sample)
+    saveRDS(cal_age_PDF,file = paste(project_dir,"cal_age_PDF.RDS",sep="/"))
+  }  
+}
+

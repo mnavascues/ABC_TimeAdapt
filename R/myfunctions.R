@@ -136,3 +136,15 @@ read_genome_info <- function(file="data/genome_info_test.txt"){
 }
 
 
+get_sample_cal_age_PDF <- function(Sample,calibration_curve='shcal13'){
+  cal_age_PDF <- vector("list",Sample$size)
+  for (k in which(Sample$is_ancient)){
+    cal_age_dist <- calibrate(x         = Sample$age14C[k],
+                              error     = Sample$age14Cerror[k],
+                              calCurves = calibration_curve,
+                              verbose   = F)
+    cal_age_PDF[[k]] <-  cal_age_dist$grids$`1`
+  }
+  return(cal_age_PDF)
+}
+
