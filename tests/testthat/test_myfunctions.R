@@ -15,8 +15,8 @@ context("Read info files")
 #  expect_true(is.numeric(info$t0))
 #})
 
-test_that("Verify header sends error when missing coloumn", {
-  expect_error(verify_file_header(c("a","b"),c("a")))
-  expect_error(verify_file_header(c("c"),c("a")))
-  expect_error(verify_file_header(c("c"),character()))
+test_that("Check header sends error when missing coloumn", {
+  expect_error(check_file_header(c("a","b"),c("a")))
+  expect_error(check_file_header(c("c"),c("a")))
+  expect_error(check_file_header(c("c"),character()))
 })
