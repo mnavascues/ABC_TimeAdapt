@@ -77,6 +77,13 @@ get_arguments <- function(){
                      nargs = 2,
                      type = "numeric",
                      short = "-n")
+  ap <- add_argument(parser = ap,
+                     arg = "--mutation_rate_prior_params",
+                     help = paste0("Mean and SD, for a lognormal ",
+                                   "distribution used as a prior for mutation rate"),
+                     nargs = 2,
+                     type = "numeric",
+                     short = "-u")
   if(! interactive()){
     f_argv <- parse_args(ap)
   }else{
@@ -90,7 +97,8 @@ get_arguments <- function(){
                                "-w", "8",                         # num_of_periods_forw
                                "-l", "2","1.465967","26","30",    # generation_length_prior_params
                                "-s", "3",                         # num_of_sims
-                               "-n", "10","200"                   # population_size_prior_params
+                               "-n", "10","200",                  # population_size_prior_params
+                               "-u", "0.00000005","0.5"           # mutation_rate_prior_params
                                ))
   }
   if (!f_argv$quiet){
@@ -112,6 +120,7 @@ print_arguments <- function(f_argv){
   write(paste0("Parameters for generation length prior: ",f_argv$generation_length_prior_params), stdout())
   write(paste0("Number of simulations: ",f_argv$num_of_sims), stdout())
   write(paste0("Parameters for poplation size prior: ",f_argv$population_size_prior_params), stdout())
+  write(paste0("Parameters for mutation rate prior: ",f_argv$mutation_rate_prior_params), stdout())
 }
 
 

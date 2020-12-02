@@ -85,4 +85,8 @@ sim_N <- sample_demography_from_prior(argv$num_of_sims,
                                       argv$num_of_periods_forw,
                                       argv$population_size_prior_params[1],
                                       argv$population_size_prior_params[2])
+# mutation rate
+sim_u <- rlnorm(argv$num_of_sims,
+                log(argv$mutation_rate_prior_params[1]),
+                argv$mutation_rate_prior_params[2])
 
