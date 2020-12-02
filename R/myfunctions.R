@@ -55,6 +55,13 @@ get_arguments <- function(){
                                    "during the simulation forward (SLiM)."),
                      type = "integer",
                      short = "-w")
+  ap <- add_argument(parser = ap,
+                     arg = "--generation_length_prior_params",
+                     help = paste0("Shape 1, shape 2, minimum and maximum, for a rescaled ",
+                                   "beta distribution used as a prior for generation length"),
+                     nargs = 4,
+                     type = "numeric",
+                     short = "-l")
   if(! interactive()){
     f_argv <- parse_args(ap)
   }else{
@@ -65,7 +72,8 @@ get_arguments <- function(){
                                "-i", "data/sample_info_test.txt", # sample_info_file
                                "-g", "data/genome_info_test.txt", # genome_info_file
                                "-f", "400",                       # num_of_gen_in_forw_sim
-                               "-w", "8"                          # num_of_periods_forw
+                               "-w", "8",                         # num_of_periods_forw
+                               "-l", "2 1.4 26 30"                # generation_length_prior_params
                                ))
   }
   if (!f_argv$quiet){
