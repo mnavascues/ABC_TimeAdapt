@@ -185,11 +185,11 @@ read_genome_info <- function(file="data/genome_info_test.txt"){
 }
 
 
-get_sample_cal_age_PDF <- function(Sample,calibration_curve='shcal13'){
-  cal_age_PDF <- vector("list",Sample$size)
-  for (k in which(Sample$is_ancient)){
-    cal_age_dist <- calibrate(x         = Sample$age14C[k],
-                              error     = Sample$age14Cerror[k],
+get_sample_cal_age_PDF <- function(f_Sample,calibration_curve='shcal13'){
+  cal_age_PDF <- vector("list",f_Sample$size)
+  for (k in which(f_Sample$is_ancient)){
+    cal_age_dist <- calibrate(x         = f_Sample$age14C[k],
+                              error     = f_Sample$age14Cerror[k],
                               calCurves = calibration_curve,
                               verbose   = F)
     cal_age_PDF[[k]] <-  cal_age_dist$grids$`1`
@@ -197,12 +197,25 @@ get_sample_cal_age_PDF <- function(Sample,calibration_curve='shcal13'){
   return(cal_age_PDF)
 }
 
+maximum_age_of_sample <- function(f_Sample,
+                                  f_cal_age_PDF,
+                                  prior_gen_length_min){
+  ts <- 0
+  for (k in which(f_Sample$is_ancient)){
+    ts <- max(ts,f_cal_age_PDF[[k]]$calBP)
+  }
+  ts <- BPtoBCAD(ts)
+  ts <- min(ts,f_Sample$ageBCAD[which(f_Sample$is_modern)])
+  ts <- round(abs(ts-f_Sample$t0)/prior_gen_length_min)
+  return(ts)
+}
 
+
+# function no longer in use substituted by maximum_age_of_sample()
 check_ts_lower_gen_in_for_sim <- function(num_of_gen_in_for_sim,
                                           f_Sample,
                                           f_cal_age_PDF,
                                           prior_gen_length_min){
-  # TODO: modify for the case of only modern samples (from different years)
   ts <- 0
   for (k in which(f_Sample$is_ancient)){
     ts <- max(ts,f_cal_age_PDF[[k]]$calBP)
@@ -246,24 +259,24 @@ sample_demography_from_prior <- function(num_of_sims,
 
 
 
-sample_ages_from_prior <- function(Sample,
+sample_ages_from_prior <- function(f_Sample,
                                    num_of_gen_in_for_sim,
-                                   cal_age_PDF,
+                                   f_cal_age_PDF,
                                    gen_length){
   
   # TODO: modify so it can get samples with only modern DNA
   
-  ages_sim <- array(NA,Sample$size)
+  ages_sim <- array(NA,f_Sample$size)
   t_max <- num_of_gen_in_for_sim
-  for (k in which(Sample$is_ancient)){
+  for (k in which(f_Sample$is_ancient)){
     # sample from PDF of calibrated ages (BP) and transform to year (BC or AD)
-    ages_sim[k] <- BPtoBCAD(sample(cal_age_PDF[[k]]$calBP,1,prob = cal_age_PDF[[k]]$PrDens))
+    ages_sim[k] <- BPtoBCAD(sample(f_cal_age_PDF[[k]]$calBP,1,prob = f_cal_age_PDF[[k]]$PrDens))
   }
-  ages_sim[Sample$is_modern] <- Sample$ageBCAD[Sample$is_modern]
+  ages_sim[f_Sample$is_modern] <- f_Sample$ageBCAD[f_Sample$is_modern]
   # transform to generations before "present" (present=year of most recent sample)
-  ages_sim <- round(abs(ages_sim-Sample$t0)/gen_length)
+  ages_sim <- round(abs(ages_sim-f_Sample$t0)/gen_length)
   
-  chrono_order <- order(ages_sim)-1 # Sample$id[order(ages_sim)]
+  chrono_order <- order(ages_sim)-1 # f_Sample$id[order(ages_sim)]
   a <- sort(as.numeric(levels(as.factor(ages_sim))))
   s <- numeric()
   for (age in a){
