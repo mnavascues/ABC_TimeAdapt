@@ -63,14 +63,17 @@ if(any(Sample$is_ancient)){
 
 
 # verify that samples cannot be older than the number of generations simulated in forward
-if(check_ts_lower_gen_in_for_sim(argv$num_of_gen_in_forw_sim,
-                                 Sample,
-                                 cal_age_PDF,
-                                 argv$generation_length_prior_params[3])){
+max_sample_age <- maximum_age_of_sample(Sample,
+                                        cal_age_PDF,
+                                        argv$generation_length_prior_params[3])
+if(max_sample_age+2 < argv$num_of_gen_in_forw_sim){
   if (!argv$quiet) cat("Length of simulation forward OK.\n")
 }else{
+  message("Insufficient length of forward time simulation. ",
+          "It is necessary to simulate more than ", max_sample_age+2," generations ",
+          "in forward to include all possible ages of samples.")
   quit("no",status=30)
-} 
+}
 
 # SAMPLE FROM PRIORS  
 # Generation length = generation interval in years
