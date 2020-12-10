@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-# TimeAdapt - simulation.R
+# TimeAdapt - params.R
 # Miguel Navascués
 # Uppsala universitet & INRAE
 # 2020
@@ -12,12 +12,11 @@ source("R/myfunctions.R")
 # read arguments from command line (gets default values in interactive)
 argv <- get_arguments()
 
-
 # write header
 if (!interactive() & !argv$quiet){
   write("\n\n",stdout())
   write("###############################",stdout())
-  write("# TimeAdapt - simulation.R    #",stdout())
+  write("# TimeAdapt - params.R        #",stdout())
   write("# by Miguel Navascués         #",stdout())
   write("# Uppsala universitet & INRAE #",stdout())
   write("# miguel.navascues@inrae.fr   #",stdout())
