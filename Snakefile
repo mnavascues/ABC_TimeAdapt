@@ -43,7 +43,7 @@ rule slim:
     input:
         'results/{p}/{b}/slim_{s}.sh'
     output:
-        'results/{p}/{b}/slim{s}.tree'
+        'results/{p}/{b}/slim_{s}.tree'
     threads: 4
     shell:
         'bash {input}'

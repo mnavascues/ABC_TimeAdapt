@@ -53,7 +53,7 @@ def main():
 
     # read tree sequence from SLiM output file
     treesq = pyslim.load(
-        "results/" + options.project + "/" + str(options.batch_id) + "/slim" + str(options.sim_i) + ".tree")
+        "results/" + options.project + "/" + str(options.batch_id) + "/slim_" + str(options.sim_i) + ".tree")
     # tree = treesq.first()
     # print(tree.draw(format="unicode"))
 
