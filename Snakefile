@@ -61,9 +61,7 @@ rule pyslim:
 
 
 rule all:
-    input:
-       slim_trees = expand('results/{p}/{b}/slim{s}.tree',p=project_name,b=batch,s=sims),
-       sim_stats = expand('results/{p}/{b}/stats_{s}.txt',p=project_name,b=batch,s=sims)
+    input: sim_stats = expand('results/{p}/{b}/stats_{s}.txt',p=project_name,b=batch,s=sims)
    
 
 # run tests
