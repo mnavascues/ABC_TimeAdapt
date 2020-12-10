@@ -67,7 +67,7 @@ if(check_ts_lower_gen_in_for_sim(argv$num_of_gen_in_forw_sim,
                                  Sample,
                                  cal_age_PDF,
                                  argv$generation_length_prior_params[3])){
-  if (!argv$quiet) cat("Length of simulation forward OK\n")
+  if (!argv$quiet) cat("Length of simulation forward OK.\n")
 }else{
   quit("no",status=30)
 } 

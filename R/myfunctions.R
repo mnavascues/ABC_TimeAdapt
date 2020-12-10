@@ -199,22 +199,23 @@ get_sample_cal_age_PDF <- function(Sample,calibration_curve='shcal13'){
 
 
 check_ts_lower_gen_in_for_sim <- function(num_of_gen_in_for_sim,
-                                          Sample,
-                                          cal_age_PDF,
+                                          f_Sample,
+                                          f_cal_age_PDF,
                                           prior_gen_length_min){
   # TODO: modify for the case of only modern samples (from different years)
   ts <- 0
-  for (k in which(Sample$is_ancient)){
-    ts <- max(ts,cal_age_PDF[[k]]$calBP)
+  for (k in which(f_Sample$is_ancient)){
+    ts <- max(ts,f_cal_age_PDF[[k]]$calBP)
   }
   ts <- BPtoBCAD(ts)
-  ts <- min(c(ts,Sample$ageBCAD),na.rm=TRUE) # check if "modern" samples are not older, just in case
-  ts <- round(abs(ts-Sample$t0)/prior_gen_length_min)
+  ts <- min(c(ts,f_Sample$ageBCAD),na.rm=TRUE) # check if "modern" samples are not older, just in case
+  ts <- round(abs(ts-f_Sample$t0)/prior_gen_length_min)
   ts <- ts+2
   if (ts > num_of_gen_in_for_sim){
-    stop(paste("Insufficient length of forward time simulation.",
-               "It is necessary to simulate more generations",
-               "in forward to include all possible ages of samples"))
+    message("Insufficient length of forward time simulation. ",
+            "It is necessary to simulate more than ", ts," generations ",
+            "in forward to include all possible ages of samples.")
+    return(FALSE)
   }
   return(TRUE)
 }
