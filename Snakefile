@@ -23,7 +23,7 @@ rule params:
         simR='R/params.R'
     output:
         slim_command=temp(expand('results/{p}/{b}/slim_{s}.sh',p=project_name,b=batch,s=sims)) ,
-        pyslim_command=temp(expand('results/{p}/{b}/pyslim_{s}.sh',p=project_name,b=batch,s=sims))
+        pyslim_command=temp(expand('results/{p}/{b}/pyslim_{s}.sh',p=project_name,b=batch,s=sims))  
     shell: 'Rscript {input.simR}             \
                     -q TRUE                  \
                     -d {seed}                \
