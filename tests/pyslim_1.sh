@@ -1,0 +1,1 @@
+python3 python/msprimeNstats.py -i data/sample_info_test.txt -g data/genome_info_test.txt -s 1 -b 1 -p test -t 0 21 47 72 75 80 81 85 115 154 208 293 303 375 -z 4 1 1 1 1 1 1 1 1 1 1 1 1 1 -o 0 1 2 3 10 9 4 8 5 6 7 12 13 16 11 15 14 -d 3133449795 -n 11 -u 6.51524527999412e-08
