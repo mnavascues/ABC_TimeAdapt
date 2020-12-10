@@ -52,7 +52,7 @@ rule slim:
 rule pyslim:
     input:
         pyslim_command='results/{p}/{b}/pyslim_{s}.sh',
-        slim_trees='results/{p}/{b}/slim{s}.tree'
+        slim_trees='results/{p}/{b}/slim_{s}.tree'
     output:
         'results/{p}/{b}/stats_{s}.txt'
     threads: 4

@@ -93,7 +93,7 @@ s3 1000 late() {
 
 // FINISH BLOCK
 s4 1000 late() {
-	sim.treeSeqOutput(path="results/"+project+"/"+batch_ID+"/slim"+i+".tree");
+	sim.treeSeqOutput(path="results/"+project+"/"+batch_ID+"/slim_"+i+".tree");
 	Ne = 2*(ts[na]/np)/sim.getValue("sum_pIBD");
 	writeFile(filePath="results/"+project+"/"+batch_ID+"/Ne.txt", contents=paste(i+" "+paste(Ne)	), append=T);
 	sim.simulationFinished();
