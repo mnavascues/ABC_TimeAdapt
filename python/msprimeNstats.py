@@ -9,18 +9,15 @@ import allel
 import msprime
 import numpy as np
 import pyslim
-import scipy.stats as st
-import argparse
 import myfun
 
-############################################################################################################
-############################################################################################################
+
 def main():
     # Get options from command line arguments and info from input file
     options = myfun.get_arguments()
     # options = get_arguments(interactive=True)
     sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
-    sample_size, group_levels, groups = myfun.read_sample_info(sample_info_file=options.info_file)
+        sample_size, group_levels, groups = myfun.read_sample_info(sample_info_file=options.info_file)
     # print(groups)
 
     # initial settings and verifications
@@ -44,9 +41,9 @@ def main():
         chrono_order_groups[lev] = [groups[lev][i] for i in options.sample_order]
         number_of_groups[lev] = len(np.unique(groups[lev]))
         total_number_of_groups += number_of_groups[lev]
-        num_of_pair_comparisons += int((number_of_groups[lev] * (number_of_groups[lev]-1))/2)
+        num_of_pair_comparisons += int((number_of_groups[lev] * (number_of_groups[lev] - 1)) / 2)
         for g in range(0, number_of_groups[lev]):
-            groups_in_level['level'+str(lev)+'group'+str(g)] = np.where(chrono_order_groups[lev] == g)[0]
+            groups_in_level['level' + str(lev) + 'group' + str(g)] = np.where(chrono_order_groups[lev] == g)[0]
 
     # add demography here
     # demogr_event = [msprime.PopulationParametersChange(time=1000, initial_size=300, population_id=0)]
@@ -103,11 +100,11 @@ def main():
             # TODO: Create empty sumstats
         else:
             geno_data, positions = myfun.sequencing(ts=gi_treesq,
-                                              ssize=sample_size,
-                                              ttr=options.ttratio,
-                                              seq_error=options.seq_error,
-                                              dr=chrono_order_is_dr,
-                                              cov=chrono_order_coverage)
+                                                    ssize=sample_size,
+                                                    ttr=options.ttratio,
+                                                    seq_error=options.seq_error,
+                                                    dr=chrono_order_is_dr,
+                                                    cov=chrono_order_coverage)
 
             # print("Genotype data matrix:")
             # print(geno_data)
@@ -118,11 +115,11 @@ def main():
                                                  start=1,
                                                  stop=length_interval)
             he_per_site = allel.mean_pairwise_difference(allele_counts)
-            pi_per_window, windows, n_bases,\
+            pi_per_window, windows, n_bases, \
             n_sites = allel.windowed_diversity(positions, allele_counts,
-                                                 size=50000,
-                                                 start=1,
-                                                 stop=length_interval)
+                                               size=50000,
+                                               start=1,
+                                               stop=length_interval)
             allele_counts_per_group = {}
             for lev in range(0, group_levels):
                 for g in range(0, number_of_groups[lev]):
@@ -132,14 +129,16 @@ def main():
 
             for lev in range(0, group_levels):
                 for g in range(0, number_of_groups[lev]):
-                    for h in range(g+1, number_of_groups[lev]):
+                    for h in range(g + 1, number_of_groups[lev]):
                         gr1 = allele_counts_per_group['level' + str(lev) + 'group' + str(g)]
                         gr2 = allele_counts_per_group['level' + str(lev) + 'group' + str(h)]
                         pairwise_diff = allel.mean_pairwise_difference_between(gr1, gr2)
                         # print("Level: " + str(lev) + ". Groups: " + str(g) + " " + str(h) +
                         #      ". Pairwise difference: " + str(pairwise_diff))
-                        
-    outfile=open("results/" + options.project + "/" + str(options.batch_id) + "/stats_" + str(options.sim_i) + ".txt","w")
+
+    outfile = open("results/" + options.project + "/" + str(options.batch_id) + "/stats_" + str(options.sim_i) + ".txt",
+                   "w")
+
 
 # n_obs, minmax, mean, var, skew, kurt = st.describe(pi_w)
 
