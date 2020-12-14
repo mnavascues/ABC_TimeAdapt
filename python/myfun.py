@@ -3,9 +3,10 @@ import scipy.stats as st
 import allel
 import argparse
 
+
 def read_sample_info(sample_info_file="data/sample_info_test.txt"):
-    '''
-    Read csv file with information on sample. Format of the file:
+    """
+    Read text file with information on sample. Format of the file:
     --------------------------------------------------------------------------
     sampleID           age14C  age14Cerror  year  coverage  damageRepair  group
     B_Ju_hoan_North-4  NA      NA           2010  40.57     TRUE          00
@@ -16,7 +17,7 @@ def read_sample_info(sample_info_file="data/sample_info_test.txt"):
 
     :param sample_info_file: path of file
     :return:
-    '''
+    """
     info_file = open(sample_info_file, "r")
     next(info_file)  # header_line = next(info_file) # if header needed
     sample_id = []
@@ -75,20 +76,23 @@ def read_sample_info(sample_info_file="data/sample_info_test.txt"):
 
     # t0 = max(year)
 
-    return sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient,\
-           sample_size, group_levels, groups
+    return sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
+        sample_size, group_levels, groups
+
+
+# TODO : use pandas for reading table
 
 
 def read_genome_intervals(genome_info_file="data/genome_info_test.txt"):
-    '''
+    """
     read file with information on the starting position and end position of
     each chromosome arm (centromeres removed)
 
     :param genome_info_file:
     :return:
-    '''
+    """
     genome_file = open(genome_info_file, "r")
-    next(genome_file) # header_line = next(info_file) # if header needed
+    next(genome_file)  # header_line = next(info_file) # if header needed
     start = []
     end = []
     rates = []
@@ -105,9 +109,12 @@ def read_genome_intervals(genome_info_file="data/genome_info_test.txt"):
     return start, end, rates
 
 
+# TODO : use pandas for reading table
+
+
 def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1, score_th=10,
                 ratio_th=3, dr=True, transversion=True):
-    '''
+    """
     snp_calling function takes perfect simulated data from one locus of one diploid individual and
     adds missing data and error according to the number of reads of the site, error rate of the
     sequencing technology and, for ancient DNA not sequenced from damage repair (dr) libraries,
@@ -122,7 +129,7 @@ def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1, score_
     :param dr:
     :param transversion:
     :return:
-    '''
+    """
     if dr is False and transversion is False:
         genotype_call = [-1, -1]
     elif f_num_reads >= reads_th:
@@ -151,22 +158,22 @@ def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1, score_
     return genotype_call
 
 
-def empty_genotype_array(n_loci, n_samples, ploidy = 2, allele = -1):
-    '''
+def empty_genotype_array(n_loci, n_samples, ploidy=2, allele=-1):
+    """
     Creates a genotype array with all values as missing (-1) for a given number
     of samples, loci and ploidy
 
     :return: empty_ga
-    '''
+    """
     empty_ga = allel.GenotypeArray(np.full((n_loci, n_samples, ploidy), allele), dtype='i1')
     return empty_ga
 
 
 def sequencing(ts, ssize, ttr, seq_error, dr, cov):
     if len(cov) != ssize:
-        msg="Number of coverage values (length="+ str(len(cov)) +\
-            ") and number of samples (ssize="+ str(ssize) +\
-            ") do not match"
+        msg = "Number of coverage values (length=" + str(len(cov)) + \
+              ") and number of samples (ssize=" + str(ssize) + \
+              ") do not match"
         raise ValueError(msg)
 
     geno_data = empty_genotype_array(n_loci=ts.num_mutations,
@@ -181,16 +188,16 @@ def sequencing(ts, ssize, ttr, seq_error, dr, cov):
         # print("--------------------------------")
         # print(var_genotypes)
         num_reads = np.random.poisson(lam=cov, size=ssize)
-        transversion_SNP = True
+        transversion_snp = True
         if np.random.random() < ttr / (ttr + 1):
-            transversion_SNP = False
+            transversion_snp = False
         # print(num_reads)
         for i in range(0, 2 * ssize, 2):
             geno_data[locus, int(i / 2)] = snp_calling(true_genotype=var_genotypes[i:(i + 2)],
                                                        f_num_reads=num_reads[int(i / 2)],
                                                        error_rate=seq_error,
                                                        dr=dr[int(i / 2)],
-                                                       transversion=transversion_SNP)
+                                                       transversion=transversion_snp)
         locus = locus + 1
     return geno_data, positions
 
@@ -300,18 +307,18 @@ def get_arguments(interactive=False):
                                      '-s', '1',
                                      '-b', '1',
                                      '-p', 'test',
-                                     '-t', '0','22','46','71','78','85','119','146','208','290','305','384',
-                                     '-z', '4','1','1','2','2','1','1','1','1','1','1','1',
-                                     '-o', '0','1','2','3','10','9','4','8','5','6','7','12','13','16','11','15','14',
+                                     '-t', '0', '22', '46', '71', '78', '85', '119', '146', '208', '290', '305', '384',
+                                     '-z', '4', '1', '1', '2', '2', '1', '1', '1', '1', '1', '1', '1',
+                                     '-o', '0', '1', '2', '3', '10', '9', '4', '8', '5', '6', '7', '12', '13', '16',
+                                     '11', '15', '14',
                                      '-d', '1762431206',
                                      '-n', '124',
                                      '-u', '5e-08'])
     else:
         options = parser.parse_args()
     if len(options.ts) != len(options.ss):
-        msg = "Number of samples (length of ss=" + str(len(options.ss)) +\
-              ") and number of sampling times (length of st=" + str(len(options.ts)) +\
+        msg = "Number of samples (length of ss=" + str(len(options.ss)) + \
+              ") and number of sampling times (length of st=" + str(len(options.ts)) + \
               ") do not match"
         raise ValueError(msg)
     return options
-
