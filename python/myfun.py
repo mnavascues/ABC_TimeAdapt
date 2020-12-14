@@ -79,32 +79,6 @@ def read_sample_info(sample_info_file="data/sample_info_test.txt"):
            sample_size, group_levels, groups
 
 
-def read_recombination_map(recombination_map_file="data/recombination_map_msprime.txt"):
-    '''
-    Read file with positions for start and end of chromosomes and
-    recombination rates for each chromosome. Format:
-    -------------------------------------
-    0 1.14856e-08
-    249218992 0.5
-    249218993 1.10543e-08
-    492309989 0.5
-    492309990 1.12796e-08
-    690184517 0.5
-    -------------------------------------
-
-    :param recombination_map_file:
-    :return:
-    '''
-    file_recomb_map = open(recombination_map_file, "r")
-    positions = []
-    rates = []
-    for line in file_recomb_map:
-        p, r = line.split()
-        positions.append(int(p))
-        rates.append(float(r))
-    return positions, rates
-
-
 def read_genome_intervals(genome_info_file="data/genome_info_test.txt"):
     '''
     read file with information on the starting position and end position of
