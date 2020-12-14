@@ -33,3 +33,15 @@ yml file created via:
 $ conda env export > timeadaptenv.yml
 ```
 
+### Input files
+
+- *Sample information file*: Text file with information on the samples to be analysed. First line should be a header containing the following column names:
+   - "sampleID": String identifying each individual. Do not use spaces or tabs.
+   - "age14C": Point estimate of age from radiocarbon dating (for ancient samples, set NA for modern samples or samples with a known calendar year). It indicates time of death.
+   - "age14Cerror": Error for age from radiocarbon dating.
+   - "year": Calendar year for the time of sampling (for present and modern samples, such as museum/collection samples, set NA for ancient samples)
+   - "coverage": Numeric value indicating sequencing depth (do NOT add "x", write "30" not "30x")
+   - "damageRepair": Indicate whather the library for ancient samples used a damage repair step. Indicate TRUE or FALSE (indicate TRUE for modern samples)
+   - "groups": Numerical code to indicate the groups of individuals for which summary statistics will be calculated. For each digit, individuals with the same number form one group, each digit defines a set of groups. Summary statistics comparing groups (such as Fst). Numbers indicating groups must be consecutive and start with 0.
+
+- *Genome information file*:
