@@ -2,13 +2,13 @@ import numpy as np
 import scipy.stats as st
 import allel
 import argparse
-
+import pandas as pd
 
 def read_sample_info(sample_info_file="data/sample_info_test.txt"):
     """
     Read text file with information on sample. Format of the file:
     --------------------------------------------------------------------------
-    sampleID           age14C  age14Cerror  year  coverage  damageRepair  group
+    sampleID           age14C  age14Cerror  year  coverage  damageRepair  groups
     B_Ju_hoan_North-4  NA      NA           2010  40.57     TRUE          00
     S_Ju_hoan_North-1  NA      NA           2010  46.49     TRUE          00
     BallitoBayA        1980    20           NA    12.94     FALSE         11
@@ -18,63 +18,37 @@ def read_sample_info(sample_info_file="data/sample_info_test.txt"):
     :param sample_info_file: path of file
     :return:
     """
-    info_file = open(sample_info_file, "r")
-    next(info_file)  # header_line = next(info_file) # if header needed
-    sample_id = []
-    # age14C = []
-    # age14Cerror = []
-    # year = []
-    coverage = []
-    is_dr = []
+    # TODO : change damageRepair for ancientDamage (which should be more intuitive)
+    # TODO : make it work with only ancient data (i.e. no year column)
+    
+    info = pd.read_table(filepath_or_buffer=sample_info_file, sep="\s+",
+                         converters={'groups': lambda x: str(x)})
+
+    sample_id = info["sampleID"]
+    coverage = info["coverage"]
+    is_dr = info["damageRepair"]
+
+    sample_size = len(info)
+    group_levels = len(info["groups"][1])
+
+    groups = np.full((group_levels, sample_size), 0, "int")
     is_ancient = []
     is_modern = []
     total_ancient = 0
-    sample_size = 0
-    # TODO: check for blank lines at the end of the file
-    first_line = True
-    group_levels = 1
-    for line in info_file:
-        sample_size = sample_size + 1
-        v1, v2, v3, v4, v5, v6, v7 = line.split()
-        if first_line:
-            group_levels = len(v7)
-        sample_id.append(v1)
-        if v2 == "NA":
-            # age14C.append(float('nan'))
-            is_modern.append(True)
-        else:
-            # age14C.append(float(v2))
-            is_modern.append(False)
-        # if v3=="NA":
-        # age14Cerror.append(float('nan'))
-        # else:
-        # age14Cerror.append(float(v3))
-        if v4 == "NA":
-            # year.append(float('nan'))
+    for i, row in info.iterrows():
+        if len(row["groups"]) != group_levels:
+            print("Error: verify that all individuals are assigned to groups")
+            # TODO : interrupt program here
+        if np.isnan(row["year"]):
             is_ancient.append(True)
+            is_modern.append(False)
             total_ancient = total_ancient + 1
         else:
-            # year.append(int(v4))
             is_ancient.append(False)
-        coverage.append(float(v5))
-        if (v6 == "FALSE") or (v6 == "F"):
-            is_dr.append(False)
-        elif (v6 == "TRUE") or (v6 == "T"):
-            is_dr.append(True)
-        else:
-            is_dr.append(False)
-        first_line = False
-    info_file.seek(0)
-    next(info_file)
-    groups = np.full((group_levels, sample_size), 0, "int")
-    sample_counter = 0
-    for line in info_file:
-        v1, v2, v3, v4, v5, v6, v7 = line.split()
+            is_modern.append(True)
         for level in range(0, group_levels):
-            groups[level, sample_counter] = v7[level]
-        sample_counter = sample_counter + 1
+            groups[level, i] = row["groups"][level]
 
-    # t0 = max(year)
 
     return sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
         sample_size, group_levels, groups
