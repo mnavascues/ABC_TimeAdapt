@@ -22,8 +22,10 @@ rule params:
     input:
         simR='R/params.R'
     output:
-        slim_command=temp(expand('results/{p}/{b}/slim_{s}.sh',p=project_name,b=batch,s=sims)) ,
-        pyslim_command=temp(expand('results/{p}/{b}/pyslim_{s}.sh',p=project_name,b=batch,s=sims))  
+        slim_command=expand('results/{p}/{b}/slim_{s}.sh',p=project_name,b=batch,s=sims) ,
+        pyslim_command=expand('results/{p}/{b}/pyslim_{s}.sh',p=project_name,b=batch,s=sims)  
+        #slim_command=temp(expand('results/{p}/{b}/slim_{s}.sh',p=project_name,b=batch,s=sims)) ,
+        #pyslim_command=temp(expand('results/{p}/{b}/pyslim_{s}.sh',p=project_name,b=batch,s=sims))  
     shell: 'Rscript {input.simR}             \
                     -q TRUE                  \
                     -d {seed}                \
@@ -43,7 +45,8 @@ rule slim:
     input:
         'results/{p}/{b}/slim_{s}.sh'
     output:
-        temp('results/{p}/{b}/slim_{s}.tree')
+        'results/{p}/{b}/slim_{s}.tree'
+        #temp('results/{p}/{b}/slim_{s}.tree')
     threads: 4
     shell:
         'bash {input}'
