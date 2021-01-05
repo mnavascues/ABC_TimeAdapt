@@ -86,13 +86,15 @@ def read_genome_intervals(genome_info_file="data/genome_info_test.txt"):
 # TODO : use pandas for reading table
 
 
-def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1, score_th=10,
-                ratio_th=3, dr=True, transversion=True):
+def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=1,
+                score_th=10, ratio_th=3, dr=True, transversion=True):
     """
-    snp_calling function takes perfect simulated data from one locus of one diploid individual and
-    adds missing data and error according to the number of reads of the site, error rate of the
-    sequencing technology and, for ancient DNA not sequenced from damage repair (dr) libraries,
-    creates missing data for transition SNPs (since they cannot be distinguished from aDNA damage)
+    snp_calling function takes perfect simulated data from one locus of one 
+    diploid individual and adds missing data and error according to the number 
+    of reads of the site, error rate of the sequencing technology and, for 
+    ancient DNA not sequenced from damage repair (dr) libraries, creates 
+    missing data for transition SNPs (since they cannot be distinguished from
+    aDNA damage)
 
     :param true_genotype:
     :param f_num_reads:
