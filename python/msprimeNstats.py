@@ -67,7 +67,8 @@ def main():
 
     # read genome intervals (e.g. chromosome arms start and end)
     # and recombination rates from file
-    start_chr_arm, end_chr_arm, rec_rate_chr_arm = myfun.read_genome_intervals()
+    start_chr_arm, end_chr_arm, \
+        rec_rate_chr_arm = myfun.read_genome_intervals(genome_info_file=options.genome_file)
     num_of_genome_intervals = len(start_chr_arm)
     # num_of_genome_intervals = 1 # KEEP THIS LINE ONLY FOR TEST
 

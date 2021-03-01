@@ -219,11 +219,11 @@ def get_arguments(interactive=False):
                         help='[type: %(type)s] Text file with sample information organised as in the '
                              'example below:\n'
                              '--------------------------------------------------------------------\n'
-                             'sampleID           age14C  age14Cerror  year  coverage  damageRepair\n'
-                             'B_Ju_hoan_North-4  NA      NA           2010  40.57     TRUE\n'
-                             'S_Ju_hoan_North-1  NA      NA           2010  46.49     TRUE\n'
-                             'BallitoBayA        1980    20           NA    12.94     FALSE\n'
-                             'BallitoBayB        2110    30           NA    1.25      TRUE\n'
+                             'sampleID           age14C  age14Cerror  year  coverage  damageRepair  groups\n'
+                             'B_Ju_hoan_North-4  NA      NA           2010  40.57     TRUE          00\n'
+                             'S_Ju_hoan_North-1  NA      NA           2010  46.49     TRUE          01\n'
+                             'BallitoBayA        1980    20           NA    12.94     FALSE         11\n'
+                             'BallitoBayB        2110    30           NA    1.25      TRUE          10\n'
                              '--------------------------------------------------------------------')
     parser.add_argument('-k', '--trans_transv_ratio',
                         dest='ttratio',
@@ -279,7 +279,7 @@ def get_arguments(interactive=False):
                         help='[type: %(type)s] Sample size, in number of diploid individuals.')
     if interactive:
         options = parser.parse_args(['-i', '../data/sample_info_test.txt',
-                                     '-g', '../data/genome_test.txt',
+                                     '-g', '../data/genome_info_test.txt',
                                      '-s', '1',
                                      '-b', '1',
                                      '-p', 'test',
