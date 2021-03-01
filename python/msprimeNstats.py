@@ -1,6 +1,6 @@
 #!/usr/bin/python3.6
 
-# python3 timeadapt.py -i data/SampleInfoTest.txt -s 1 -b 1 -p test
+# python3 msprimeNstats.py -i data/SampleInfoTest.txt -s 1 -b 1 -p test
 # -t 0 22 46 71 78 85 119 146 208 290 305 384
 # -z 4 1 1 2 2 1 1 1 1 1 1 1
 # -d 123456789 -n 200
