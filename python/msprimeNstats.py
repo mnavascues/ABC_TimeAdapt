@@ -15,7 +15,7 @@ import myfun
 def main():
     # Get options from command line arguments and info from input file
     options = myfun.get_arguments()
-    # options = get_arguments(interactive=True)
+    # options = myfun.get_arguments(interactive=True)
     sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
         sample_size, group_levels, groups = myfun.read_sample_info(sample_info_file=options.info_file)
     # print(groups)
@@ -44,6 +44,7 @@ def main():
         num_of_pair_comparisons += int((number_of_groups[lev] * (number_of_groups[lev] - 1)) / 2)
         for g in range(0, number_of_groups[lev]):
             groups_in_level['level' + str(lev) + 'group' + str(g)] = np.where(chrono_order_groups[lev] == g)[0]
+    # TODO mark redundant groups between levels so summary statistics are not calculated twice
 
     # add demography here
     # demogr_event = [msprime.PopulationParametersChange(time=1000, initial_size=300, population_id=0)]
