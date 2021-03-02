@@ -91,8 +91,8 @@ get_arguments <- function(){
                                "-d", "1234567890",                # seed
                                "-p", "test",                      # project_name
                                "-b", "1",                         # batch_ID
-                               "-i", "data/sample_info_test.txt", # sample_info_file
-                               "-g", "data/genome_info_test.txt", # genome_info_file
+                               "-i", "test/sample_info_test.txt", # sample_info_file
+                               "-g", "test/genome_info_test.txt", # genome_info_file
                                "-f", "400",                       # num_of_gen_in_forw_sim
                                "-w", "8",                         # num_of_periods_forw
                                "-l", "2","1.465967","26","30",    # generation_length_prior_params
