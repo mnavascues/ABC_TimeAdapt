@@ -17,7 +17,8 @@ def main():
     options = myfun.get_arguments()
     # options = myfun.get_arguments(interactive=True)
     sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
-        sample_size, group_levels, groups = myfun.read_sample_info(sample_info_file=options.info_file)
+        sample_size, group_levels, \
+        groups = myfun.read_sample_info(sample_info_file=options.info_file)
     # print(groups)
 
     # initial settings and verifications
