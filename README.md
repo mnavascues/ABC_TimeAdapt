@@ -13,7 +13,7 @@ The code has been tested with the following versions:
   - numpy
   - pyslim 0.403
   - scipy 1.5.4
-- R 3.6.con
+- R 3.6.1
   - argparser 0.6
   - extraDistr 1.8.11
   - rcarbon 1.3.1
