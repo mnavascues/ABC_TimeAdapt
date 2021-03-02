@@ -278,8 +278,8 @@ def get_arguments(interactive=False):
                         nargs='*',
                         help='[type: %(type)s] Sample size, in number of diploid individuals.')
     if interactive:
-        options = parser.parse_args(['-i', '../data/sample_info_test.txt',
-                                     '-g', '../data/genome_info_test.txt',
+        options = parser.parse_args(['-i', '../tests/sample_info_test.txt',
+                                     '-g', '../tests/genome_info_test.txt',
                                      '-s', '1',
                                      '-b', '1',
                                      '-p', 'test',
