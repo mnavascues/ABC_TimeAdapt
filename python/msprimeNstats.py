@@ -45,7 +45,12 @@ def main():
         num_of_pair_comparisons += int((number_of_groups[lev] * (number_of_groups[lev] - 1)) / 2)
         for g in range(0, number_of_groups[lev]):
             groups_in_level['level' + str(lev) + 'group' + str(g)] = np.where(chrono_order_groups[lev] == g)[0]
+
     # TODO mark redundant groups between levels so summary statistics are not calculated twice
+    # unique_groups = {}
+    # for g in range(0,total_number_of_groups):
+        
+
 
     # add demography here
     # demogr_event = [msprime.PopulationParametersChange(time=1000, initial_size=300, population_id=0)]
