@@ -4,6 +4,8 @@ TimeAdapt makes a joint inference of demography and selection from longitudinal 
 
 ### Requirements
 
+The code has been tested with the following versions:
+
 - Python 3.8.5
   - scikit-allel 1.3.2
   - argparse
@@ -11,27 +13,39 @@ TimeAdapt makes a joint inference of demography and selection from longitudinal 
   - numpy
   - pyslim 0.403
   - scipy 1.5.4
-- R 3.6.3
-  - abcrf 1.8.1
+- R 3.6.con
   - argparser 0.6
   - extraDistr 1.8.11
   - rcarbon 1.3.1
 - SLiM 3.4
 
-### Configuration
+### Configuration using conda
 
+Creation of the environment from scratch:
 ```shell
-$ conda create -n timeadaptenv python==3.8.5
+$ conda create -n timeadaptenv python==3.8.5 r-base=3.6.1
 $ conda activate timeadaptenv
 $ pip install -r requirements.txt 
-$ Rscript requirements.R
-```
-
-yml file created via:
-
-```shell
+$ conda install -c r r-rcarbon=1.2.0
+$ conda install -c r r-argparser=0.4
+$ conda install -c r r-extraDistr=1.8.11
 $ conda env export > timeadaptenv.yml
 ```
+
+Creation of the environment via yml file:
+```shell
+$ conda env create -f timeadaptenv.yml
+```
+
+### Run using conda and snakemake
+
+```shell
+$ conda activate timeadaptenv
+$ snakemake all
+```
+
+
+
 
 ### Input files
 
