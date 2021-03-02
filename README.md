@@ -37,13 +37,17 @@ Creation of the environment via yml file:
 $ conda env create -f timeadaptenv.yml
 ```
 
-### Run using conda and snakemake
+File requirements.R is also provided for an alternative way to install R packages.
 
-Run simulations (one batch) after specifying parameters in the Snakefile
+### Run using snakemake
+
+Run one batch of simulations with Snakefile (specify parameters within Snakefile, see below)
 ```shell
 $ conda activate timeadaptenv
 $ snakemake sim
 ```
+
+Alternatively you can generate your own pipeline. For simulations, params.R (use "params.R -h" for help) generates files slim_\*.sh and pyslim_\*.sh with the SLiM and Python command lines that produce each simulation (SLiM must be run first).
 
 ## Input parameters (as used in the Snakefile)
 
