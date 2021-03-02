@@ -63,7 +63,7 @@ rule pyslim:
         'bash {input.pyslim_command}'
 
 
-rule all:
+rule sim:
     input: sim_stats = expand('results/{p}/{b}/stats_{s}.txt',p=project_name,b=batch,s=sims)
    
 

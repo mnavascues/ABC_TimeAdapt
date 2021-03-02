@@ -41,7 +41,7 @@ $ conda env create -f timeadaptenv.yml
 
 ```shell
 $ conda activate timeadaptenv
-$ snakemake all
+$ snakemake sim
 ```
 
 
