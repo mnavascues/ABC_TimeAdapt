@@ -39,12 +39,30 @@ $ conda env create -f timeadaptenv.yml
 
 ### Run using conda and snakemake
 
+Run simulations (one batch) after specifying parameters in the Snakefile
 ```shell
 $ conda activate timeadaptenv
 $ snakemake sim
 ```
 
+## Input parameters (as used in the Snakefile)
 
+- *project_name*: name of the analysis project, a folder with that name is created in results folder and all output written inside.
+- *batch*: identifier of a batch of simulations for the project. A folder named with that identifier is created within the project folder and results from the simulations of that bacth written inside.
+- *seed*: seed for the random number generator (integer)
+- *sample_file*: file (with path) containing sample information (see below)
+- *genome_file*: file (with path) containing genome information (see below)
+- *generations_forward*: number of generations simulated in forward (by SLiM)
+- *periods_forward*: number of periods in which the forward simulation is divided
+- *gen_len_prior_sh1*: prior for generation length (shape1 of rescaled beta distribution)
+- *gen_len_prior_sh2*: prior for generation length (shape2 of rescaled beta distribution)
+- *gen_len_prior_min*: prior for generation length (minimum of rescaled beta distribution)
+- *gen_len_prior_max*: prior for generation length (maximum of rescaled beta distribution)
+- *num_of_sims*: number of simulation (in the batch)
+- *pop_size_prior_min*: prior for population size (minimum of uniform distribution)
+- *pop_size_prior_max*: prior for population size (maximum of uniform distribution)
+- *mut_rate_prior_mean*: prior for mutation rate (mean of normal distribution)
+- *mut_rate_prior_sd*: prior for mutation rate (sd of normal distribution)
 
 
 ### Input files
