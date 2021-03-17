@@ -1,8 +1,9 @@
+# set options (default options are for integration test)
 project_name = "test"
 batch = 1
 seed = 1234567890
-sample_file = "test/sample_info_test.txt"
-genome_file = "test/genome_info_test.txt"
+sample_file = "tests/sample_info_test.txt"
+genome_file = "tests/genome_info_test.txt"
 generations_forward = 400
 periods_forward = 8
 gen_len_prior_sh1 = 2
