@@ -35,10 +35,10 @@ jobs:
       #    echo Add other actions to build,
       #    echo test, and deploy your project.
           
-      - name: Set up R 3.6
+      - name: Set up R 3.6.1
         uses: r-lib/actions/setup-r@v1
         with:
-          r-version: '3.6'
+          r-version: '3.6.1'
       - name: Install dependencies
         shell: Rscript {0}
         run: |
