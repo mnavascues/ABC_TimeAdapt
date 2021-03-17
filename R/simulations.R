@@ -1,9 +1,9 @@
 #!/usr/bin/env Rscript
 
-# TimeAdapt - params.R
-# Miguel Navascués
+# TimeAdapt - simulations.R
+# Miguel de Navascués
 # Uppsala universitet & INRAE
-# 2020
+# 2021
 
 library(argparser, quietly=TRUE)
 library(extraDistr, quietly=TRUE)
