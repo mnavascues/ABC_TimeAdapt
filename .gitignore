@@ -11,4 +11,4 @@ data/Old/*
 README.html
 .snakemake/
 timeadaptenv.yml
-
+TimeAdapt.Rproj
