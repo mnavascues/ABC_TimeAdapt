@@ -121,7 +121,7 @@ check_file_header <- function(expected_header,file_header){
   return(TRUE)
 }
 
-read_sample_info <- function(file="data/sample_info_test.txt"){
+read_sample_info <- function(file){
   info <- read.table(file,header=T,stringsAsFactors=F,strip.white=T)
   expected_header <- c("sampleID","age14C","age14Cerror","year","coverage","damageRepair","groups")
   if(check_file_header(expected_header, file_header = colnames(info))){
@@ -142,15 +142,16 @@ read_sample_info <- function(file="data/sample_info_test.txt"){
                    total_ancient = sum(!is.na(info$age14C)),
                    size          = nrow(info),
                    t0            = max(info$year,na.rm=T) ) )
+    } else {
+      stop(paste("Wrong data type in file:",file))
     }
-    stop(paste("Wrong data type in file:",file))
   }else{
     quit("no",status=10)
   }
 }
 
 
-read_genome_info <- function(file="data/genome_info_test.txt"){
+read_genome_info <- function(file){
   info <- read.table(file,header=T)
   #expected_header <- c("ID","chromosome_start","chromosome_end","centromere_start","centromere_end","recombination_rate")
   expected_header <- c("chromosome_end","recombination_rate") # for the moment these are the only columns used

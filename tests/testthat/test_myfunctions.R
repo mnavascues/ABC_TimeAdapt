@@ -24,19 +24,28 @@ test_that("Check for incomplete set of arguments", {
 
   expect_error(get_arguments(test=TRUE, test_arg=testarg_error))
 })
-
-
 # print_arguments()
 
 context("Read info files")
 
 # check_file_header()
 test_that("Check header sends error when missing coloumn", {
-  expect_error(check_file_header(c("a","b"),c("a")))
-  expect_error(check_file_header(c("c"),c("a")))
-  expect_error(check_file_header(c("c"),character()))
+  expect_error(check_file_header(c("a","b"),c("a")),"Missing columns in input file: b")
+  expect_error(check_file_header(c("a"),c("b")),"Missing columns in input file: a")
+  expect_error(check_file_header(c("a"),character()),"Missing columns in input file: a")
+  expect_equal(check_file_header(c("a","b"),c("a","b","c")),T)
+  expect_equal(check_file_header(c("a","b"),c("a","b")),T)
 })
-# read_sample_info("../../data/sample_info_test.txt")
+# read_sample_info("../sample_info_test.txt")
+test_that("Readings sample info file sends error when wrong data type", {
+  fname <- tempfile()
+  write("sampleID age14C age14Cerror year coverage damageRepair groups", fname)
+  write("1 a a a a a a", fname, append=T)
+  expect_error(read_sample_info(fname),paste("Wrong data type in file:",fname))
+  unlink(fname)
+})
+
+
 # read_genome_info()
 
 context("Ages of samples")
