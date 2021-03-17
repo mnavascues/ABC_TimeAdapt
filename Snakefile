@@ -21,7 +21,7 @@ sims = range(1,num_of_sims+1)
 # read parameters and sample from priors
 rule params:
     input:
-        simR='R/params.R'
+        simR='R/simulations.R'
     output:
         slim_command=expand('results/{p}/{b}/slim_{s}.sh',p=project_name,b=batch,s=sims) ,
         pyslim_command=expand('results/{p}/{b}/pyslim_{s}.sh',p=project_name,b=batch,s=sims)  
