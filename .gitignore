@@ -10,3 +10,5 @@ src/Old/*
 data/Old/*
 README.html
 .snakemake/
+timeadaptenv.yml
+
