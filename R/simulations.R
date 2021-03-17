@@ -10,7 +10,7 @@ library(extraDistr, quietly=TRUE)
 source("R/myfunctions.R")
 
 # read arguments from command line (gets default values in interactive)
-argv <- get_arguments()
+argv <- get_arguments(test=interactive()) # if interactive uses test values as command line arguments
 
 # write header
 if (!interactive() & !argv$quiet){

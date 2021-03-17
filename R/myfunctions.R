@@ -5,7 +5,8 @@
 
 library(rcarbon, quietly=TRUE)
 
-get_arguments <- function(){
+if(interactive()) source("tests/testarg.R") else testarg<-NA
+get_arguments <- function(test=FALSE, test_arg=testarg){
   ap <- arg_parser(description = paste("Approximate Bayesian computation analysis",
                                        "for joint inference of demography and selection",
                                        "from temporal population genomic data.",
@@ -36,13 +37,13 @@ get_arguments <- function(){
   ap <- add_argument(parser = ap,
                      arg = "--sample_info_file",
                      help = paste0("Text file with sample information organised as in ",
-                                   "the example file in data folder (sample_info_test.txt)"),
+                                   "the example file in tests folder (sample_info_test.txt)"),
                      type = "character",
                      short = "-i")
   ap <- add_argument(parser = ap,
                      arg = "--genome_info_file",
                      help = paste0("Text file with genome information organised as in ",
-                                   "the example file in data folder (genome_info_test.txt)"),
+                                   "the example file in tests folder (genome_info_test.txt)"),
                      type = "character",
                      short = "-g")
   ap <- add_argument(parser = ap,
@@ -84,22 +85,10 @@ get_arguments <- function(){
                      nargs = 2,
                      type = "numeric",
                      short = "-u")
-  if(! interactive()){
+  if(!test){
     f_argv <- parse_args(ap)
   }else{
-    f_argv <- parse_args(ap, c("-q", "FALSE",                     # quiet
-                               "-d", "1234567890",                # seed
-                               "-p", "test",                      # project_name
-                               "-b", "1",                         # batch_ID
-                               "-i", "tests/sample_info_test.txt", # sample_info_file
-                               "-g", "tests/genome_info_test.txt", # genome_info_file
-                               "-f", "400",                       # num_of_gen_in_forw_sim
-                               "-w", "8",                         # num_of_periods_forw
-                               "-l", "2","1.465967","26","30",    # generation_length_prior_params
-                               "-s", "3",                         # num_of_sims
-                               "-n", "10","200",                  # population_size_prior_params
-                               "-u", "0.00000005","0.5"           # mutation_rate_prior_params
-                               ))
+    f_argv <- parse_args(ap, test_arg)
   }
   if (!f_argv$quiet){
     print(ap)
