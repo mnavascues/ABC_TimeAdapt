@@ -29,6 +29,7 @@ $ pip install -r requirements.txt
 $ conda install -c r r-rcarbon=1.2.0
 $ conda install -c r r-argparser=0.4
 $ conda install -c r r-extraDistr=1.8.11
+$ conda install -c r r-testthat=2.1.1
 $ conda env export > timeadaptenv.yml
 ```
 
