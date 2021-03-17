@@ -43,7 +43,7 @@ jobs:
         shell: Rscript {0}
         run: |
           install.packages(c("remotes", "testthat","argparser"))
-          remotes::install_deps(dependencies = TRUE)
+          #remotes::install_deps(dependencies = TRUE)
 
       - name: Testthat
         shell: Rscript {0}
