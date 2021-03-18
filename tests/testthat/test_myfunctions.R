@@ -3,8 +3,11 @@ source("../../R/myfunctions.R")
 
 context("Command line arguments")
 
+passed <- TRUE
+send_error <- FALSE
+
 # get_arguments()
-test_that("Check for incomplete set of arguments", {
+passed <- test_that("Check for incomplete set of arguments", {
   source("../testarg.R")
   argv <- get_arguments(test=TRUE, test_arg=testarg)
 
@@ -24,27 +27,30 @@ test_that("Check for incomplete set of arguments", {
 
   expect_error(get_arguments(test=TRUE, test_arg=testarg_error))
 })
+if (!passed) send_error <- TRUE
 # print_arguments()
 
+  
 context("Read info files")
 
 # check_file_header()
-test_that("Check header sends error when missing coloumn", {
+passed <- test_that("Check header sends error when missing coloumn", {
   expect_error(check_file_header(c("a","b"),c("a")),"Missing columns in input file: b")
   expect_error(check_file_header(c("a"),c("b")),"Missing columns in input file: a")
   expect_error(check_file_header(c("a"),character()),"Missing columns in input file: a")
   expect_equal(check_file_header(c("a","b"),c("a","b","c")),T)
   expect_equal(check_file_header(c("a","b"),c("a","b")),T)
 })
+if (!passed) send_error <- TRUE
 # read_sample_info("../sample_info_test.txt")
-test_that("Readings sample info file sends error when wrong data type", {
+passed <- test_that("Readings sample info file sends error when wrong data type", {
   fname <- tempfile()
   write("sampleID age14C age14Cerror year coverage damageRepair groups", fname)
   write("1 a a a a a a", fname, append=T)
   expect_error(read_sample_info(fname),paste("Wrong data type in file:",fname))
   unlink(fname)
 })
-
+if (!passed) send_error <- TRUE
 
 # read_genome_info()
 
@@ -59,3 +65,4 @@ context("Sample from priors")
 # sample_demography_from_prior()
 # sample_ages_from_prior()
 
+if (send_error) stop('Some tests did not pass')
