@@ -70,4 +70,7 @@ rule sim:
 
 # run tests
 rule test:
-    shell: 'Rscript -e "library(testthat);  test_file(\'tests/testthat/test_myfunctions.R\')"'
+    shell: 'Rscript tests/test.R'
+
+rule test2:
+    shell: 'Rscript -e "library(testthat);  source(\'tests/testthat/test_myfunctions.R\')"'
