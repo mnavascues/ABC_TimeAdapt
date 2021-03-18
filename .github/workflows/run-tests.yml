@@ -38,6 +38,6 @@ jobs:
         shell: Rscript {0}
         run: |
           library(testthat)
-          test_file("tests/testthat/test_myfunctions.R")
+          test_file("tests/testthat/test_myfunctions.R",reporter="fail")
           
           
