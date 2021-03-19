@@ -125,7 +125,9 @@ check_file_header <- function(expected_header,file_header){
 read_sample_info <- function(file){
   info <- read.table(file,header=T,stringsAsFactors=F,strip.white=T)
   expected_header <- c("sampleID","age14C","age14Cerror","year","coverage","damageRepair","groups")
-  if(check_file_header(expected_header, file_header = colnames(info))){
+  header_ok <- FALSE
+  header_ok <- check_file_header(expected_header, file_header = colnames(info))
+  if(header_ok){
     if(all(is.character(info$sampleID),
            is.numeric(info$age14C),
            is.numeric(info$age14Cerror),
@@ -147,7 +149,7 @@ read_sample_info <- function(file){
       stop(paste("Wrong data type in file:",file))
     }
   }else{
-    quit("check_file_header error on read_sample_info",status=10)
+    quit(save="no",status=10)
   }
 }
 
@@ -156,7 +158,9 @@ read_genome_info <- function(file){
   info <- read.table(file,header=T)
   #expected_header <- c("ID","chromosome_start","chromosome_end","centromere_start","centromere_end","recombination_rate")
   expected_header <- c("chromosome_end","recombination_rate") # for the moment these are the only columns used
-  if(check_file_header(expected_header, file_header = colnames(info))){
+  header_ok <- FALSE
+  header_ok <- check_file_header(expected_header, file_header = colnames(info))
+  if(header_ok){
     number_of_chromosomes <- nrow(info)
     rec_map_SLiM_rates <- numeric()
     rec_map_SLiM_ends <- numeric()
@@ -171,7 +175,7 @@ read_genome_info <- function(file){
                  rec_map_SLiM = cbind(ends=rec_map_SLiM_ends,
                                       rates=rec_map_SLiM_rates) ))
   }else{
-    quit("check_file_header error on read_genome_info",status=20)
+    quit(save="no",status=20)
   }
 }
 
