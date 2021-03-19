@@ -1,7 +1,7 @@
 # TimeAdapt - myfunctions.R
-# Miguel Navascués
+# Miguel de Navascués
 # Uppsala universitet & INRAE
-# 2020
+# 2021
 
 library(rcarbon, quietly=TRUE)
 
