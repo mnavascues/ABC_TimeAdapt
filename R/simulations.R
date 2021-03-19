@@ -1,14 +1,12 @@
-#!/usr/bin/env Rscript
-
 print_info_simulation <- function(){
-  write("###################################",stdout())
-  write("#                                 #",stdout())
-  write("#   TimeAdapt - simulation.R      #",stdout())
-  write("#   by Miguel de Navascués        #",stdout())
-  write("#   Uppsala universitet & INRAE   #",stdout())
-  write("#   miguel.navascues@inrae.fr     #",stdout())
-  write("#                                 #",stdout())
-  write("###################################",stdout())
+  write("#########################################",stdout())
+  write("#                                       #",stdout())
+  write("#      TimeAdapt - simulations          #",stdout())
+  write("#      by Miguel de Navascués           #",stdout())
+  write("#      Uppsala universitet & INRAE      #",stdout())
+  write("#      miguel.navascues@inrae.fr        #",stdout())
+  write("#                                       #",stdout())
+  write("#########################################",stdout())
 }
 
 library(argparser, quietly=TRUE)
