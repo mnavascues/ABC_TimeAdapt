@@ -74,7 +74,7 @@ if(max_sample_age+2 < argv$num_of_gen_in_forw_sim){
   message("Insufficient length of forward time simulation. ",
           "It is necessary to simulate more than ", max_sample_age+2," generations ",
           "in forward to include all possible ages of samples.")
-  quit("no",status=30)
+  quit(save="no",status=30)
 }
 
 # SAMPLE FROM PRIORS  
