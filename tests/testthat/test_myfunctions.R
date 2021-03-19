@@ -87,7 +87,15 @@ test_that("Reading genome info file gets right values", {
 context("Ages of samples")
 
 # get_sample_cal_age_PDF()
-# check_ts_lower_gen_in_for_sim()
+# maximum_age_of_sample()
+
+test_that("Gets correct maximum age", {
+  test_cal_age_PDF <- list(NULL,data.frame(calBP=c(2001,2000,1999),PrDens=c(1.6-05,1.6-05,1.6e-05)))
+  test_Sample <- list(is_ancient=c(F,T),is_modern=c(T,F),ageBCAD=c(2020,NA),t0=2020)
+  expect_equal(maximum_age_of_sample(test_Sample,test_cal_age_PDF,25), 83)
+})
+
+
 
 context("Sample from priors")
 
