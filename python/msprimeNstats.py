@@ -1,5 +1,3 @@
-#!/usr/bin/python3.6
-
 # python3 msprimeNstats.py -i data/SampleInfoTest.txt -s 1 -b 1 -p test
 # -t 0 22 46 71 78 85 119 146 208 290 305 384
 # -z 4 1 1 2 2 1 1 1 1 1 1 1
@@ -15,7 +13,7 @@ import myfun
 def main():
     # Get options from command line arguments and info from input file
     options = myfun.get_arguments()
-    # options = myfun.get_arguments(interactive=True)
+    # options = myfun.get_arguments(test=True)
     sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
         sample_size, group_levels, \
         groups = myfun.read_sample_info(sample_info_file=options.info_file)

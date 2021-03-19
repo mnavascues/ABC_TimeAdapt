@@ -178,7 +178,7 @@ def sequencing(ts, ssize, ttr, seq_error, dr, cov):
     return geno_data, positions
 
 
-def get_arguments(interactive=False):
+def get_arguments(test=False):
     parser = argparse.ArgumentParser(description='Gets SLiM tree sequences, recapitates, add mutations '
                                                  'and calculates summary statistics')
     parser.add_argument('-b', '--batch_number',
@@ -277,7 +277,7 @@ def get_arguments(interactive=False):
                         type=int,
                         nargs='*',
                         help='[type: %(type)s] Sample size, in number of diploid individuals.')
-    if interactive:
+    if test:
         options = parser.parse_args(['-i', '../tests/sample_info_test.txt',
                                      '-g', '../tests/genome_info_test.txt',
                                      '-s', '1',
