@@ -24,7 +24,7 @@ if (interactive()){ # if interactive uses test values as command line arguments
 }
 
 # print script info to screen
-if (!interactive() & !argv$quiet){print_info()}
+if (!interactive() & !argv$quiet){print_info_simulation()}
 
 # set seed for random number generator
 set.seed(argv$seed)
