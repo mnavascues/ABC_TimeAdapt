@@ -171,7 +171,7 @@ read_genome_info <- function(file){
                  rec_map_SLiM = cbind(ends=rec_map_SLiM_ends,
                                       rates=rec_map_SLiM_rates) ))
   }else{
-    quit("no",status=20)
+    quit("check_file_header error on read_genome_info",status=20)
   }
 }
 
@@ -179,10 +179,10 @@ read_genome_info <- function(file){
 get_sample_cal_age_PDF <- function(f_Sample,calibration_curve='shcal13'){
   cal_age_PDF <- vector("list",f_Sample$size)
   for (k in which(f_Sample$is_ancient)){
-    cal_age_dist <- calibrate(x         = f_Sample$age14C[k],
-                              error     = f_Sample$age14Cerror[k],
-                              calCurves = calibration_curve,
-                              verbose   = F)
+    cal_age_dist <- rcarbon::calibrate(x         = f_Sample$age14C[k],
+                                       error     = f_Sample$age14Cerror[k],
+                                       calCurves = calibration_curve,
+                                       verbose   = F)
     cal_age_PDF[[k]] <-  cal_age_dist$grids$`1`
   }
   return(cal_age_PDF)
@@ -195,7 +195,7 @@ maximum_age_of_sample <- function(f_Sample,
   for (k in which(f_Sample$is_ancient)){
     ts <- max(ts,f_cal_age_PDF[[k]]$calBP)
   }
-  ts <- BPtoBCAD(ts)
+  ts <- rcarbon::BPtoBCAD(ts)
   ts <- min(ts,f_Sample$ageBCAD[which(f_Sample$is_modern)])
   ts <- round(abs(ts-f_Sample$t0)/prior_gen_length_min)
   return(ts)
