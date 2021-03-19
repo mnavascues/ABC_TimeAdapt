@@ -147,7 +147,7 @@ read_sample_info <- function(file){
       stop(paste("Wrong data type in file:",file))
     }
   }else{
-    quit("no",status=10)
+    quit("check_file_header error on read_sample_info",status=10)
   }
 }
 
