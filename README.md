@@ -13,10 +13,12 @@ The code has been tested with the following versions (on Ubuntu 18.04):
   - numpy
   - pyslim 0.403
   - scipy 1.5.4
+  - pytest
 - R 3.6.1
   - argparser 0.6
   - extraDistr 1.8.11
   - rcarbon 1.3.1
+  - testthat 2.1.1
 - SLiM 3.4
 
 ### Configuration using conda
@@ -42,7 +44,7 @@ File requirements.R is also provided for an alternative way to install R package
 
 ### Run using snakemake
 
-Run tests (testthat for R)
+Run tests (testthat for R, pytest for Python)
 ```shell
 $ conda activate timeadaptenv
 $ snakemake test

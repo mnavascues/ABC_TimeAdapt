@@ -5,3 +5,4 @@ numpy
 pyslim==0.403
 scipy==1.5.4
 pandas
+pytest==6.2.2

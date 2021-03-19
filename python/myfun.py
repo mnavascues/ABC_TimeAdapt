@@ -3,6 +3,9 @@ import scipy.stats as st
 import allel
 import argparse
 import pandas as pd
+import tempfile
+import os
+
 
 def read_sample_info(sample_info_file="data/sample_info_test.txt"):
     """
@@ -54,8 +57,28 @@ def read_sample_info(sample_info_file="data/sample_info_test.txt"):
         sample_size, group_levels, groups
 
 
-# TODO : use pandas for reading table
-
+def test_read_sample_info():
+    _, temporary_file_name = tempfile.mkstemp()
+    with open(temporary_file_name, 'w') as f:
+        f.write("sampleID age14C age14Cerror year coverage damageRepair groups\n")    
+        f.write("modern   NA     NA          2010 30.03    TRUE         0\n")    
+        f.write("ancient  1980   20          NA   10.01    TRUE         1\n")    
+    sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
+        sample_size, group_levels, \
+        groups = read_sample_info(sample_info_file=temporary_file_name)
+    assert sample_id[0]=="modern"
+    assert sample_id[1]=="ancient"
+    assert coverage[0]==30.03
+    assert is_ancient[0]==False
+    assert is_ancient[1]==True
+    assert is_modern[0]==True
+    assert is_modern[1]==False
+    assert is_dr[0]==True
+    assert is_dr[1]==True
+    assert total_ancient==1
+    assert sample_size==2
+    assert group_levels==1
+    
 
 def read_genome_intervals(genome_info_file="data/genome_info_test.txt"):
     """
