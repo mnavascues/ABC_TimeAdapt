@@ -100,6 +100,14 @@ test_that("Gets correct maximum age", {
 context("Sample from priors")
 
 # sample_N_trajectory()
+test_that("Output is correct size", {
+  a=100;b=1;c=10
+  test_N_trajectory <- sample_N_trajectory(a,b,c)
+  expect_length(test_N_trajectory,a)
+  expect_true(all(test_N_trajectory>=b))
+  expect_true(all(test_N_trajectory<=c))
+})
+
 # sample_demography_from_prior()
 # sample_ages_from_prior()
 
