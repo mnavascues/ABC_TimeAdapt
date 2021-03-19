@@ -5,8 +5,8 @@
 
 library(rcarbon, quietly=TRUE)
 
-#if(interactive()) source("tests/testarg.R") else testarg<-NA
-get_arguments <- function(test=FALSE, test_arg=testarg){
+if(interactive()) source("tests/testarg.R") else testarg<-NA
+get_arguments <- function(test=FALSE, test_arg=NULL){
   ap <- arg_parser(description = paste("Approximate Bayesian computation analysis",
                                        "for joint inference of demography and selection",
                                        "from temporal population genomic data.",
