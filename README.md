@@ -1,6 +1,6 @@
 ## TimeAdapt
 
-TimeAdapt makes a joint inference of demography and selection from longitudinal population genomic data. The inference is based on approximate Bayesian computation via random forest. It takes whole genome data and information about the ages of samples to perform simulations (using SLiM + pyslim/msprime).
+TimeAdapt makes (i.e. will eventually make) a joint inference of demography and selection from longitudinal population genomic data. The inference is based on approximate Bayesian computation via random forest. It takes whole genome data and information about the ages of samples to perform simulations (using SLiM + pyslim/msprime).
 
 ### Requirements
 
@@ -54,7 +54,7 @@ $ conda activate timeadaptenv
 $ snakemake sim
 ```
 
-Alternatively you can generate your own pipeline. For simulations, params.R (use "params.R -h" for help) generates files slim_\*.sh and pyslim_\*.sh with the SLiM and Python command lines that produce each simulation (SLiM must be run first).
+Alternatively you can create your own pipeline. For simulations, simulations.R (use "Rscript simulations.R -h" for help) generates files slim_\*.sh and pyslim_\*.sh with the SLiM and Python command lines that produce each simulation (SLiM must be run first, then Python).
 
 ## Input parameters (as used in the Snakefile)
 
