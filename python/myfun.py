@@ -21,7 +21,7 @@ def read_sample_info(sample_info_file="data/sample_info_test.txt"):
     # TODO : change damageRepair for ancientDamage (which should be more intuitive)
     # TODO : make it work with only ancient data (i.e. no year column)
     
-    info = pd.read_table(filepath_or_buffer=sample_info_file, sep="\s+",
+    info = pd.read_table(filepath_or_buffer=sample_info_file, sep=r'\s+',
                          converters={'groups': lambda x: str(x)})
 
     sample_id = info["sampleID"]
