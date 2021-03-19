@@ -42,6 +42,12 @@ File requirements.R is also provided for an alternative way to install R package
 
 ### Run using snakemake
 
+Run tests (testthat for R)
+```shell
+$ conda activate timeadaptenv
+$ snakemake test
+```
+
 Run one batch of simulations with Snakefile (specify parameters within Snakefile, see below)
 ```shell
 $ conda activate timeadaptenv
