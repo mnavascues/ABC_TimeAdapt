@@ -110,16 +110,7 @@ print_arguments <- function(f_argv){
   write(paste0("Parameters for mutation rate prior: ",f_argv$mutation_rate_prior_params), stdout())
 }
 
-print_info <- function(){
-  write("\n\n",stdout())
-  write("###############################",stdout())
-  write("# TimeAdapt - simulation.R    #",stdout())
-  write("# by Miguel de Navascués      #",stdout())
-  write("# Uppsala universitet & INRAE #",stdout())
-  write("# miguel.navascues@inrae.fr   #",stdout())
-  write("###############################",stdout())
-  write("\n",stdout())
-}
+
 
 
 

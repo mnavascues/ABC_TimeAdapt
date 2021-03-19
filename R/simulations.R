@@ -1,9 +1,15 @@
 #!/usr/bin/env Rscript
 
-# TimeAdapt - simulations.R
-# Miguel de Navascués
-# Uppsala universitet & INRAE
-# 2021
+print_info_simulation <- function(){
+  write("###################################",stdout())
+  write("#                                 #",stdout())
+  write("#   TimeAdapt - simulation.R      #",stdout())
+  write("#   by Miguel de Navascués        #",stdout())
+  write("#   Uppsala universitet & INRAE   #",stdout())
+  write("#   miguel.navascues@inrae.fr     #",stdout())
+  write("#                                 #",stdout())
+  write("###################################",stdout())
+}
 
 library(argparser, quietly=TRUE)
 library(extraDistr, quietly=TRUE)
