@@ -206,28 +206,6 @@ maximum_age_of_sample <- function(f_Sample,
 }
 
 
-# function no longer in use substituted by maximum_age_of_sample()
-check_ts_lower_gen_in_for_sim <- function(num_of_gen_in_for_sim,
-                                          f_Sample,
-                                          f_cal_age_PDF,
-                                          prior_gen_length_min){
-  ts <- 0
-  for (k in which(f_Sample$is_ancient)){
-    ts <- max(ts,f_cal_age_PDF[[k]]$calBP)
-  }
-  ts <- BPtoBCAD(ts)
-  ts <- min(c(ts,f_Sample$ageBCAD),na.rm=TRUE) # check if "modern" samples are not older, just in case
-  ts <- round(abs(ts-f_Sample$t0)/prior_gen_length_min)
-  ts <- ts+2
-  if (ts > num_of_gen_in_for_sim){
-    message("Insufficient length of forward time simulation. ",
-            "It is necessary to simulate more than ", ts," generations ",
-            "in forward to include all possible ages of samples.")
-    return(FALSE)
-  }
-  return(TRUE)
-}
-
 sample_N_trajectory <- function(num_of_periods_forw,
                                 prior_N_min,
                                 prior_N_max){
