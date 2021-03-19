@@ -10,19 +10,15 @@ library(extraDistr, quietly=TRUE)
 source("R/myfunctions.R")
 
 # read arguments from command line (gets default values in interactive)
-argv <- get_arguments(test=interactive()) # if interactive uses test values as command line arguments
-
-# write header
-if (!interactive() & !argv$quiet){
-  write("\n\n",stdout())
-  write("###############################",stdout())
-  write("# TimeAdapt - params.R        #",stdout())
-  write("# by Miguel Navascués         #",stdout())
-  write("# Uppsala universitet & INRAE #",stdout())
-  write("# miguel.navascues@inrae.fr   #",stdout())
-  write("###############################",stdout())
-  write("\n",stdout())
+if (interactive()){ # if interactive uses test values as command line arguments
+  source("tests/testarg.R")
+  argv <- get_arguments(test=TRUE,test_arg=testarg)
+}else{
+  argv <- get_arguments()
 }
+
+# print script info to screen
+if (!interactive() & !argv$quiet){print_info()}
 
 # set seed for random number generator
 set.seed(argv$seed)

@@ -5,12 +5,10 @@
 
 library(rcarbon, quietly=TRUE)
 
-if(interactive()) source("tests/testarg.R") else testarg<-NA
 get_arguments <- function(test=FALSE, test_arg=NULL){
-  ap <- arg_parser(description = paste("Approximate Bayesian computation analysis",
+  ap <- arg_parser(description = paste("TimeAdapt. Approximate Bayesian computation analysis",
                                        "for joint inference of demography and selection",
-                                       "from temporal population genomic data.",
-                                       "Reading sample info and sampling parameters from priors"))
+                                       "from temporal population genomic data."))
   ap <- add_argument(parser = ap,
                      arg = "--quiet",
                      help = paste0("Run on quiet mode."),
@@ -92,7 +90,7 @@ get_arguments <- function(test=FALSE, test_arg=NULL){
   }
   if (!f_argv$quiet){
     print(ap)
-    print_arguments(f_argv)
+    #print_arguments(f_argv)
   }
   return(f_argv)
 }
@@ -111,6 +109,18 @@ print_arguments <- function(f_argv){
   write(paste0("Parameters for poplation size prior: ",f_argv$population_size_prior_params), stdout())
   write(paste0("Parameters for mutation rate prior: ",f_argv$mutation_rate_prior_params), stdout())
 }
+
+print_info <- function(){
+  write("\n\n",stdout())
+  write("###############################",stdout())
+  write("# TimeAdapt - simulation.R    #",stdout())
+  write("# by Miguel de Navascués      #",stdout())
+  write("# Uppsala universitet & INRAE #",stdout())
+  write("# miguel.navascues@inrae.fr   #",stdout())
+  write("###############################",stdout())
+  write("\n",stdout())
+}
+
 
 
 check_file_header <- function(expected_header,file_header){
