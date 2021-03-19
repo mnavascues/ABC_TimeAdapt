@@ -1,5 +1,5 @@
 testarg <- c(
-  "-q", "TRUE",                      # quiet
+  "-q", "FALSE",                      # quiet
   "-d", "1234567890",                # seed
   "-p", "test",                      # project_name
   "-b", "1",                         # batch_ID

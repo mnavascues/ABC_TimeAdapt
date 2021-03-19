@@ -9,7 +9,7 @@ test_that("Check for incomplete set of arguments", {
   argv <- get_arguments(test=TRUE, test_arg=testarg)
 
   expect_equal(argv$help,F)
-  expect_equal(argv$quiet,T)
+  expect_equal(argv$quiet,F)
   expect_equal(argv$seed,1234567890)
   expect_equal(argv$project_name,"test")
   expect_equal(argv$batch_ID,1)
