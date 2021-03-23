@@ -75,5 +75,9 @@ rule clean:
 
 # run tests
 rule test:
-    shell: 'Rscript -e "library(testthat); test_file(\'tests/testthat/test_myfunctions.R\')" ;\
-            pytest -v python/myfun.py'
+    shell:
+        '''
+        Rscript -e "library(testthat); test_file(\'tests/testthat/test_myfunctions.R\')"
+        echo "\n\n\n"
+        pytest -v python/myfun.py
+        '''
