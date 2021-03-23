@@ -13,3 +13,4 @@ README.html
 .snakemake/
 timeadaptenv.yml
 TimeAdapt.Rproj
+dag.svg

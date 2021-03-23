@@ -50,10 +50,11 @@ $ conda activate timeadaptenv
 $ snakemake test
 ```
 
-Run one batch of simulations with Snakefile (specify parameters within Snakefile, see below)
+Run one batch of simulations with Snakefile and get directed acyclic graph of pipeline
 ```shell
 $ conda activate timeadaptenv
 $ snakemake sim
+$ snakemake --dag | dot -Tsvg > dag.svg
 ```
 
 Alternatively you can create your own pipeline. For simulations, simulations.R (use "Rscript simulations.R -h" for help) generates files slim_\*.sh and pyslim_\*.sh with the SLiM and Python command lines that produce each simulation (SLiM must be run first, then Python).
