@@ -18,6 +18,10 @@ mut_rate_prior_sd = 0.5
 
 sims = range(1,num_of_sims+1)
 
+# run simulations
+rule sim:
+    input: sim_stats = expand('results/{p}/{b}/stats_{s}.txt',p=project_name,b=batch,s=sims)
+
 # read parameters and sample from priors
 rule params:
     input:
@@ -64,14 +68,9 @@ rule pyslim:
     shell:
         'bash {input.pyslim_command}'
 
-
-rule sim:
-    input: sim_stats = expand('results/{p}/{b}/stats_{s}.txt',p=project_name,b=batch,s=sims)
-   
-
+# delete all files in project/batch directory
 rule clean:
     shell: 'rm -rf results/'+project_name+'/'+str(batch)
-
 
 # run tests
 rule test:
