@@ -68,6 +68,10 @@ rule sim:
     input: sim_stats = expand('results/{p}/{b}/stats_{s}.txt',p=project_name,b=batch,s=sims)
    
 
+rule clean:
+    shell: 'rm -rf results/'+project_name+'/'+str(batch)
+
+
 # run tests
 rule test:
     shell: 'Rscript -e "library(testthat); test_file(\'tests/testthat/test_myfunctions.R\')" ;\
