@@ -47,8 +47,6 @@ def main():
     # TODO mark redundant groups between levels so summary statistics are not calculated twice
     # unique_groups = {}
     # for g in range(0,total_number_of_groups):
-        
-
 
     # add demography here
     # demogr_event = [msprime.PopulationParametersChange(time=1000, initial_size=300, population_id=0)]
@@ -122,10 +120,10 @@ def main():
                                                  stop=length_interval)
             he_per_site = allel.mean_pairwise_difference(allele_counts)
             pi_per_window, windows, n_bases, \
-            n_sites = allel.windowed_diversity(positions, allele_counts,
-                                               size=50000,
-                                               start=1,
-                                               stop=length_interval)
+                n_sites = allel.windowed_diversity(positions, allele_counts,
+                                                   size=50000,
+                                                   start=1,
+                                                   stop=length_interval)
             allele_counts_per_group = {}
             for lev in range(0, group_levels):
                 for g in range(0, number_of_groups[lev]):
