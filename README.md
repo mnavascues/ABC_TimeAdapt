@@ -75,7 +75,7 @@ $ module load bioinfo-tools
 $ module load snakemake
 $ module load SLiM
 $ snakemake clean --cores 1
-$ snakemake getparams
+$ snakemake getparams --cores 1
 $ nohup snakemake sim --profile slurm &
 ```
 
