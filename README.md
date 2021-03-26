@@ -21,7 +21,7 @@ The code has been tested with the following versions (on Ubuntu 18.04):
   - testthat 2.1.1
 - SLiM 3.4
 
-### Configuration using conda
+### Usage
 
 Creation of the environment from scratch:
 ```shell
@@ -40,11 +40,10 @@ Creation of the environment via yml file:
 $ conda env create -f timeadaptenv.yml
 ```
 
-File requirements.R is also provided for an alternative way to install R packages.
+There is aldo file requirements.R for an alternative way to install R packages.
 
-### Run using snakemake
 
-Run tests (testthat for R, pytest for Python)
+Run (using snakemake) tests (testthat for R, pytest for Python)
 ```shell
 $ conda activate timeadaptenv
 $ snakemake test
@@ -59,7 +58,32 @@ $ snakemake --dag | dot -Tsvg > dag.svg
 
 Alternatively you can create your own pipeline. For simulations, simulations.R (use "Rscript simulations.R -h" for help) generates files slim_\*.sh and pyslim_\*.sh with the SLiM and Python command lines that produce each simulation (SLiM must be run first, then Python).
 
-## Input parameters (as used in the Snakefile)
+Remove all results from project folder
+```shell
+$ snakemake clean
+```
+
+
+
+Run on cluster (will likely differ in otyher clusters!) 
+
+```shell
+$ module load conda
+$ source conda_init.sh
+$ conda activate timeadaptenv
+$ module load bioinfo-tools
+$ module load snakemake
+$ module load SLiM
+$ snakemake clean --cores 1
+$ nohup snakemake sim --profile slurm &
+```
+
+
+
+
+
+
+### Input parameters (as used in the Snakefile)
 
 | Parameter name | type | description |
 |---|---|---------------|
