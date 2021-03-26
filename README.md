@@ -23,6 +23,8 @@ The code has been tested with the following versions (on Ubuntu 18.04):
 
 ### Usage
 
+These instructions are written for myself and might need to be adapted to other configurations.
+
 Creation of the environment from scratch:
 ```shell
 $ conda create -n timeadaptenv python==3.8.5 r-base=3.6.1
@@ -41,7 +43,6 @@ $ conda env create -f timeadaptenv.yml
 ```
 
 There is aldo file requirements.R for an alternative way to install R packages.
-
 
 Run (using snakemake) tests (testthat for R, pytest for Python)
 ```shell
@@ -63,8 +64,6 @@ Remove all results from project folder
 $ snakemake clean
 ```
 
-
-
 Run on cluster (will likely differ in otyher clusters!) 
 
 ```shell
@@ -78,11 +77,6 @@ $ snakemake clean --cores 1
 $ snakemake getparams --cores 1
 $ nohup snakemake sim --profile slurm &
 ```
-
-
-
-
-
 
 ### Input parameters (as used in the Snakefile)
 
@@ -118,3 +112,10 @@ $ nohup snakemake sim --profile slurm &
    - "groups": Numerical code to indicate the groups of individuals for which summary statistics will be calculated. For each digit, individuals with the same number form one group, each digit defines a set of groups. Summary statistics comparing groups (such as Fst). Numbers indicating groups must be consecutive and start with 0.
 
 - *Genome information file*:
+
+...
+
+
+### How to cite TimeAdapt
+
+TimeAdapt implements the method described by Pavinato et al. (2020). The code puts together several tools that should be acknowledged when using TimeAdapt: SLiM, pyslim, msprime (TODO: add full citation for these)
