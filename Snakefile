@@ -72,6 +72,10 @@ rule pyslim:
 rule clean:
     shell: 'rm -rf results/'+project_name+'/'+str(batch)
 
+# delete all files in project/batch directory
+rule clean_project:
+    shell: 'rm -rf results/'+project_name
+
 # run tests
 rule test:
     shell:
