@@ -122,7 +122,7 @@ for (sim in seq_len(argv$num_of_sims)){
   write(command_slim, file = paste0(batch_dir,"/slim_",sim,".sh"))
 
   # write command line for pyslim
-  command_pyslim <- paste("python3", "python/msprimeNstats.py",
+  command_pyslim <- paste("python", "python/msprimeNstats.py",
                            "-i", argv$sample_info_file,
                            "-g", argv$genome_info_file,
                            "-s", sim,
@@ -135,6 +135,6 @@ for (sim in seq_len(argv$num_of_sims)){
                            "-n", sim_N[sim,1],
                            "-u", sim_u[sim])
   write(command_pyslim, file = paste0(batch_dir,"/pyslim_",sim,".sh"))
-
+  
 }
 
