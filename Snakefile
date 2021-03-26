@@ -23,9 +23,9 @@ rule sim:
     input: sim_stats = expand('results/{p}/{b}/stats_{s}.txt',p=project_name,b=batch,s=sims)
 
 # read parameters and sample from priors
-rule params:
+rule getparams:
     input:
-        simR='R/simulations.R'
+        'R/simulations.R'
     output:
         slim_command=expand('results/{p}/{b}/slim_{s}.sh',p=project_name,b=batch,s=sims) ,
         pyslim_command=expand('results/{p}/{b}/pyslim_{s}.sh',p=project_name,b=batch,s=sims)  
@@ -33,7 +33,7 @@ rule params:
         #pyslim_command=temp(expand('results/{p}/{b}/pyslim_{s}.sh',p=project_name,b=batch,s=sims))  
     shell:
         '''
-        Rscript {input.simR} \
+        Rscript {input} \
                 -q TRUE \
                 -d {seed} \
                 -p {project_name} \
