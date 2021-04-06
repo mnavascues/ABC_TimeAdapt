@@ -64,19 +64,6 @@ Remove all results from project folder
 $ snakemake clean
 ```
 
-Run on cluster (will likely differ in otyher clusters!) 
-
-```shell
-$ module load conda
-$ source conda_init.sh
-$ conda activate timeadaptenv
-$ module load bioinfo-tools
-$ module load snakemake
-$ module load SLiM
-$ snakemake clean --cores 1
-$ snakemake getparams --cores 1
-$ nohup snakemake sim --profile slurm &
-```
 
 ### Input parameters (as used in the Snakefile)
 

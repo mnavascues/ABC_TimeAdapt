@@ -17,3 +17,4 @@ dag.svg
 test*.sh
 timeadapt.tar.gz
 slurm/*
+run_on_UPPMAX.txt
