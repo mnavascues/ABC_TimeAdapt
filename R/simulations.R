@@ -9,51 +9,61 @@ print_info_simulation <- function(){
   write("#########################################",stdout())
 }
 
-library(argparser, quietly=TRUE)
+library(ini, quietly=TRUE)
 library(extraDistr, quietly=TRUE)
 source("R/myfunctions.R")
 
-# read arguments from command line (gets default values in interactive)
-if (interactive()){ # if interactive uses test values as command line arguments
-  source("tests/testarg.R")
-  argv <- get_arguments(test=TRUE,test_arg=testarg)
+# read options from file
+if (interactive()){ # if interactive uses test values
+  options_file <- 'testproject.ini'
 }else{
-  argv <- get_arguments()
+  args = commandArgs(trailingOnly=TRUE)
+  if (length(args)==0){
+    stop("Options file (format *.ini) needs to be provided")
+  }else{
+    options_file <- args[1]
+  }
 }
+options <- read.ini(options_file)
+options$Settings$quiet            <- as.logical(options$Settings$quiet)
+options$Model$generations_forward <- as.integer(options$Model$generations_forward) 
+options$Model$periods_forward     <- as.integer(options$Model$periods_forward)
+options$Settings$num_of_sims      <- as.integer(options$Settings$num_of_sims)
 
 # print script info to screen
-if (!interactive() & !argv$quiet){print_info_simulation()}
+if (!interactive() & !options$Settings$quiet){print_info_simulation()}
 
 # set seed for random number generator
-set.seed(argv$seed)
+set.seed(options$Settings$seed)
 
 # create results directory
 dir.create("results", showWarnings = FALSE)
-project_dir <- paste("results",argv$project_name,sep="/")
+project_dir <- paste("results",options$Settings$project_name,sep="/")
 dir.create(project_dir, showWarnings = FALSE)
-batch_dir <- paste("results",argv$project_name,argv$batch_ID,sep="/")
+batch_dir <- paste("results",options$Settings$project_name,options$Settings$batch,sep="/")
 dir.create(batch_dir, showWarnings = FALSE)
 
 # read sample and genome information from tables in text files
-Sample <- read_sample_info(argv$sample_info_file)
-if (!argv$quiet) {cat("Sample:\n");(Sample)}
-Genome <- read_genome_info(argv$genome_info_file)
-if (!argv$quiet) {cat("Genome:\n");(Genome)}
+Sample <- read_sample_info(options$Settings$sample_file)
+if (!options$Settings$quiet) {cat("Sample:\n");(Sample)}
+Genome <- read_genome_info(options$Settings$genome_file)
+if (!options$Settings$quiet) {cat("Genome:\n");(Genome)}
+
 
 # number of generations to simulate in forward (in SLiM)
-times_of_change_forw     <- seq(from = argv$num_of_gen_in_forw_sim/argv$num_of_periods_forw,
-                                to   = argv$num_of_gen_in_forw_sim-1,
-                                by   = argv$num_of_gen_in_forw_sim/argv$num_of_periods_forw)
-if (!argv$quiet) {cat("Periods in forward:\n");(times_of_change_forw)}
+times_of_change_forw     <- seq(from = options$Model$generations_forward/options$Model$periods_forward,
+                                to   = options$Model$generations_forward-1,
+                                by   = options$Model$generations_forward/options$Model$periods_forward)
+if (!options$Settings$quiet) {cat("Periods in forward:\n");(times_of_change_forw)}
 
 # calculate probability distribution curves for calibrated age of ancient samples
 # (from 14C ages)
 if(any(Sample$is_ancient)){
   if (file.exists(paste(project_dir,"cal_age_PDF.RDS",sep="/"))){
-    if (!argv$quiet) cat("RDS file exists: importing calibrated age PDF\n")
+    if (!options$Settings$quiet) cat("RDS file exists: importing calibrated age PDF\n")
     cal_age_PDF <- readRDS(file = paste(project_dir,"cal_age_PDF.RDS",sep="/"))
   }else{
-    if (!argv$quiet) cat("RDS file does not exists: calculating calibrated age PDF\n")
+    if (!options$Settings$quiet) cat("RDS file does not exists: calculating calibrated age PDF\n")
     cal_age_PDF <- get_sample_cal_age_PDF(Sample)
     saveRDS(cal_age_PDF,file = paste(project_dir,"cal_age_PDF.RDS",sep="/"))
   }  
@@ -65,9 +75,9 @@ if(any(Sample$is_ancient)){
 # verify that samples cannot be older than the number of generations simulated in forward
 max_sample_age <- maximum_age_of_sample(Sample,
                                         cal_age_PDF,
-                                        argv$generation_length_prior_params[3])
-if(max_sample_age+2 < argv$num_of_gen_in_forw_sim){
-  if (!argv$quiet) cat("Length of simulation forward OK.\n")
+                                        as.numeric(options$Priors$gen_len_prior_min))
+if(max_sample_age+2 < options$Model$generations_forward){
+  if (!options$Settings$quiet) cat("Length of simulation forward OK.\n")
 }else{
   message("Insufficient length of forward time simulation. ",
           "It is necessary to simulate more than ", max_sample_age+2," generations ",
@@ -77,26 +87,26 @@ if(max_sample_age+2 < argv$num_of_gen_in_forw_sim){
 
 # SAMPLE FROM PRIORS  
 # Generation length = generation interval in years
-sim_gen_length  <- rnsbeta(argv$num_of_sims,
-                           argv$generation_length_prior_params[1],
-                           argv$generation_length_prior_params[2],
-                           argv$generation_length_prior_params[3],
-                           argv$generation_length_prior_params[4])
+sim_gen_length  <- rnsbeta(options$Settings$num_of_sims,
+                           as.numeric(options$Priors$gen_len_prior_sh1),
+                           as.numeric(options$Priors$gen_len_prior_sh2),
+                           as.numeric(options$Priors$gen_len_prior_min),
+                           as.numeric(options$Priors$gen_len_prior_max))
 # census population size
-sim_N <- sample_demography_from_prior(argv$num_of_sims,
-                                      argv$num_of_periods_forw,
-                                      argv$population_size_prior_params[1],
-                                      argv$population_size_prior_params[2])
+sim_N <- sample_demography_from_prior(options$Settings$num_of_sims,
+                                      as.numeric(options$Model$periods_forward),
+                                      as.numeric(options$Priors$pop_size_prior_min),
+                                      as.numeric(options$Priors$pop_size_prior_max))
 # mutation rate
-sim_u <- rlnorm(argv$num_of_sims,
-                log(argv$mutation_rate_prior_params[1]),
-                argv$mutation_rate_prior_params[2])
+sim_u <- rlnorm(options$Settings$num_of_sims,
+                log(as.numeric(options$Priors$mut_rate_prior_mean)),
+                as.numeric(options$Priors$mut_rate_prior_sd))
 
-for (sim in seq_len(argv$num_of_sims)){
-  if (!argv$quiet) cat(paste("\n\nSimulation",sim,"\n----------------------------------\n"))
+for (sim in seq_len(options$Settings$num_of_sims)){
+  if (!options$Settings$quiet) cat(paste("\n\nSimulation",sim,"\n----------------------------------\n"))
   # simulate ages of aDNA from their calibrated age distribution
   sim_sample_time <- sample_ages_from_prior(Sample,
-                                            argv$num_of_gen_in_forw_sim,
+                                            options$Model$generations_forward,
                                             cal_age_PDF,
                                             gen_length=sim_gen_length[sim])
   # sample seeds for SLiM and pyslim
@@ -110,9 +120,9 @@ for (sim in seq_len(argv$num_of_sims)){
                          " -d ", paste0("ts=\"c("), paste(sim_sample_time$slim_ts,collapse=","), paste0(")\""),
                          " -d ", paste0("ss=\"c("), paste(rev(sim_sample_time$sample_sizes),collapse=","), paste0(")\""),
                          " -d ", paste0("i=", sim),
-                         " -d ", paste0("batch_ID=",argv$batch_ID),
-                         " -d ", paste0("project=\"'",argv$project_name,"'\""),
-                         " -d ", paste0("np=", argv$num_of_periods_forw),
+                         " -d ", paste0("batch_ID=",options$Settings$batch),
+                         " -d ", paste0("project=\"'",options$Settings$project_name,"'\""),
+                         " -d ", paste0("np=", options$Model$periods_forward),
                          " -d ", paste0("na=", sim_sample_time$na),
                          " -d ", paste0("L=", Genome$L),
                          " -d ", paste0("ends=\"c("), paste(Genome$rec_map_SLiM[,1],collapse=","), paste0(")\""),
@@ -123,17 +133,18 @@ for (sim in seq_len(argv$num_of_sims)){
 
   # write command line for pyslim
   command_pyslim <- paste("python", "python/msprimeNstats.py",
-                           "-i", argv$sample_info_file,
-                           "-g", argv$genome_info_file,
+                           "-i", options$Settings$sample_file,
+                           "-g", options$Settings$genome_file,
                            "-s", sim,
-                           "-b", argv$batch_ID,
-                           "-p", argv$project_name,
+                           "-b", options$Settings$batch,
+                           "-p", options$Settings$project_name,
                            "-t", paste(sim_sample_time$msprime_ts, collapse=" "),
                            "-z", paste(sim_sample_time$sample_sizes, collapse=" "),
                            "-o", paste(sim_sample_time$chrono_order, collapse=" "),
                            "-d", seed_pyslim,
                            "-n", sim_N[sim,1],
                            "-u", sim_u[sim])
+
   write(command_pyslim, file = paste0(batch_dir,"/pyslim_",sim,".sh"))
   
 }

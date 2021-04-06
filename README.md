@@ -15,7 +15,7 @@ The code has been tested with the following versions (on Ubuntu 18.04):
   - scipy 1.5.4
   - pytest
 - R 3.6.1
-  - argparser 0.6
+  - ini 0.3.1
   - extraDistr 1.8.11
   - rcarbon 1.3.1
   - testthat 2.1.1
@@ -31,7 +31,7 @@ $ conda create -n timeadaptenv python==3.8.5 r-base=3.6.1
 $ conda activate timeadaptenv
 $ pip install -r requirements.txt 
 $ conda install -c r r-rcarbon=1.2.0
-$ conda install -c r r-argparser=0.4
+$ conda install -c r r-ini=0.3.1
 $ conda install -c r r-extraDistr=1.8.11
 $ conda install -c r r-testthat=2.1.1
 $ conda env export > timeadaptenv.yml
@@ -57,7 +57,7 @@ $ snakemake sim
 $ snakemake --dag | dot -Tsvg > dag.svg
 ```
 
-Alternatively you can create your own pipeline. For simulations, simulations.R (use "Rscript simulations.R -h" for help) generates files slim_\*.sh and pyslim_\*.sh with the SLiM and Python command lines that produce each simulation (SLiM must be run first, then Python).
+Alternatively you can create your own pipeline. For simulations, simulations.R generates files slim_\*.sh and pyslim_\*.sh with the SLiM and Python command lines that produce each simulation (SLiM must be run first, then Python).
 
 Remove all results from project folder
 ```shell
@@ -65,22 +65,25 @@ $ snakemake clean
 ```
 
 
-### Input parameters (as used in the Snakefile)
+### Input parameters (in *.ini config file)
 
 | Parameter name | type | description |
 |---|---|---------------|
+|[Settings]|||
 | *project_name* | string | name of the analysis project, a folder with that name is created in results folder and all output written inside.|
 | *batch* | integer | identifier of a batch of simulations for the project. A folder named with that identifier is created within the project folder and results from the simulations of that bacth written inside.|
-| *seed* | integer | seed for the random number generator |
 | *sample_file* | string |  path + file name containing sample information (see below)|
 | *genome_file* | string | path + file name containing genome information (see below)|
+| *num_of_sims* | positive integer | number of simulation (in the batch)|
+| *seed* | integer | seed for the random number generator |
+|[Model]|||
 | *generations_forward* | positive integer | number of generations simulated in forward (by SLiM)|
 | *periods_forward* | positive integer | number of periods in which the forward simulation is divided|
+|[Priors]|||
 | *gen_len_prior_sh1* | | prior for generation length (shape1 of rescaled beta distribution)|
 | *gen_len_prior_sh2*| | prior for generation length (shape2 of rescaled beta distribution)|
 | *gen_len_prior_min*| | prior for generation length (minimum of rescaled beta distribution)|
 | *gen_len_prior_max*| | prior for generation length (maximum of rescaled beta distribution)|
-| *num_of_sims* | positive integer | number of simulation (in the batch)|
 | *pop_size_prior_min* | positive integer | prior for population size (minimum of uniform distribution)|
 | *pop_size_prior_max* | positive integer | prior for population size (maximum of uniform distribution)|
 | *mut_rate_prior_mean* |  |prior for mutation rate (mean of normal distribution)|
