@@ -3,6 +3,8 @@
 # -z 4 1 1 2 2 1 1 1 1 1 1 1
 # -d 123456789 -n 200
 
+import sys
+import configparser
 import allel
 import msprime
 import numpy as np
@@ -11,25 +13,46 @@ import myfun
 
 
 def main():
+    
+
+    
+    
     # Get options from command line arguments and info from input file
-    options = myfun.get_arguments()
+    # options = myfun.get_arguments()
     # options = myfun.get_arguments(test=True)
+
+    proj_options_file = sys.argv[1]
+    sim_options_file = sys.argv[2]
+    #proj_options_file = 'testproject.ini'
+    #sim_options_file = 'results/test/1/sim_'+str(options.sim_i)+'.ini'
+    
+    proj_options = configparser.ConfigParser()
+    proj_options.read(proj_options_file)
+    sim_options = configparser.ConfigParser()
+    sim_options.read(sim_options_file)
+
+    ss = [int(i) for i in sim_options.get("Sample","ss").split()]
+    sample_order = [int(i) for i in sim_options.get("Sample","chrono_order").split()]
+    ts = [int(i) for i in sim_options.get("Sample","msprime_ts").split()]
+    N  = [int(i) for i in sim_options.get("Demography","N").split()]
+
+
     sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
         sample_size, group_levels, \
-        groups = myfun.read_sample_info(sample_info_file=options.info_file)
+        groups = myfun.read_sample_info(sample_info_file=proj_options.get('Settings','sample_file'))
     # print(groups)
 
     # initial settings and verifications
-    np.random.seed(options.seed)
-    na = len(options.ss) - 1
-    if sum(options.ss) != sample_size:
-        msg = "Number of samples from command line (sum of ss=" + str(sum(options.ss)) + \
-              ") and number of samples from file (sample_size=" + str(sample_size) + \
+    np.random.seed(sim_options.getint('Seeds','seed_pyslim'))
+    na = len(ss) - 1
+    if sum(ss) != sample_size:
+        msg = "Number of samples from *.ini file (sum of ss=" + str(sum(ss)) + \
+              ") and number of samples from sample info file (sample_size=" + str(sample_size) + \
               ") do not match"
         raise ValueError(msg)
 
-    chrono_order_coverage = [coverage[i] for i in options.sample_order]
-    chrono_order_is_dr = [is_dr[i] for i in options.sample_order]
+    chrono_order_coverage = [coverage[i] for i in sample_order]
+    chrono_order_is_dr = [is_dr[i] for i in sample_order]
 
     chrono_order_groups = np.zeros([group_levels, sample_size], dtype='int')
     groups_in_level = {}
@@ -37,7 +60,7 @@ def main():
     number_of_groups = np.zeros(group_levels, dtype='int')
     total_number_of_groups = 0
     for lev in range(0, group_levels):
-        chrono_order_groups[lev] = [groups[lev][i] for i in options.sample_order]
+        chrono_order_groups[lev] = [groups[lev][i] for i in sample_order]
         number_of_groups[lev] = len(np.unique(groups[lev]))
         total_number_of_groups += number_of_groups[lev]
         num_of_pair_comparisons += int((number_of_groups[lev] * (number_of_groups[lev] - 1)) / 2)
@@ -53,16 +76,16 @@ def main():
 
     # read tree sequence from SLiM output file
     treesq = pyslim.load(
-        "results/" + options.project + "/" + str(options.batch_id) + "/slim_" + str(options.sim_i) + ".tree")
+        "results/" + proj_options.get('Settings','project') + "/" + proj_options.get('Settings','batch') + "/slim_" + sim_options.get('Simulation','i') + ".tree")
     # tree = treesq.first()
     # print(tree.draw(format="unicode"))
 
     # simplify tree sequence keeping nodes for the sampled individuals and their roots
-    sample_individuals = np.random.choice(treesq.individuals_alive_at(options.ts[0]),
-                                          options.ss[0], replace=False)
+    sample_individuals = np.random.choice(treesq.individuals_alive_at(ts[0]),
+                                          ss[0], replace=False)
     sample_individuals.sort()
     for x in range(1, na + 1):
-        sample_individuals = np.concatenate([sample_individuals, treesq.individuals_alive_at(options.ts[x])])
+        sample_individuals = np.concatenate([sample_individuals, treesq.individuals_alive_at(ts[x])])
     keep_nodes = []
     for samp_i in sample_individuals:
         keep_nodes.extend(treesq.individual(samp_i).nodes)
@@ -71,7 +94,7 @@ def main():
     # read genome intervals (e.g. chromosome arms start and end)
     # and recombination rates from file
     start_chr_arm, end_chr_arm, \
-        rec_rate_chr_arm = myfun.read_genome_intervals(genome_info_file=options.genome_file)
+        rec_rate_chr_arm = myfun.read_genome_intervals(genome_info_file=proj_options.get("Settings","genome_file"))
     num_of_genome_intervals = len(start_chr_arm)
     # num_of_genome_intervals = 1 # KEEP THIS LINE ONLY FOR TEST
 
@@ -84,17 +107,17 @@ def main():
         gi_treesq = gi_treesq.ltrim()
         gi_treesq = pyslim.SlimTreeSequence(gi_treesq.rtrim())
         gi_treesq = gi_treesq.recapitate(recombination_rate=rec_rate_chr_arm[0],
-                                         Ne=options.ne,
+                                         Ne=N[0],
                                          # demographic_events=demogr_event,
                                          model="dtwf",
                                          random_seed=np.random.randint(1, 2 ^ 32 - 1))
         gi_treesq = pyslim.SlimTreeSequence(msprime.mutate(gi_treesq,
-                                                           rate=options.mu,
+                                                           rate=sim_options.getfloat("Genome","mu"),
                                                            random_seed=np.random.randint(1, 2 ^ 32 - 1)))
         #
         # sample_individuals = np.empty(0,dtype=int)
         # for x in range(0, na + 1):
-        #    sample_individuals = np.concatenate([sample_individuals, gi_treesq.individuals_alive_at(options.ts[x])])
+        #    sample_individuals = np.concatenate([sample_individuals, gi_treesq.individuals_alive_at(ts[x])])
         # for ind in sample_individuals:
         #    print(gi_treesq.individual(ind))
 
@@ -105,8 +128,8 @@ def main():
         else:
             geno_data, positions = myfun.sequencing(ts=gi_treesq,
                                                     ssize=sample_size,
-                                                    ttr=options.ttratio,
-                                                    seq_error=options.seq_error,
+                                                    ttr=sim_options.getfloat("Genome","ttratio"),
+                                                    seq_error=sim_options.getfloat("Genome","seq_error"),
                                                     dr=chrono_order_is_dr,
                                                     cov=chrono_order_coverage)
 
@@ -140,8 +163,9 @@ def main():
                         # print("Level: " + str(lev) + ". Groups: " + str(g) + " " + str(h) +
                         #      ". Pairwise difference: " + str(pairwise_diff))
 
-    outfile = open("results/" + options.project + "/" + str(options.batch_id) + "/stats_" + str(options.sim_i) + ".txt",
+    outfile = open("results/" + proj_options.get('Settings','project') + "/" + proj_options.get('Settings','batch') + "/stats_" + sim_options.get('Simulation','i') + ".txt",
                    "w")
+
 
 
 # n_obs, minmax, mean, var, skew, kurt = st.describe(pi_w)

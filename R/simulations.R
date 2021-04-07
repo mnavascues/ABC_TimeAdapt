@@ -38,9 +38,9 @@ set.seed(options$Settings$seed)
 
 # create results directory
 dir.create("results", showWarnings = FALSE)
-project_dir <- paste("results",options$Settings$project_name,sep="/")
+project_dir <- paste("results",options$Settings$project,sep="/")
 dir.create(project_dir, showWarnings = FALSE)
-batch_dir <- paste("results",options$Settings$project_name,options$Settings$batch,sep="/")
+batch_dir <- paste("results",options$Settings$project,options$Settings$batch,sep="/")
 dir.create(batch_dir, showWarnings = FALSE)
 
 # read sample and genome information from tables in text files
@@ -112,6 +112,28 @@ for (sim in seq_len(options$Settings$num_of_sims)){
   # sample seeds for SLiM and pyslim
   seed_slim <- round(runif(1,0,2^32-1))
   seed_pyslim <- round(runif(1,0,2^32-1))
+
+  # write sim *.ini file
+  sim_ini <- list()
+  sim_ini[["Simulation"]] <- list(project  = options$Settings$project,
+                                  batch    = options$Settings$batch,
+                                  i        = sim)
+  sim_ini[["Sample"]] <- list(ss           = paste(sim_sample_time$sample_sizes, collapse=" "),
+                              slim_ts      = paste(sim_sample_time$slim_ts, collapse=" "),
+                              msprime_ts   = paste(sim_sample_time$msprime_ts, collapse=" "),
+                              chrono_order = paste(sim_sample_time$chrono_order, collapse=" ")) 
+  sim_ini[["Demography"]] <- list(N  = paste(sim_N[sim,], collapse=" "),
+                                  tc = paste(times_of_change_forw, collapse=" ")) 
+  sim_ini[["Genome"]] <- list(L         = Genome$L,
+                              ends      = paste(Genome$rec_map_SLiM[,1], collapse=" "),
+                              rates     = paste(Genome$rec_map_SLiM[,2], collapse=" "),
+                              mu        = sim_u[sim],
+                              ttratio   = 2.0,
+                              seq_error = 0.005)
+  sim_ini[["Seeds"]] <- list(seed_slim   = seed_slim,
+                             seed_pyslim = seed_pyslim)
+  sim_ini_file <- paste0(batch_dir,"/sim_",sim,".ini")
+  write.ini(sim_ini, sim_ini_file)
   
   # write command line for SLiM
   command_slim <- paste0("slim ",
@@ -120,8 +142,8 @@ for (sim in seq_len(options$Settings$num_of_sims)){
                          " -d ", paste0("ts=\"c("), paste(sim_sample_time$slim_ts,collapse=","), paste0(")\""),
                          " -d ", paste0("ss=\"c("), paste(rev(sim_sample_time$sample_sizes),collapse=","), paste0(")\""),
                          " -d ", paste0("i=", sim),
-                         " -d ", paste0("batch_ID=",options$Settings$batch),
-                         " -d ", paste0("project=\"'",options$Settings$project_name,"'\""),
+                         " -d ", paste0("batch=",options$Settings$batch),
+                         " -d ", paste0("project=\"'",options$Settings$project,"'\""),
                          " -d ", paste0("np=", options$Model$periods_forward),
                          " -d ", paste0("na=", sim_sample_time$na),
                          " -d ", paste0("L=", Genome$L),
@@ -132,20 +154,8 @@ for (sim in seq_len(options$Settings$num_of_sims)){
   write(command_slim, file = paste0(batch_dir,"/slim_",sim,".sh"))
 
   # write command line for pyslim
-  command_pyslim <- paste("python", "python/msprimeNstats.py",
-                           "-i", options$Settings$sample_file,
-                           "-g", options$Settings$genome_file,
-                           "-s", sim,
-                           "-b", options$Settings$batch,
-                           "-p", options$Settings$project_name,
-                           "-t", paste(sim_sample_time$msprime_ts, collapse=" "),
-                           "-z", paste(sim_sample_time$sample_sizes, collapse=" "),
-                           "-o", paste(sim_sample_time$chrono_order, collapse=" "),
-                           "-d", seed_pyslim,
-                           "-n", sim_N[sim,1],
-                           "-u", sim_u[sim])
-
-  write(command_pyslim, file = paste0(batch_dir,"/pyslim_",sim,".sh"))
+  # command_pyslim <- paste("python", "python/msprimeNstats.py", options_file, sim_ini_file)
+  # write(command_pyslim, file = paste0(batch_dir,"/pyslim_",sim,".sh"))
   
 }
 

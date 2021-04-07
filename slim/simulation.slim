@@ -10,7 +10,7 @@ initialize() {
 		defineConstant("np", 8);
 		defineConstant("na", 13);
 		defineConstant("i",  1);
-		defineConstant("batch_ID", 1);
+		defineConstant("batch", 1);
 		defineConstant("project","test");
 		defineConstant("ends", c(5e+05,500001,1e+06,1000001,1500000,1500001));
     defineConstant("rates", c(1.14856e-09,0.5,1.10543e-09,0.5,1.12796e-09,0.5));
@@ -81,8 +81,8 @@ s3 1000 late() {
 
 // FINISH BLOCK
 s4 1000 late() {
-	sim.treeSeqOutput(path="results/"+project+"/"+batch_ID+"/slim_"+i+".tree");
+	sim.treeSeqOutput(path="results/"+project+"/"+batch+"/slim_"+i+".tree");
 	Ne = 2*(ts[na]/np)/sim.getValue("sum_pIBD");
-	writeFile(filePath="results/"+project+"/"+batch_ID+"/Ne.txt", contents=paste(i+" "+paste(Ne)	), append=T);
+	writeFile(filePath="results/"+project+"/"+batch+"/Ne.txt", contents=paste(i+" "+paste(Ne)	), append=T);
 	sim.simulationFinished();
 }
