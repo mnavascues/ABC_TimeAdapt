@@ -15,7 +15,7 @@ num_of_sims = options.getint('Settings','num_of_sims')
 
 sims = range(1,num_of_sims+1)
 
-localrules: getparams
+localrules: sim, getparams, clean, clean_batch, test
 
 # run simulations
 rule sim:
