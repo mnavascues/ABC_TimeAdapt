@@ -1,4 +1,3 @@
-library(argparser, quietly=TRUE)
 source("../../R/myfunctions.R")
 
 context("Read info files")
