@@ -8,7 +8,6 @@ The code has been tested with the following versions (on Ubuntu 18.04):
 
 - Python 3.8.5
   - scikit-allel 1.3.2
-  - argparse
   - msprime 0.7.4
   - numpy
   - pyslim 0.403
@@ -27,32 +26,38 @@ These instructions are written for myself and might need to be adapted to other 
 
 Creation of the environment from scratch:
 ```shell
-$ conda create -n timeadaptenv python==3.8.5 r-base=3.6.1
-$ conda activate timeadaptenv
-$ pip install -r requirements.txt 
+$ conda create -n timeadapt python==3.8.5 r-base=3.6.1
+$ conda activate timeadapt
+$ conda install scikit-allel=1.3.2
+$ conda install msprime=0.7.4
+$ conda install numpy=1.20.2
+$ conda install pyslim=0.600
+$ conda install scipy=1.5.3
+$ conda install pandas=1.2.3
+$ conda install pytest=6.2.3
 $ conda install -c r r-rcarbon=1.2.0
 $ conda install -c r r-ini=0.3.1
 $ conda install -c r r-extraDistr=1.8.11
 $ conda install -c r r-testthat=2.1.1
-$ conda env export > timeadaptenv.yml
+$ conda install pip
+$ python -m pip install msprime --pre --upgrade
+$ conda env export > timeadapt.yml
 ```
 
 Creation of the environment via yml file:
 ```shell
-$ conda env create -f timeadaptenv.yml
+$ conda env create -f timeadapt.yml
 ```
-
-There is aldo file requirements.R for an alternative way to install R packages.
 
 Run (using snakemake) tests (testthat for R, pytest for Python)
 ```shell
-$ conda activate timeadaptenv
+$ conda activate timeadapt
 $ snakemake test
 ```
 
 Run one batch of simulations with Snakefile and get directed acyclic graph of pipeline
 ```shell
-$ conda activate timeadaptenv
+$ conda activate timeadapt
 $ snakemake sim
 $ snakemake --dag | dot -Tsvg > dag.svg
 ```
