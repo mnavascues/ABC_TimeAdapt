@@ -1,4 +1,4 @@
-source("../../R/myfunctions.R")
+source("../../scripts/timeadapt.R")
 
 context("Read info files")
 
