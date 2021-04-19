@@ -71,7 +71,8 @@ rule test:
         '''
         Rscript -e "library(testthat); test_file(\'tests/testthat/test_myfunctions.R\')"
         echo "\n\n\n"
-        pytest -v python/myfun.py
+        # pytest -v python/myfun.py
+        pytest -v scripts/timeadapt.py
         '''
 
 
@@ -79,6 +80,6 @@ rule test:
 rule coalsim:
     input:
         script='scripts/coalsim.py'
-    shell: 'python {input.script} tests/input/config_project.ini results/test/1/test_sim_1.ini'
+    shell: 'python {input.script} tests/input/config_project.ini tests/input/test_sim_1.ini'
 
 
