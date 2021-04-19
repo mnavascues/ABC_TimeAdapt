@@ -52,6 +52,8 @@ rule pyslim:
         slim_trees='results/{p}/{b}/slim_{s}.tree'
     output:
         'results/{p}/{b}/stats_{s}.txt'
+    conda:
+        'timeadapt.yml'
     shell:
         'python python/msprimeNstats.py {options_file} {input.sim_ini}'
 
@@ -71,3 +73,12 @@ rule test:
         echo "\n\n\n"
         pytest -v python/myfun.py
         '''
+
+
+# simulation with msprime
+rule coalsim:
+    input:
+        script='scripts/coalsim.py'
+    shell: 'python {input.script} tests/input/config_project.ini results/test/1/test_sim_1.ini'
+
+
