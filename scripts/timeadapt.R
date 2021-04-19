@@ -48,21 +48,22 @@ read_sample_info <- function(file){
 read_genome_info <- function(file){
   info <- read.table(file,header=T)
   #expected_header <- c("ID","chromosome_start","chromosome_end","centromere_start","centromere_end","recombination_rate")
-  expected_header <- c("chromosome_end","recombination_rate") # for the moment these are the only columns used
+  expected_header <- c("Chromosome","Length","Recombination_rate") # for the moment these are the only columns used
   header_ok <- FALSE
   header_ok <- check_file_header(expected_header, file_header = colnames(info))
   if(header_ok){
+    chromosome_end <- cumsum(info$Length)
     number_of_chromosomes <- nrow(info)
     rec_map_SLiM_rates <- numeric()
     rec_map_SLiM_ends <- numeric()
     for (chr in seq_len(number_of_chromosomes)){
-      rec_map_SLiM_rates <- c(rec_map_SLiM_rates, info$recombination_rate[chr], 0.5)
+      rec_map_SLiM_rates <- c(rec_map_SLiM_rates, info$Recombination_rate[chr], 0.5)
       rec_map_SLiM_ends  <- c(rec_map_SLiM_ends, 
-                              info$chromosome_end[chr], 
-                              info$chromosome_end[chr]+1)
+                              chromosome_end[chr], 
+                              chromosome_end[chr]+1)
     }
     return( list(number_of_chromosomes = number_of_chromosomes,
-                 L = info$chromosome_end[number_of_chromosomes], # total genome length
+                 L = chromosome_end[number_of_chromosomes], # total genome length
                  rec_map_SLiM = cbind(ends=rec_map_SLiM_ends,
                                       rates=rec_map_SLiM_rates) ))
   }else{

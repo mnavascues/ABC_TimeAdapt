@@ -15,7 +15,7 @@ source("scripts/timeadapt.R")
 
 # read options from file
 if (interactive()){ # if interactive uses test values
-  options_file <- 'testproject.ini'
+  options_file <- 'tests/input/config_project.ini'
 }else{
   args = commandArgs(trailingOnly=TRUE)
   if (length(args)==0){
