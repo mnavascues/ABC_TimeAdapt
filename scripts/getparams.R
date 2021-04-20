@@ -28,6 +28,7 @@ options <- read.ini(options_file)
 options$Settings$quiet            <- as.logical(options$Settings$quiet)
 options$Model$generations_forward <- as.integer(options$Model$generations_forward) 
 options$Model$periods_forward     <- as.integer(options$Model$periods_forward)
+options$Model$periods_coalescence <- as.integer(options$Model$periods_coalescence)
 options$Settings$num_of_sims      <- as.integer(options$Settings$num_of_sims)
 
 # print script info to screen
@@ -94,9 +95,12 @@ sim_gen_length  <- rnsbeta(options$Settings$num_of_sims,
                            as.numeric(options$Priors$gen_len_prior_max))
 # census population size
 sim_N <- sample_demography_from_prior(options$Settings$num_of_sims,
-                                      as.numeric(options$Model$periods_forward),
+                                      options$Model$periods_forward+options$Model$periods_coalescence,
                                       as.numeric(options$Priors$pop_size_prior_min),
                                       as.numeric(options$Priors$pop_size_prior_max))
+# sim_N_coal <- sim_N[,(1:options$Model$periods_coalescence)]
+# sim_N_forw <- sim_N[,-(1:options$Model$periods_coalescence)]
+
 # mutation rate
 sim_u <- rlnorm(options$Settings$num_of_sims,
                 log(as.numeric(options$Priors$mut_rate_prior_mean)),
