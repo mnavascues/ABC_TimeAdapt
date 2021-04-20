@@ -113,9 +113,9 @@ for (sim in seq_len(options$Settings$num_of_sims)){
                                             options$Model$generations_forward,
                                             cal_age_PDF,
                                             gen_length=sim_gen_length[sim])
-  # sample seeds for SLiM and pyslim
-  seed_slim <- round(runif(1,0,2^32-1))
-  seed_pyslim <- round(runif(1,0,2^32-1))
+  # sample seeds for msprime and SLiM
+  seed_msprime <- round(runif(1,0,2^32-1))
+  seed_slim    <- round(runif(1,0,2^32-1))
 
   # write sim *.ini file
   sim_ini <- list()
@@ -134,14 +134,14 @@ for (sim in seq_len(options$Settings$num_of_sims)){
                               mu        = sim_u[sim],
                               ttratio   = 2.0,
                               seq_error = 0.005)
-  sim_ini[["Seeds"]] <- list(seed_slim   = seed_slim,
-                             seed_pyslim = seed_pyslim)
-  sim_ini_file <- paste0(batch_dir,"/sim_",sim,".ini")
+  sim_ini[["Seeds"]] <- list(seed_slim    = seed_slim,
+                             seed_msprime = seed_msprime)
+  sim_ini_file <- paste0(batch_dir,"/",options$Settings$project,"_sim_",sim,".ini")
   write.ini(sim_ini, sim_ini_file)
   
   # write command line for SLiM
   command_slim <- paste0("slim ",
-                         " -d ", paste0("N=\"c("), paste(sim_N[sim,],collapse=","), paste0(")\""),
+                         " -d ", paste0("N=\"c("), paste(sim_N[sim,-(1:options$Model$periods_coalescence)],collapse=","), paste0(")\""),
                          " -d ", paste0("tc=\"c("), paste(times_of_change_forw,collapse=","), paste0(")\""),
                          " -d ", paste0("ts=\"c("), paste(sim_sample_time$slim_ts,collapse=","), paste0(")\""),
                          " -d ", paste0("ss=\"c("), paste(rev(sim_sample_time$sample_sizes),collapse=","), paste0(")\""),
