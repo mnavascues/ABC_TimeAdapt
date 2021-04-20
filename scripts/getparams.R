@@ -119,9 +119,9 @@ for (sim in seq_len(options$Settings$num_of_sims)){
 
   # write sim *.ini file
   sim_ini <- list()
-  sim_ini[["Simulation"]] <- list(project  = options$Settings$project,
-                                  batch    = options$Settings$batch,
-                                  i        = sim)
+  sim_ini[["Simulation"]] <- list(#project  = options$Settings$project,
+                                  #batch    = options$Settings$batch,
+                                  sim      = sim)
   sim_ini[["Sample"]] <- list(ss           = paste(sim_sample_time$sample_sizes, collapse=" "),
                               slim_ts      = paste(sim_sample_time$slim_ts, collapse=" "),
                               msprime_ts   = paste(sim_sample_time$msprime_ts, collapse=" "),
@@ -136,7 +136,7 @@ for (sim in seq_len(options$Settings$num_of_sims)){
                               seq_error = 0.005)
   sim_ini[["Seeds"]] <- list(seed_slim    = seed_slim,
                              seed_msprime = seed_msprime)
-  sim_ini_file <- paste0(batch_dir,"/",options$Settings$project,"_sim_",sim,".ini")
+  sim_ini_file <- paste0(batch_dir,"/sim_",sim,".ini")
   write.ini(sim_ini, sim_ini_file)
   
   # write command line for SLiM
@@ -155,7 +155,7 @@ for (sim in seq_len(options$Settings$num_of_sims)){
                          " -d ", paste0("rates=\"c("), paste(Genome$rec_map_SLiM[,2],collapse=","), paste0(")\""),
                          " -s ", seed_slim,
                          " scripts/forwsim.slim > /tmp/slimout.txt")
-  write(command_slim, file = paste0(batch_dir,"/",options$Settings$project,"_slim_",sim,".sh"))
+  write(command_slim, file = paste0(batch_dir,"/slim_",sim,".sh"))
 
   # write command line for pyslim
   # command_pyslim <- paste("python", "python/msprimeNstats.py", options_file, sim_ini_file)

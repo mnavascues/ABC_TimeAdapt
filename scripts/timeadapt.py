@@ -12,18 +12,23 @@ def get_options(proj_options_file,sim_options_file):
   project     = proj_options.get('Settings','project')
   batch       = proj_options.get('Settings','batch')
   genome_file = proj_options.get('Settings','genome_file')
-  N           = int(sim_options.get('Demography','N'))
 
-  return project, batch, genome_file, N
+  sim         = sim_options.get('Simulation','sim')
+
+  N  = [int(i) for i in sim_options.get("Demography","N").split()]   
+
+  return project, batch, sim, genome_file, N
 
 
 def test_get_options():
-  project, batch, genome_file, N = get_options(proj_options_file = "tests/input/config_project.ini",
-                                   sim_options_file  = "tests/input/test_sim_1.ini")
+  project, batch, sim, genome_file, N = get_options(proj_options_file = "tests/input/config_project.ini",
+                                   sim_options_file  = "tests/input/sim_1.ini")
   assert project == "test"
   assert batch == "1"
-  assert N == 20
+  assert sim == "1"
   assert genome_file == "tests/input/human_genome.txt"
+  assert N == [20,10]
+  assert N[0] == 20
  
 
 ### end GET OPTIONS ··········································································

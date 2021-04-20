@@ -1,7 +1,7 @@
 import configparser
 
 # READ OPTIONS FILE
-options_file = 'testproject.ini'
+options_file = 'tests/input/config_project.ini'
 options = configparser.ConfigParser()
 options.read(options_file)
 
@@ -19,12 +19,24 @@ localrules: sim, getparams, clean, clean_batch, test
 
 # run simulations
 rule sim:
-    input: sim_stats = expand('results/{p}/{b}/stats_{s}.txt',p=project,b=batch,s=sims)
+    #input: sim_stats = expand('results/{p}/{b}/stats_{s}.txt',p=project,b=batch,s=sims)
+    input: coalsim_trees = expand('results/{p}/{b}/coalsim_{s}.trees',p=project,b=batch,s=sims)
+
+# simulation with msprime
+rule coalsim:
+    input:
+        script='scripts/coalsim.py',
+        sim_ini='results/{p}/{b}/sim_{s}.ini'
+    output:
+        'results/{p}/{b}/coalsim_{s}.trees'
+    shell:
+        'python {input.script} {options_file} {input.sim_ini}'
+
 
 # read parameters and sample from priors
 rule getparams:
     input:
-        'R/simulations.R'
+        script='scripts/getparams.R'
     output:
         slim_command=expand('results/{p}/{b}/slim_{s}.sh',p=project,b=batch,s=sims) ,
         sim_ini=expand('results/{p}/{b}/sim_{s}.ini',p=project,b=batch,s=sims) 
@@ -32,30 +44,7 @@ rule getparams:
         #slim_command=temp(expand('results/{p}/{b}/slim_{s}.sh',p=project,b=batch,s=sims)) ,
         #pyslim_command=temp(expand('results/{p}/{b}/pyslim_{s}.sh',p=project,b=batch,s=sims))  
     shell:
-        'Rscript {input} {options_file}'
-
-# simulate with SLiM
-rule slim:
-    input:
-        'results/{p}/{b}/slim_{s}.sh'
-    output:
-        'results/{p}/{b}/slim_{s}.tree'
-        #temp('results/{p}/{b}/slim_{s}.tree')
-    shell:
-        'bash {input}'
-
-# simulate with msprime (via pyslim) and calculate summary stats
-rule pyslim:
-    input:
-        # pyslim_command='results/{p}/{b}/pyslim_{s}.sh',
-        sim_ini='results/{p}/{b}/sim_{s}.ini',
-        slim_trees='results/{p}/{b}/slim_{s}.tree'
-    output:
-        'results/{p}/{b}/stats_{s}.txt'
-    conda:
-        'timeadapt.yml'
-    shell:
-        'python python/msprimeNstats.py {options_file} {input.sim_ini}'
+        'Rscript {input.script} {options_file}'
 
 # delete all files in batch directory
 rule clean_batch:
@@ -69,16 +58,11 @@ rule clean:
 rule test:
     shell:
         '''
+        echo "----------- RUNNING TESTTHAT (R) ---------------\n"
         Rscript -e "library(testthat); test_file(\'tests/testthat/test_timeadapt.R\')"
-        echo "\n"
+        echo "\n----------- RUNNING PYTEST (PYTHON) ---------------\n"
         pytest -v scripts/timeadapt.py
         '''
 
-
-# simulation with msprime
-rule coalsim:
-    input:
-        script='scripts/coalsim.py'
-    shell: 'python {input.script} tests/input/config_project.ini tests/input/test_sim_1.ini'
 
 
