@@ -32,13 +32,13 @@ jobs:
       - name: Install dependencies
         shell: Rscript {0}
         run: |
-          install.packages(c("rcarbon","testthat","argparser"))
+          install.packages(c("rcarbon","testthat"))
 
       - name: Testthat
         shell: Rscript {0}
         run: |
           library(testthat)
-          test_file("tests/testthat/test_myfunctions.R",reporter="fail")
+          test_file("tests/testthat/test_timeadapt.R",reporter="fail")
 
       - name: Set up Python 3.8.5
         uses: actions/setup-python@v2
@@ -60,5 +60,5 @@ jobs:
           
       - name: Test with pytest
         run: |
-          pytest python/myfun.py          
+          pytest scripts/timeadapt.py          
           
