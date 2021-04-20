@@ -21,6 +21,7 @@ def main():
   rate_map = msprime.RateMap(position = positions, rate = rates) 
 
   # simulate with msprime
+  # https://tskit.dev/msprime/docs/latest/intro.html
   msp_ts = msprime.sim_ancestry(samples            = N,
                                 population_size    = N,
                                 model              = "dtwf",
