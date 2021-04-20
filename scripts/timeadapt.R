@@ -52,7 +52,7 @@ read_genome_info <- function(file){
   header_ok <- FALSE
   header_ok <- check_file_header(expected_header, file_header = colnames(info))
   if(header_ok){
-    chromosome_end <- cumsum(info$Length)
+    chromosome_end <- cumsum(as.numeric(info$Length))
     number_of_chromosomes <- nrow(info)
     rec_map_SLiM_rates <- numeric()
     rec_map_SLiM_ends <- numeric()
