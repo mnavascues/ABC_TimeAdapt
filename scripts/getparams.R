@@ -154,8 +154,8 @@ for (sim in seq_len(options$Settings$num_of_sims)){
                          " -d ", paste0("ends=\"c("), paste(Genome$rec_map_SLiM[,1],collapse=","), paste0(")\""),
                          " -d ", paste0("rates=\"c("), paste(Genome$rec_map_SLiM[,2],collapse=","), paste0(")\""),
                          " -s ", seed_slim,
-                         " slim/simulation.slim > /tmp/slimout.txt")
-  write(command_slim, file = paste0(batch_dir,"/slim_",sim,".sh"))
+                         " scripts/forwsim.slim > /tmp/slimout.txt")
+  write(command_slim, file = paste0(batch_dir,"/",options$Settings$project,"_slim_",sim,".sh"))
 
   # write command line for pyslim
   # command_pyslim <- paste("python", "python/msprimeNstats.py", options_file, sim_ini_file)
