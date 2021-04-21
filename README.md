@@ -59,7 +59,7 @@ Run one batch of simulations with Snakefile and get directed acyclic graph of pi
 ```shell
 $ conda activate timeadapt
 $ snakemake sim
-$ snakemake --dag | dot -Tsvg > dag.svg
+$ snakemake --dag | dot -Tsvg > results/workflow_dag.svg
 ```
 
 Alternatively you can create your own pipeline. For simulations, simulations.R generates files slim_\*.sh and pyslim_\*.sh with the SLiM and Python command lines that produce each simulation (SLiM must be run first, then Python).
