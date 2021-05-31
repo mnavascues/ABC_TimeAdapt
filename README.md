@@ -4,11 +4,11 @@ TimeAdapt makes (i.e. will eventually make) a joint inference of demography and 
 
 ### Requirements
 
-The code has been tested with the following versions (on Ubuntu 18.04):
+The code has been tested with the following versions (on Ubuntu 20.04):
 
 - Python 3.8.5
   - scikit-allel 1.3.2
-  - msprime 0.7.4
+  - msprime 1.0.0b1
   - numpy
   - pyslim 0.403
   - scipy 1.5.4
@@ -29,7 +29,7 @@ Creation of the environment from scratch:
 $ conda create -n timeadapt python==3.8.5 r-base=3.6.1
 $ conda activate timeadapt
 $ conda install scikit-allel=1.3.2
-$ conda install msprime=0.7.4
+$ conda install msprime=1.0.0b1
 $ conda install numpy=1.20.2
 $ conda install pyslim=0.600
 $ conda install scipy=1.5.3
@@ -74,17 +74,17 @@ $ snakemake clean
 
 | Parameter name | type | description |
 |---|---|---------------|
-|[Settings]|||
+|**[Settings]|**||
 | *project_name* | string | name of the analysis project, a folder with that name is created in results folder and all output written inside.|
 | *batch* | integer | identifier of a batch of simulations for the project. A folder named with that identifier is created within the project folder and results from the simulations of that bacth written inside.|
 | *sample_file* | string |  path + file name containing sample information (see below)|
 | *genome_file* | string | path + file name containing genome information (see below)|
 | *num_of_sims* | positive integer | number of simulation (in the batch)|
 | *seed* | integer | seed for the random number generator |
-|[Model]|||
+|**[Model]**|||
 | *generations_forward* | positive integer | number of generations simulated in forward (by SLiM)|
 | *periods_forward* | positive integer | number of periods in which the forward simulation is divided|
-|[Priors]|||
+|**[Priors]**|||
 | *gen_len_prior_sh1* | | prior for generation length (shape1 of rescaled beta distribution)|
 | *gen_len_prior_sh2*| | prior for generation length (shape2 of rescaled beta distribution)|
 | *gen_len_prior_min*| | prior for generation length (minimum of rescaled beta distribution)|
