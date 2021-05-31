@@ -2,20 +2,20 @@ import configparser
 
 # READ OPTIONS FILE
 options_file = 'tests/input/config_project.ini'
-options = configparser.ConfigParser()
+options      = configparser.ConfigParser()
 options.read(options_file)
 
 # SETTINGS
-project = options.get('Settings','project')
-batch = options.get('Settings','batch')
-seed = options.get('Settings','seed')
+project     = options.get('Settings','project')
+batch       = options.get('Settings','batch')
+seed        = options.get('Settings','seed')
 sample_file = options.get('Settings','sample_file')
 genome_file = options.get('Settings','genome_file')
 num_of_sims = options.getint('Settings','num_of_sims')
 
 sims = range(1,num_of_sims+1)
 
-localrules: sim, getparams, clean, clean_batch, test
+localrules: sim, getparams, clean, clean_project, clean_batch, test
 
 # run simulations
 rule sim:
@@ -51,8 +51,12 @@ rule clean_batch:
     shell: 'rm -rf results/'+project+'/'+str(batch)
 
 # delete all files in project directory
-rule clean:
+rule clean_project:
     shell: 'rm -rf results/'+project
+
+# delete all files in project directory
+rule clean:
+    shell: 'rm -rf results/'
 
 # run tests
 rule test:
