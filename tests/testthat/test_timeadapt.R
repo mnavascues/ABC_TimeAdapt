@@ -7,8 +7,8 @@ test_that("Check header sends error when missing coloumn", {
   expect_error(check_file_header(c("a","b"),c("a")),"Missing columns in input file: b")
   expect_error(check_file_header(c("a"),c("b")),"Missing columns in input file: a")
   expect_error(check_file_header(c("a"),character()),"Missing columns in input file: a")
-  expect_equal(check_file_header(c("a","b"),c("a","b","c")),T)
-  expect_equal(check_file_header(c("a","b"),c("a","b")),T)
+  expect_true(check_file_header(c("a","b"),c("a","b","c")))
+  expect_true(check_file_header(c("a","b"),c("a","b")))
 })
 
 # read_sample_info("../sample_info_test.txt")
