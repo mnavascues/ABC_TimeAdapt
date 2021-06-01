@@ -39,9 +39,9 @@ set.seed(options$Settings$seed)
 
 # create results directory
 dir.create("results", showWarnings = FALSE)
-project_dir <- paste("results",options$Settings$project,sep="/")
+project_dir <- paste("results", options$Settings$project, sep="/")
 dir.create(project_dir, showWarnings = FALSE)
-batch_dir <- paste("results",options$Settings$project,options$Settings$batch,sep="/")
+batch_dir <- paste(project_dir, options$Settings$batch, sep="/")
 dir.create(batch_dir, showWarnings = FALSE)
 
 # read sample and genome information from tables in text files
