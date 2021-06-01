@@ -52,9 +52,9 @@ if (!options$Settings$quiet) {cat("Genome:\n");(Genome)}
 
 
 # number of generations to simulate in forward (in SLiM)
-times_of_change_forw     <- seq(from = options$Model$generations_forward/options$Model$periods_forward,
-                                to   = options$Model$generations_forward-1,
-                                by   = options$Model$generations_forward/options$Model$periods_forward)
+times_of_change_forw     <- as.integer(seq(from = options$Model$generations_forward/options$Model$periods_forward,
+                                           to   = options$Model$generations_forward-1,
+                                           by   = options$Model$generations_forward/options$Model$periods_forward))
 if (!options$Settings$quiet) {cat("Periods in forward:\n");(times_of_change_forw)}
 
 # calculate probability distribution curves for calibrated age of ancient samples
