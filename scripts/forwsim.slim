@@ -2,7 +2,7 @@ initialize() {
 	if (exists("slimgui"))
 	{
 		setSeed(690281019);  
-		defineConstant("L",  1500000);
+		defineConstant("L",  39999999);
 		defineConstant("N",  c(11,85,200,200,200,37,10,30) );
 		defineConstant("tc", c(50,100,150,200,250,300,350) );
 		defineConstant("ts", c(25,97,107,192,246,285,315,319,320,325,328,353,379,400) );
@@ -12,8 +12,8 @@ initialize() {
 		defineConstant("i",  1);
 		defineConstant("batch", 1);
 		defineConstant("project","test");
-		defineConstant("ends", c(5e+05,500001,1e+06,1000001,1500000,1500001));
-    defineConstant("rates", c(1.14856e-09,0.5,1.10543e-09,0.5,1.12796e-09,0.5));
+		defineConstant("ends", c(9999999,10000000,19999999,20000000,29999999,30000000,39999999));
+    defineConstant("rates", c(1e-09,0.5,1e-09,0.5,1e-09,0.5,1e-09));
 	}
 	initializeSLiMOptions(keepPedigrees=T);
 	initializeMutationRate(0.0);
@@ -23,9 +23,11 @@ initialize() {
 	initializeRecombinationRate(rates, ends);
 	initializeTreeSeq();
 }
-1 early() {
+1 late() {
 	
-	sim.addSubpop("p1", N[0]);
+   sim.readFromPopulationFile("results/"+project+"/"+batch+"/coalsim_"+i+".trees");	
+   sim.setValue("previous_generation_N", p0.individualCount);
+
 	
 	// schedule SAMPLING BLOCK
 	sim.setValue("count_sampling", 0);
@@ -36,17 +38,17 @@ initialize() {
 	sim.rescheduleScriptBlock(s2, start=tc[0], end=tc[0]);
 	
 	// schedule CALCULATE Ne BLOCK
-	sim.setValue("sum_pIBD", rep(0.0,np));
-	sim.rescheduleScriptBlock(s3, start=1, end=ts[na]);
+	sim.setValue("sum_prob_coal", rep(0.0,np));
+	sim.rescheduleScriptBlock(s3, start=2, end=ts[na]);
 	
 	// schedule FINISH BLOCK
 	sim.rescheduleScriptBlock(s4, start=ts[na], end=ts[na]);
 }
 
 // SAMPLING BLOCK
-s1 1000 late() {
+s1 999999 late() {
 	count = sim.getValue("count_sampling");
-	sim.treeSeqRememberIndividuals(p1.sampleIndividuals(ss[count]));
+	sim.treeSeqRememberIndividuals(p0.sampleIndividuals(ss[count]));
 	if (count<(na-1)){
 		sim.rescheduleScriptBlock(s1, start=ts[count+1], end=ts[count+1]);
 	}
@@ -55,9 +57,9 @@ s1 1000 late() {
 }
 
 // DEMOGRAPHY BLOCK
-s2 1000 early(){
+s2 999999 early(){
 	count = sim.getValue("count_demography");
-	p1.setSubpopulationSize(N[count+1]);
+	p0.setSubpopulationSize(N[count+1]);
 	if (count<(np-2)){
 		sim.rescheduleScriptBlock(s2, start=tc[count+1], end=tc[count+1]);
 	}
@@ -66,23 +68,43 @@ s2 1000 early(){
 }
 
 // CALCULATE Ne BLOCK
-s3 1000 late() {
-   count = sim.getValue("count_demography");	
-	parents = unique(sim.subpopulations.individuals.pedigreeParentIDs);
-	k = sapply(parents, "sum(sim.subpopulations.individuals.pedigreeParentIDs == applyValue);");
-	prob = k/p1.individualCount;
-	pIBD = sum(prob*prob*0.25);
-	//Ne=1/pIBD;
-	//Ne = (2*p1.individualCount-1)/(1+var(k)/2);
-	sum_pIBD = sim.getValue("sum_pIBD") ;
-	sum_pIBD[count] = pIBD + sum_pIBD[count];
-	sim.setValue("sum_pIBD", sum_pIBD );
+s3 999999 late() {
+   previous_generation_N = sim.getValue("previous_generation_N");
+   sim.setValue("previous_generation_N", p0.individualCount);
+
+   rescaledParentIDs = p0.individuals.pedigreeParentIDs-min(p0.individuals.pedigreeParentIDs);
+   k = tabulate(rescaledParentIDs);
+   k = c(k,rep(0, previous_generation_N-size(k)));
+
+	prob_coal = sum(k/sum(k)*(k-1)/sum(k)*0.5);// self-compatible hermaphrodite!!
+	//Ne = 1/prob_coal/2;
+	//catn("N(t-1)="+previous_generation_N);
+	//catn("N(t)="+p0.individualCount);
+	//catn("Ne_coal="+Ne);
+	//invNe = (var(k)/mean(k)+mean(k)-1)/(2*p0.individualCount-1);
+	//catn("Ne_var="+1/invNe);
+
+   //catn("generation :"+sim.generation);
+   //count = sim.getValue("count_demography");
+   //catn("count: "+count);
+   period = max(which(sim.generation>c(0,tc)));
+   //catn("period: "+period);
+   	
+	sum_prob_coal = sim.getValue("sum_prob_coal") ;
+	sum_prob_coal[period] = prob_coal + sum_prob_coal[period];
+	sim.setValue("sum_prob_coal", sum_prob_coal );
 }
 
 // FINISH BLOCK
-s4 1000 late() {
+s4 999999 late() {
 	sim.treeSeqOutput(path="results/"+project+"/"+batch+"/slim_"+i+".tree");
-	Ne = 2*(ts[na]/np)/sim.getValue("sum_pIBD");
+   lenght_periods = c(tc,ts[na])-c(1,tc);
+   //catn(lenght_periods);
+	Ne = lenght_periods/sim.getValue("sum_prob_coal")/2;
+	//catn("N:");
+	//catn(N);
+	//catn("Ne:");
+	//catn(Ne);
 	writeFile(filePath="results/"+project+"/"+batch+"/Ne.txt", contents=paste(i+" "+paste(Ne)	), append=T);
 	sim.simulationFinished();
 }
