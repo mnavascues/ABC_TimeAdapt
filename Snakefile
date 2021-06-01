@@ -15,12 +15,24 @@ num_of_sims = options.getint('Settings','num_of_sims')
 
 sims = range(1,num_of_sims+1)
 
-localrules: sim, getparams, clean, clean_project, clean_batch, test
+# localrules: sim, getparams, clean, clean_project, clean_batch, test
 
 # run simulations
 rule sim:
     #input: sim_stats = expand('results/{p}/{b}/stats_{s}.txt',p=project,b=batch,s=sims)
-    input: coalsim_trees = expand('results/{p}/{b}/coalsim_{s}.trees',p=project,b=batch,s=sims)
+    #input: coalsim_trees = expand('results/{p}/{b}/coalsim_{s}.trees',p=project,b=batch,s=sims)
+    input: forwsim_trees = expand('results/{p}/{b}/forwsim_{s}.trees',p=project,b=batch,s=sims)
+
+# simulation with msprime
+rule forwsim:
+    input:
+        script='scripts/forwsim.slim',
+        slim_options='results/{p}/{b}/sim_{s}.eidos',
+        coalsim_trees='results/{p}/{b}/coalsim_{s}.trees'
+    output:
+        forwsim_trees='results/{p}/{b}/forwsim_{s}.trees'
+    shell:
+        'slim -d "option_file=\'{input.slim_options}\'" -d "tree_sequence_file=\'{input.coalsim_trees}\'" {input.script}'
 
 # simulation with msprime
 rule coalsim:
@@ -28,7 +40,7 @@ rule coalsim:
         script='scripts/coalsim.py',
         sim_ini='results/{p}/{b}/sim_{s}.ini'
     output:
-        'results/{p}/{b}/coalsim_{s}.trees'
+        coalsim_trees='results/{p}/{b}/coalsim_{s}.trees'
     shell:
         'python {input.script} {options_file} {input.sim_ini}'
 
@@ -38,7 +50,8 @@ rule getparams:
     input:
         script='scripts/getparams.R'
     output:
-        slim_command=expand('results/{p}/{b}/slim_{s}.sh',p=project,b=batch,s=sims) ,
+        #slim_command=expand('results/{p}/{b}/slim_{s}.sh',p=project,b=batch,s=sims),
+        slim_options=expand('results/{p}/{b}/sim_{s}.eidos',p=project,b=batch,s=sims),
         sim_ini=expand('results/{p}/{b}/sim_{s}.ini',p=project,b=batch,s=sims) 
         #pyslim_command=expand('results/{p}/{b}/pyslim_{s}.sh',p=project,b=batch,s=sims)  
         #slim_command=temp(expand('results/{p}/{b}/slim_{s}.sh',p=project,b=batch,s=sims)) ,

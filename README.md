@@ -74,7 +74,7 @@ $ snakemake clean
 
 | Parameter name | type | description |
 |---|---|---------------|
-|**[Settings]|**||
+|**[Settings]**|||
 | *project_name* | string | name of the analysis project, a folder with that name is created in results folder and all output written inside.|
 | *batch* | integer | identifier of a batch of simulations for the project. A folder named with that identifier is created within the project folder and results from the simulations of that bacth written inside.|
 | *sample_file* | string |  path + file name containing sample information (see below)|

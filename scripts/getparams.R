@@ -24,12 +24,7 @@ if (interactive()){ # if interactive uses test values
     options_file <- args[1]
   }
 }
-options <- read.ini(options_file)
-options$Settings$quiet            <- as.logical(options$Settings$quiet)
-options$Model$generations_forward <- as.integer(options$Model$generations_forward) 
-options$Model$periods_forward     <- as.integer(options$Model$periods_forward)
-options$Model$periods_coalescence <- as.integer(options$Model$periods_coalescence)
-options$Settings$num_of_sims      <- as.integer(options$Settings$num_of_sims)
+options <- set_options_type(read.ini(options_file))
 
 # print script info to screen
 if (!interactive() & !options$Settings$quiet){print_info_simulation()}
@@ -76,7 +71,7 @@ if(any(Sample$is_ancient)){
 # verify that samples cannot be older than the number of generations simulated in forward
 max_sample_age <- maximum_age_of_sample(Sample,
                                         cal_age_PDF,
-                                        as.numeric(options$Priors$gen_len_prior_min))
+                                        options$Priors$gen_len_prior_min)
 if(max_sample_age+2 < options$Model$generations_forward){
   if (!options$Settings$quiet) cat("Length of simulation forward OK.\n")
 }else{
@@ -89,22 +84,22 @@ if(max_sample_age+2 < options$Model$generations_forward){
 # SAMPLE FROM PRIORS  
 # Generation length = generation interval in years
 sim_gen_length  <- rnsbeta(options$Settings$num_of_sims,
-                           as.numeric(options$Priors$gen_len_prior_sh1),
-                           as.numeric(options$Priors$gen_len_prior_sh2),
-                           as.numeric(options$Priors$gen_len_prior_min),
-                           as.numeric(options$Priors$gen_len_prior_max))
+                           options$Priors$gen_len_prior_sh1,
+                           options$Priors$gen_len_prior_sh2,
+                           options$Priors$gen_len_prior_min,
+                           options$Priors$gen_len_prior_max)
 # census population size
 sim_N <- sample_demography_from_prior(options$Settings$num_of_sims,
                                       options$Model$periods_forward+options$Model$periods_coalescence,
-                                      as.numeric(options$Priors$pop_size_prior_min),
-                                      as.numeric(options$Priors$pop_size_prior_max))
+                                      options$Priors$pop_size_prior_min,
+                                      options$Priors$pop_size_prior_max)
 # sim_N_coal <- sim_N[,(1:options$Model$periods_coalescence)]
 # sim_N_forw <- sim_N[,-(1:options$Model$periods_coalescence)]
 
 # mutation rate
 sim_u <- rlnorm(options$Settings$num_of_sims,
-                log(as.numeric(options$Priors$mut_rate_prior_mean)),
-                as.numeric(options$Priors$mut_rate_prior_sd))
+                log(options$Priors$mut_rate_prior_mean),
+                options$Priors$mut_rate_prior_sd)
 
 for (sim in seq_len(options$Settings$num_of_sims)){
   if (!options$Settings$quiet) cat(paste("\n\nSimulation",sim,"\n----------------------------------\n"))
@@ -129,8 +124,8 @@ for (sim in seq_len(options$Settings$num_of_sims)){
   sim_ini[["Demography"]] <- list(N  = paste(sim_N[sim,], collapse=" "),
                                   tc = paste(times_of_change_forw, collapse=" ")) 
   sim_ini[["Genome"]] <- list(L         = Genome$L,
-                              ends      = paste(Genome$rec_map_SLiM[,1], collapse=" "),
-                              rates     = paste(Genome$rec_map_SLiM[,2], collapse=" "),
+                              ends      = paste(Genome$rec_map_SLiM$ends, collapse=" "),
+                              rates     = paste(Genome$rec_map_SLiM$rates, collapse=" "),
                               mu        = sim_u[sim],
                               ttratio   = 2.0,
                               seq_error = 0.005)
@@ -138,6 +133,24 @@ for (sim in seq_len(options$Settings$num_of_sims)){
                              seed_msprime = seed_msprime)
   sim_ini_file <- paste0(batch_dir,"/sim_",sim,".ini")
   write.ini(sim_ini, sim_ini_file)
+  
+  # write source file for SLiM
+  source4slim <- paste0("setSeed(",seed_slim,");\n",
+                        "defineConstant(\"L\",",Genome$L,");\n",
+                        "defineConstant(\"N\",c(",paste(sim_N[sim,-(1:options$Model$periods_coalescence)],collapse=","),"));\n",
+                        "defineConstant(\"tc\",c(",paste(times_of_change_forw,collapse=","),"));\n",
+                        "defineConstant(\"ts\",c(",paste(sim_sample_time$slim_ts,collapse=","),"));\n",
+                        "defineConstant(\"ss\",c(",paste(rev(sim_sample_time$sample_sizes),collapse=","),"));\n",
+                        "defineConstant(\"np\",",options$Model$periods_forward,");\n",
+                        "defineConstant(\"na\",",sim_sample_time$na,");\n",
+                        "defineConstant(\"i\",",sim,");\n",
+                        "defineConstant(\"batch\",",options$Settings$batch,");\n",
+                        "defineConstant(\"project\",\"",options$Settings$project,"\");\n",
+                        "defineConstant(\"ends\",c(",paste(Genome$rec_map_SLiM$ends,collapse=","),"));\n",
+                        "defineConstant(\"rates\",c(",paste(Genome$rec_map_SLiM$rates,collapse=","),"));\n")
+  write(source4slim, file = paste0(batch_dir,"/sim_",sim,".eidos"))
+  
+  
   
   # write command line for SLiM
   command_slim <- paste0("slim ",
@@ -151,8 +164,8 @@ for (sim in seq_len(options$Settings$num_of_sims)){
                          " -d ", paste0("np=", options$Model$periods_forward),
                          " -d ", paste0("na=", sim_sample_time$na),
                          " -d ", paste0("L=", Genome$L),
-                         " -d ", paste0("ends=\"c("), paste(Genome$rec_map_SLiM[,1],collapse=","), paste0(")\""),
-                         " -d ", paste0("rates=\"c("), paste(Genome$rec_map_SLiM[,2],collapse=","), paste0(")\""),
+                         " -d ", paste0("ends=\"c("), paste(Genome$rec_map_SLiM$ends,collapse=","), paste0(")\""),
+                         " -d ", paste0("rates=\"c("), paste(Genome$rec_map_SLiM$rates,collapse=","), paste0(")\""),
                          " -s ", seed_slim,
                          " scripts/forwsim.slim > /tmp/slimout.txt")
   write(command_slim, file = paste0(batch_dir,"/slim_",sim,".sh"))

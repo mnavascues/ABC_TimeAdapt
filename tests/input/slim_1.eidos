@@ -1,0 +1,14 @@
+setSeed(3072488519);
+defineConstant("L",39999999);
+defineConstant("N",c(85,200,200,200,37,10,30,71));
+defineConstant("tc",c(50,100,150,200,250,300,350));
+defineConstant("ts",c(16,96,109,193,257,282,310,320,321,326,328,356,381,400));
+defineConstant("ss",c(1,1,1,1,1,1,1,1,1,1,1,1,1,4));
+defineConstant("np",8);
+defineConstant("na",13);
+defineConstant("i",1);
+defineConstant("batch",1);
+defineConstant("project","test");
+defineConstant("ends",c(9999999,10000000,19999999,20000000,29999999,30000000,39999999));
+defineConstant("rates",c(1.14856e-08,0.5,1.10543e-08,0.5,1.12796e-08,0.5,1.12312e-08));
+
