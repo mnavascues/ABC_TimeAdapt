@@ -26,7 +26,7 @@ def test_get_options():
   assert project == "test"
   assert batch == "1"
   assert sim == "1"
-  assert genome_file == "tests/input/human_genome.txt"
+  assert genome_file == "tests/input/test_genome.txt"
   assert N == [20,10]
   assert N[0] == 20
  
