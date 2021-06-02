@@ -14,7 +14,7 @@ initialize() {
 }
 1 late() {
 	
-  sim.readFromPopulationFile("results/"+project+"/"+batch+"/coalsim_"+i+".trees");	
+   sim.readFromPopulationFile("results/"+project+"/"+batch+"/coalsim_"+i+".trees");	
 	p0.setSubpopulationSize(N[0]);
 
 	// schedule SAMPLING BLOCK
@@ -24,17 +24,19 @@ initialize() {
 	// schedule DEMOGRAPHY BLOCK
 	sim.setValue("count_demography", 0);
 	sim.rescheduleScriptBlock(s2, start=tc[0], end=tc[0]);
+	sim.rescheduleScriptBlock(s0, start=2, end=ts[na]);
 	
 	// schedule CALCULATE Ne BLOCK
 	sim.setValue("sum_prob_coal", rep(0.0,np));
 	sim.rescheduleScriptBlock(s3, start=3, end=ts[na]);
 	
-	// schedule FINISH BLOCK
+	// schedule FINISH BLOCKS
 	sim.rescheduleScriptBlock(s4, start=ts[na], end=ts[na]);
+	sim.rescheduleScriptBlock(s5, start=ts[na]+1, end=ts[na]+1);
 }
 
 // set previous generation population size
-2: early(){
+s0 999999 early(){
    sim.setValue("previous_generation_N", p0.individualCount);
    //catn("generation :"+sim.generation);
 }
@@ -88,8 +90,12 @@ s3 999999 late() {
 	sim.setValue("sum_prob_coal", sum_prob_coal );
 }
 
-// FINISH BLOCK
+// FINISH BLOCKS
 s4 999999 late() {
+	sim.treeSeqRememberIndividuals(p0.sampleIndividuals(ss[na]));
+   p0.setSubpopulationSize(0);
+}
+s5 999999 late() {
 	sim.treeSeqOutput(path="results/"+project+"/"+batch+"/forwsim_"+i+".trees");
    lenght_periods = c(tc,ts[na])-c(2,tc);
    //catn(lenght_periods);
@@ -98,6 +104,6 @@ s4 999999 late() {
 	catn(N);
 	catn("Ne:");
 	catn(Ne);
-	writeFile(filePath="results/"+project+"/"+batch+"/Ne.txt", contents=paste(i+" "+paste(Ne)	), append=T);
+	writeFile(filePath="results/"+project+"/"+batch+"/Ne.txt", contents=paste(i+" "+paste(Ne)), append=T);
 	sim.simulationFinished();
 }
