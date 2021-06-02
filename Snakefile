@@ -19,8 +19,6 @@ sims = range(1,num_of_sims+1)
 
 # run simulations
 rule sim:
-    #input: sim_stats = expand('results/{p}/{b}/stats_{s}.txt',p=project,b=batch,s=sims)
-    #input: coalsim_trees = expand('results/{p}/{b}/coalsim_{s}.trees',p=project,b=batch,s=sims)
     input: forwsim_trees = expand('results/{p}/{b}/forwsim_{s}.trees',p=project,b=batch,s=sims)
 
 # simulation with msprime
@@ -32,7 +30,7 @@ rule forwsim:
     output:
         forwsim_trees='results/{p}/{b}/forwsim_{s}.trees'
     shell:
-        'slim -d "option_file=\'{input.slim_options}\'" -d "tree_sequence_file=\'{input.coalsim_trees}\'" {input.script}'
+        'slim -d "option_file=\'{input.slim_options}\'" {input.script}'
 
 # simulation with msprime
 rule coalsim:
@@ -50,12 +48,8 @@ rule getparams:
     input:
         script='scripts/getparams.R'
     output:
-        #slim_command=expand('results/{p}/{b}/slim_{s}.sh',p=project,b=batch,s=sims),
         slim_options=expand('results/{p}/{b}/sim_{s}.eidos',p=project,b=batch,s=sims),
         sim_ini=expand('results/{p}/{b}/sim_{s}.ini',p=project,b=batch,s=sims) 
-        #pyslim_command=expand('results/{p}/{b}/pyslim_{s}.sh',p=project,b=batch,s=sims)  
-        #slim_command=temp(expand('results/{p}/{b}/slim_{s}.sh',p=project,b=batch,s=sims)) ,
-        #pyslim_command=temp(expand('results/{p}/{b}/pyslim_{s}.sh',p=project,b=batch,s=sims))  
     shell:
         'Rscript {input.script} {options_file}'
 
@@ -67,8 +61,8 @@ rule clean_batch:
 rule clean_project:
     shell: 'rm -rf results/'+project
 
-# delete all files in project directory
-rule clean:
+# delete all files in results directory
+rule clean_all:
     shell: 'rm -rf results/'
 
 # run tests

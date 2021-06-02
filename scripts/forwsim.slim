@@ -1,11 +1,7 @@
 initialize() {
 	if (exists("slimgui")){
-	   source("results/test/1/sim_3.eidos");
-		//source("tests/input/sim_1.eidos");
-		defineConstant("tree_sequence_file","results/test/1/coalsim_3.trees");
-		//defineConstant("tree_sequence_file","tests/input/coalsim_1.trees");
+		source("tests/input/sim_1.eidos");
 	}else{
-	  catn(option_file);
 		source(option_file);
 	}
 	initializeSLiMOptions(keepPedigrees=T);
@@ -18,10 +14,9 @@ initialize() {
 }
 1 late() {
 	
-  sim.readFromPopulationFile(tree_sequence_file);	
+  sim.readFromPopulationFile("results/"+project+"/"+batch+"/coalsim_"+i+".trees");	
 	p0.setSubpopulationSize(N[0]);
 
-	
 	// schedule SAMPLING BLOCK
 	sim.setValue("count_sampling", 0);
 	sim.rescheduleScriptBlock(s1, start=ts[0], end=ts[0]);

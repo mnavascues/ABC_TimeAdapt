@@ -153,22 +153,22 @@ for (sim in seq_len(options$Settings$num_of_sims)){
   
   
   # write command line for SLiM
-  command_slim <- paste0("slim ",
-                         " -d ", paste0("N=\"c("), paste(sim_N[sim,-(1:options$Model$periods_coalescence)],collapse=","), paste0(")\""),
-                         " -d ", paste0("tc=\"c("), paste(times_of_change_forw,collapse=","), paste0(")\""),
-                         " -d ", paste0("ts=\"c("), paste(sim_sample_time$slim_ts,collapse=","), paste0(")\""),
-                         " -d ", paste0("ss=\"c("), paste(rev(sim_sample_time$sample_sizes),collapse=","), paste0(")\""),
-                         " -d ", paste0("i=", sim),
-                         " -d ", paste0("batch=",options$Settings$batch),
-                         " -d ", paste0("project=\"'",options$Settings$project,"'\""),
-                         " -d ", paste0("np=", options$Model$periods_forward),
-                         " -d ", paste0("na=", sim_sample_time$na),
-                         " -d ", paste0("L=", Genome$L),
-                         " -d ", paste0("ends=\"c("), paste(Genome$rec_map_SLiM$ends,collapse=","), paste0(")\""),
-                         " -d ", paste0("rates=\"c("), paste(Genome$rec_map_SLiM$rates,collapse=","), paste0(")\""),
-                         " -s ", seed_slim,
-                         " scripts/forwsim.slim > /tmp/slimout.txt")
-  write(command_slim, file = paste0(batch_dir,"/slim_",sim,".sh"))
+  #command_slim <- paste0("slim ",
+  #                       " -d ", paste0("N=\"c("), paste(sim_N[sim,-(1:options$Model$periods_coalescence)],collapse=","), paste0(")\""),
+  #                       " -d ", paste0("tc=\"c("), paste(times_of_change_forw,collapse=","), paste0(")\""),
+  #                       " -d ", paste0("ts=\"c("), paste(sim_sample_time$slim_ts,collapse=","), paste0(")\""),
+  #                       " -d ", paste0("ss=\"c("), paste(rev(sim_sample_time$sample_sizes),collapse=","), paste0(")\""),
+  #                       " -d ", paste0("i=", sim),
+  #                       " -d ", paste0("batch=",options$Settings$batch),
+  #                       " -d ", paste0("project=\"'",options$Settings$project,"'\""),
+  #                       " -d ", paste0("np=", options$Model$periods_forward),
+  #                       " -d ", paste0("na=", sim_sample_time$na),
+  #                       " -d ", paste0("L=", Genome$L),
+  #                       " -d ", paste0("ends=\"c("), paste(Genome$rec_map_SLiM$ends,collapse=","), paste0(")\""),
+  #                       " -d ", paste0("rates=\"c("), paste(Genome$rec_map_SLiM$rates,collapse=","), paste0(")\""),
+  #                       " -s ", seed_slim,
+  #                       " scripts/forwsim.slim > /tmp/slimout.txt")
+  #write(command_slim, file = paste0(batch_dir,"/slim_",sim,".sh"))
 
   # write command line for pyslim
   # command_pyslim <- paste("python", "python/msprimeNstats.py", options_file, sim_ini_file)
