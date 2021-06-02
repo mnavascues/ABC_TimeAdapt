@@ -27,8 +27,8 @@ def test_get_options():
   assert batch == "1"
   assert sim == "1"
   assert genome_file == "tests/input/test_genome.txt"
-  assert N == [20,10]
-  assert N[0] == 20
+  assert N == [11,85,200,200,200,37,10,30,71]
+  assert N[0] == 11
  
 
 ### end GET OPTIONS ··········································································
