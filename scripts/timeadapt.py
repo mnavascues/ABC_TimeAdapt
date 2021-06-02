@@ -12,21 +12,23 @@ def get_options(proj_options_file,sim_options_file):
   project     = proj_options.get('Settings','project')
   batch       = proj_options.get('Settings','batch')
   genome_file = proj_options.get('Settings','genome_file')
-
+  sample_file = proj_options.get('Settings','sample_file')
   sim         = sim_options.get('Simulation','sim')
+  N           = [int(i) for i in sim_options.get("Demography","N").split()]   
+  seed_coal   = sim_options.getint('Seeds','seed_coal')
+  seed_mut    = sim_options.getint('Seeds','seed_mut')
 
-  N  = [int(i) for i in sim_options.get("Demography","N").split()]   
-
-  return project, batch, sim, genome_file, N
+  return project, batch, sim, genome_file, sample_file, N, seed_coal, seed_mut
 
 
 def test_get_options():
-  project, batch, sim, genome_file, N = get_options(proj_options_file = "tests/input/config_project.ini",
-                                   sim_options_file  = "tests/input/sim_1.ini")
+  project, batch, sim, genome_file, sample_file, N, seed_coal, seed_mut = \
+           get_options(proj_options_file = "tests/input/config_project.ini", sim_options_file  = "tests/input/sim_1.ini")
   assert project == "test"
   assert batch == "1"
   assert sim == "1"
   assert genome_file == "tests/input/test_genome.txt"
+  assert sample_file == "tests/input/test_sample.txt"
   assert N == [11,85,200,200,200,37,10,30,71]
   assert N[0] == 11
  
