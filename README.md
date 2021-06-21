@@ -6,19 +6,20 @@ TimeAdapt makes (i.e. will eventually make) a joint inference of demography and 
 
 The code has been tested with the following versions (on Ubuntu 20.04):
 
-- Python 3.8.5
+- Python 3.8.10
   - scikit-allel 1.3.2
-  - msprime 1.0.0b1
-  - numpy
+  - msprime 1.0.1
+  - numpy 1.20.3
   - pyslim 0.403
   - scipy 1.5.4
-  - pytest
-- R 3.6.1
+  - pytest 6.2.4
+  - pandas 1.2.4
+- R 3.6.3
   - ini 0.3.1
   - extraDistr 1.8.11
-  - rcarbon 1.3.1
+  - rcarbon 1.2.0
   - testthat 2.1.1
-- SLiM 3.4
+- SLiM 3.6
 
 ### Usage
 
@@ -26,47 +27,42 @@ These instructions are written for myself and might need to be adapted to other 
 
 Creation of the environment from scratch:
 ```shell
-$ conda create -n timeadapt python==3.8.5 r-base=3.6.1
-$ conda activate timeadapt
-$ conda install scikit-allel=1.3.2
-$ conda install msprime=1.0.0b1
-$ conda install numpy=1.20.2
-$ conda install pyslim=0.600
-$ conda install scipy=1.5.3
-$ conda install pandas=1.2.3
-$ conda install pytest=6.2.3
-$ conda install -c r r-rcarbon=1.2.0
-$ conda install -c r r-ini=0.3.1
-$ conda install -c r r-extraDistr=1.8.11
-$ conda install -c r r-testthat=2.1.1
-$ conda install pip
-$ python -m pip install msprime --pre --upgrade
-$ conda env export > timeadapt.yml
+conda create -n timeadapt python==3.8.10 r-base=3.6.3
+conda activate timeadapt
+conda install scikit-allel
+pip install msprime
+conda install pyslim
+conda install pytest
+conda install -c r r-rcarbon
+conda install -c r r-ini
+conda install -c r r-extraDistr
+conda install -c r r-testthat
+conda env export > timeadapt.yml
 ```
 
 Creation of the environment via yml file:
 ```shell
-$ conda env create -f timeadapt.yml
+conda env create -f timeadapt.yml
 ```
 
 Run (using snakemake) tests (testthat for R, pytest for Python)
 ```shell
-$ conda activate timeadapt
-$ snakemake test
+conda activate timeadapt
+snakemake test
 ```
 
 Run one batch of simulations with Snakefile and get directed acyclic graph of pipeline
 ```shell
-$ conda activate timeadapt
-$ snakemake sim
-$ snakemake --dag | dot -Tsvg > results/workflow_dag.svg
+conda activate timeadapt
+snakemake sim
+snakemake --dag | dot -Tsvg > results/workflow_dag.svg
 ```
 
 Alternatively you can create your own pipeline. For simulations, simulations.R generates files slim_\*.sh and pyslim_\*.sh with the SLiM and Python command lines that produce each simulation (SLiM must be run first, then Python).
 
 Remove all results from project folder
 ```shell
-$ snakemake clean
+snakemake clean
 ```
 
 
@@ -93,6 +89,36 @@ $ snakemake clean
 | *pop_size_prior_max* | positive integer | prior for population size (maximum of uniform distribution)|
 | *mut_rate_prior_mean* |  |prior for mutation rate (mean of normal distribution)|
 | *mut_rate_prior_sd* |  | prior for mutation rate (sd of normal distribution)|
+
+Example:
+
+```
+[Settings]
+seed = 1234567890
+quiet = False
+project = test
+batch = 1
+sample_file = tests/input/test_sample.txt
+genome_file = tests/input/test_genome.txt
+num_of_sims = 3
+
+[Model]
+generations_forward = 400
+periods_forward = 8
+periods_coalescence = 1
+
+[Priors]
+gen_len_prior_sh1 = 2
+gen_len_prior_sh2 = 1.465967
+gen_len_prior_min = 26
+gen_len_prior_max = 30
+pop_size_prior_min = 10
+pop_size_prior_max = 200
+mut_rate_prior_mean = 0.00000005
+mut_rate_prior_sd = 0.5
+```
+
+
 
 
 ### Input files
