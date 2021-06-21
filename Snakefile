@@ -19,9 +19,22 @@ sims = range(1,num_of_sims+1)
 
 # run simulations
 rule sim:
-    input: forwsim_trees = expand('results/{p}/{b}/forwsim_{s}.trees',p=project,b=batch,s=sims)
+    input: sumstats_files = expand('results/{p}/{b}/sumstats_{s}.txt',p=project,b=batch,s=sims)
 
-# simulation with msprime
+
+# simulation of mutations with msprime
+rule mutsim:
+    input:
+        script='scripts/mutsim.py',
+        sim_ini='results/{p}/{b}/sim_{s}.ini',
+        forwsim_trees='results/{p}/{b}/forwsim_{s}.trees'
+    output:
+        sumstats_files='results/{p}/{b}/sumstats_{s}.txt'
+    shell:
+        'python {input.script} {options_file} {input.sim_ini}'
+
+
+# simulation with SLiM
 rule forwsim:
     input:
         script='scripts/forwsim.slim',
@@ -32,7 +45,7 @@ rule forwsim:
     shell:
         'slim -d "option_file=\'{input.slim_options}\'" {input.script}'
 
-# simulation with msprime
+# simulation of tree sequence with msprime
 rule coalsim:
     input:
         script='scripts/coalsim.py',
