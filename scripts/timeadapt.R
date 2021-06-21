@@ -9,10 +9,12 @@ set_options_type <- function(options){
   
   options$Settings$seed              <- as.integer(options$Settings$seed)
   options$Settings$quiet             <- as.logical(options$Settings$quiet)
+  options$Settings$num_of_sims       <- as.integer(options$Settings$num_of_sims)
+
   options$Model$generations_forward  <- as.integer(options$Model$generations_forward) 
   options$Model$periods_forward      <- as.integer(options$Model$periods_forward)
   options$Model$periods_coalescence  <- as.integer(options$Model$periods_coalescence)
-  options$Settings$num_of_sims       <- as.integer(options$Settings$num_of_sims)
+
   options$Priors$gen_len_prior_min   <- as.numeric(options$Priors$gen_len_prior_min)
   options$Priors$gen_len_prior_sh1   <- as.numeric(options$Priors$gen_len_prior_sh1)
   options$Priors$gen_len_prior_sh2   <- as.numeric(options$Priors$gen_len_prior_sh2)
@@ -22,6 +24,7 @@ set_options_type <- function(options){
   options$Priors$pop_size_prior_max  <- as.numeric(options$Priors$pop_size_prior_max)  
   options$Priors$mut_rate_prior_mean <- as.numeric(options$Priors$mut_rate_prior_mean)  
   options$Priors$mut_rate_prior_sd   <- as.numeric(options$Priors$mut_rate_prior_sd)
+
   return(options)
 }
 
