@@ -6,8 +6,8 @@ intermediate_files/
 scripts/__pycache__/
 misc_code/Old/__pycache__/
 misc_code/previous_version/python/__pycache__/
-data/RecombinationMap2010/*
-data/ideogram*
+data/hapmap
+data/hapmap/*
 .Rproj.user
 src/Old/*
 data/Old/*
