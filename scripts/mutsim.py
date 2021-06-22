@@ -60,40 +60,53 @@ def main():
                                                 seq_error=seq_error,
                                                 dr=chrono_order_is_dr,
                                                 cov=chrono_order_coverage)
-  
-    print("Genotype data matrix:")
-    print(geno_data)
-    allele_counts = geno_data.count_alleles()
-    print("Allele count=\n"+str(allele_counts))
+    segsites, pi, min_pi, max_pi, mean_pi, variance_pi, skewness_pi,\
+         kurtosis_pi, min_W_theta, max_W_theta, mean_W_theta,\
+         variance_W_theta, skewness_W_theta, kurtosis_W_theta, Taj_D,\
+         min_Taj_D, max_Taj_D, mean_Taj_D, variance_Taj_D, skewness_Taj_D,\
+         kurtosis_Taj_D, roh_distribution\
+         = timeadapt.single_sample_sumstats(geno_data, positions, max(positions), 50000)
+    print("segsites: "+ str(segsites))
+    print("pi: "+ str(pi))
+    print("Taj_D: "+ str(Taj_D))
+    print("roh_distribution: "+ str(roh_distribution))
+    print(np.all(positions[1:] > positions[:-1]))
+ 
+    print("-------------------------------------------------------------------")
+    #print("Genotype data matrix:")
+    #print(geno_data)
+    #allele_counts = geno_data.count_alleles()
+    #print("Allele count=\n"+str(allele_counts))
     # TODO : make a function to calculate single sample summary stats, call it here and below
-    pi_per_lg = allel.sequence_diversity(positions, allele_counts,
-                                         start=1,
-                                         stop=40000000)
-    he_per_site = allel.mean_pairwise_difference(allele_counts)
-    pi_per_window, windows, n_bases, \
-      n_sites = allel.windowed_diversity(positions, allele_counts,
-                                         size=50000,
-                                         start=1,
-                                         stop=40000000)
-    allele_counts_per_group = {}
-    for lev in range(0, group_levels):
-      for g in range(0, number_of_groups[lev]):
-        allele_counts_per_group['level' + str(lev) + 'group' + str(g)] = \
-          geno_data.count_alleles(subpop=groups_in_level['level' + str(lev) + 'group' + str(g)])
+    #pi_per_lg = allel.sequence_diversity(positions, allele_counts,
+    #                                     start=1,
+    #                                     stop=40000000)
+    #he_per_site = allel.mean_pairwise_difference(allele_counts)
+    #pi_per_window, windows, n_bases, \
+    #  n_sites = allel.windowed_diversity(positions, allele_counts,
+    #                                     size=50000,
+    #                                     start=1,
+    #                                     stop=40000000)
+    #allele_counts_per_group = {}
+    #for lev in range(0, group_levels):
+    #  for g in range(0, number_of_groups[lev]):
+    #    allele_counts_per_group['level' + str(lev) + 'group' + str(g)] = \
+    #      geno_data.count_alleles(subpop=groups_in_level['level' + str(lev) + 'group' + str(g)])
         # TODO : call here function for single sample sumstats
 
-    for lev in range(0, group_levels):
-      for g in range(0, number_of_groups[lev]):
-        for h in range(g + 1, number_of_groups[lev]):
-          gr1 = allele_counts_per_group['level' + str(lev) + 'group' + str(g)]
-          gr2 = allele_counts_per_group['level' + str(lev) + 'group' + str(h)]
-          pairwise_diff = allel.mean_pairwise_difference_between(gr1, gr2)
-          print("Level: " + str(lev) + ". Groups: " + str(g) + " " + str(h) +
-                ". Pairwise difference: " + str(pairwise_diff))
+    #for lev in range(0, group_levels):
+    #  for g in range(0, number_of_groups[lev]):
+    #    for h in range(g + 1, number_of_groups[lev]):
+    #      gr1 = allele_counts_per_group['level' + str(lev) + 'group' + str(g)]
+    #      gr2 = allele_counts_per_group['level' + str(lev) + 'group' + str(h)]
+    #      pairwise_diff = allel.mean_pairwise_difference_between(gr1, gr2)
+    #      print("Level: " + str(lev) + ". Groups: " + str(g) + " " + str(h) +
+    #            ". Pairwise difference: " + str(pairwise_diff))
                                               
 
   outfile = open("results/" + project + "/" + batch + "/sumstats_" + sim + ".txt",
                    "w")
+
 
 
 ############################################################################################################

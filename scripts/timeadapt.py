@@ -5,6 +5,9 @@ import scipy.stats as st
 import allel
 import math
 import tempfile # for creating temporal files on testing
+import pytest
+
+
 
 ### GET OPTIONS ··············································································
 def get_options(proj_options_file,sim_options_file):
@@ -47,6 +50,87 @@ def test_get_options():
  
 
 ### end GET OPTIONS ··········································································
+
+
+
+
+
+### READ SAMPLE INFO FILE .........
+
+def read_sample_info(sample_info_file):
+    """
+    Read text file with information on sample. Format of the file:
+    --------------------------------------------------------------------------
+    sampleID           age14C  age14Cerror  year  coverage  damageRepair  groups
+    B_Ju_hoan_North-4  NA      NA           2010  40.57     TRUE          00
+    S_Ju_hoan_North-1  NA      NA           2010  46.49     TRUE          00
+    BallitoBayA        1980    20           NA    12.94     FALSE         11
+    BallitoBayB        2110    30           NA    1.25      TRUE          12
+    --------------------------------------------------------------------------
+
+    :param sample_info_file: path of file
+    :return:
+    """
+    # TODO : change damageRepair for ancientDamage (which should be more intuitive)
+    # TODO : make it work with only ancient data (i.e. no year column)
+
+    info = pd.read_table(filepath_or_buffer=sample_info_file, sep=r'\s+',
+                         converters={'groups': lambda x: str(x)})
+
+    sample_id = info["sampleID"]
+    coverage = info["coverage"]
+    is_dr = info["damageRepair"]
+
+    sample_size = len(info)
+    group_levels = len(info["groups"][1])
+
+    groups = np.full((group_levels, sample_size), 0, "int")
+    is_ancient = []
+    is_modern = []
+    total_ancient = 0
+    for i, row in info.iterrows():
+        if len(row["groups"]) != group_levels:
+            print("Error: verify that all individuals are assigned to groups")
+            # TODO : interrupt program here
+        if np.isnan(row["year"]):
+            is_ancient.append(True)
+            is_modern.append(False)
+            total_ancient = total_ancient + 1
+        else:
+            is_ancient.append(False)
+            is_modern.append(True)
+        for level in range(0, group_levels):
+            groups[level, i] = row["groups"][level]
+
+    return sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
+           sample_size, group_levels, groups
+
+
+def test_read_sample_info():
+    _, temporary_file_name = tempfile.mkstemp()
+    with open(temporary_file_name, 'w') as f:
+        f.write("sampleID age14C age14Cerror year coverage damageRepair groups\n")
+        f.write("modern   NA     NA          2010 30.03    TRUE         0\n")
+        f.write("ancient  1980   20          NA   10.01    TRUE         1\n")
+    sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
+    sample_size, group_levels, \
+    groups = read_sample_info(sample_info_file=temporary_file_name)
+    assert sample_id[0] == "modern"
+    assert sample_id[1] == "ancient"
+    assert coverage[0] == 30.03
+    assert is_ancient[0] is False
+    assert is_ancient[1] is True
+    assert is_modern[0] is True
+    assert is_modern[1] is False
+    assert is_dr[0]
+    assert is_dr[1]
+    assert total_ancient == 1
+    assert sample_size == 2
+    assert group_levels == 1
+
+### end READ SAMPLE INFO FILE .........
+
+
 
 ### GET GENOME MAP ····································································
 def get_genome_map(gf):
@@ -116,6 +200,8 @@ def test_empty_genotype_array():
   assert len(test_ga) == 3
   assert all(test_ga[0,0] == [-1,-1])
   assert all(test_ga[2,3] == [-1,-1])
+  test_ga = empty_genotype_array(3, 4, ploidy=2, allele=0)
+  assert all(test_ga[1,1] == [0,0])
 
 ### end MAKE EMPTY GENOTYPE ARRAY ····························································
 
@@ -218,97 +304,154 @@ def sequencing(ts, ssize, ttr, seq_error, dr, cov):
     locus = locus + 1
   return geno_data, positions
 
-def test_sequencing():
-  np.random.seed(1234)
+#def test_sequencing():
+#  np.random.seed(1234)
+  # TODO create a ts and some test from it
 
 ### end SIMULATE SEQUENCING  ····························
 
 
+### CALCULATE SUMMARY STATISTICS : SINGLE SAMPLE  ····························
 
-### READ SAMPLE INFO FILE .........
-
-def read_sample_info(sample_info_file):
-    """
-    Read text file with information on sample. Format of the file:
-    --------------------------------------------------------------------------
-    sampleID           age14C  age14Cerror  year  coverage  damageRepair  groups
-    B_Ju_hoan_North-4  NA      NA           2010  40.57     TRUE          00
-    S_Ju_hoan_North-1  NA      NA           2010  46.49     TRUE          00
-    BallitoBayA        1980    20           NA    12.94     FALSE         11
-    BallitoBayB        2110    30           NA    1.25      TRUE          12
-    --------------------------------------------------------------------------
-
-    :param sample_info_file: path of file
-    :return:
-    """
-    # TODO : change damageRepair for ancientDamage (which should be more intuitive)
-    # TODO : make it work with only ancient data (i.e. no year column)
-
-    info = pd.read_table(filepath_or_buffer=sample_info_file, sep=r'\s+',
-                         converters={'groups': lambda x: str(x)})
-
-    sample_id = info["sampleID"]
-    coverage = info["coverage"]
-    is_dr = info["damageRepair"]
-
-    sample_size = len(info)
-    group_levels = len(info["groups"][1])
-
-    groups = np.full((group_levels, sample_size), 0, "int")
-    is_ancient = []
-    is_modern = []
-    total_ancient = 0
-    for i, row in info.iterrows():
-        if len(row["groups"]) != group_levels:
-            print("Error: verify that all individuals are assigned to groups")
-            # TODO : interrupt program here
-        if np.isnan(row["year"]):
-            is_ancient.append(True)
-            is_modern.append(False)
-            total_ancient = total_ancient + 1
-        else:
-            is_ancient.append(False)
-            is_modern.append(True)
-        for level in range(0, group_levels):
-            groups[level, i] = row["groups"][level]
-
-    return sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
-           sample_size, group_levels, groups
+def single_sample_sumstats(ga,pos,chr_end,w_size):
+  ac = ga.count_alleles()
+  sfs = allel.sfs_folded(ac)
+  # total number of segregating sites (excluding monomorphic and all missing data)
+  segsites = sum(sfs)-sfs[0]
+  # pairwise genetic diversity
+  pi = allel.sequence_diversity(pos, ac, start=1, stop=chr_end)
+  w_pi, _, _, _ = allel.windowed_diversity(pos, ac, size=w_size, start=1, stop=chr_end)
+  _, minmax_pi, mean_pi, variance_pi, skewness_pi, kurtosis_pi = st.describe(w_pi)
+  min_pi = minmax_pi[0]
+  max_pi = minmax_pi[1]
+  # Watterson theta (from number of segregating sites)
+  w_W_theta, _, _, _ = allel.windowed_watterson_theta(pos, ac, size=w_size, start=1, stop=chr_end)
+  _, minmax_W_theta, mean_W_theta, variance_W_theta, skewness_W_theta, kurtosis_W_theta = st.describe(w_W_theta)
+  min_W_theta = minmax_W_theta[0]
+  max_W_theta = minmax_W_theta[1]
+  # Tajima's D
+  Taj_D = allel.tajima_d(ac, pos, start=1, stop=chr_end)
+  w_Taj_D, _, _ = allel.windowed_tajima_d(pos, ac, size=w_size, start=1, stop=chr_end)
+  _, minmax_Taj_D, mean_Taj_D, variance_Taj_D, skewness_Taj_D,\
+             kurtosis_Taj_D = st.describe(w_Taj_D, nan_policy='omit')
+  min_Taj_D = minmax_Taj_D[0]
+  max_Taj_D = minmax_Taj_D[1]
+  # distribution of sizes for naive runs of homozygosity (distance between heterozygous positions)
+  roh_distribution = distribution_roh(ga,pos,chr_end)
+  
+  return segsites, pi, min_pi, max_pi, mean_pi, variance_pi, skewness_pi,\
+         kurtosis_pi, min_W_theta, max_W_theta, mean_W_theta,\
+         variance_W_theta, skewness_W_theta, kurtosis_W_theta, Taj_D,\
+         min_Taj_D, max_Taj_D, mean_Taj_D, variance_Taj_D, skewness_Taj_D,\
+         kurtosis_Taj_D, roh_distribution
 
 
-def test_read_sample_info():
-    _, temporary_file_name = tempfile.mkstemp()
-    with open(temporary_file_name, 'w') as f:
-        f.write("sampleID age14C age14Cerror year coverage damageRepair groups\n")
-        f.write("modern   NA     NA          2010 30.03    TRUE         0\n")
-        f.write("ancient  1980   20          NA   10.01    TRUE         1\n")
-    sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
-    sample_size, group_levels, \
-    groups = read_sample_info(sample_info_file=temporary_file_name)
-    assert sample_id[0] == "modern"
-    assert sample_id[1] == "ancient"
-    assert coverage[0] == 30.03
-    assert is_ancient[0] is False
-    assert is_ancient[1] is True
-    assert is_modern[0] is True
-    assert is_modern[1] is False
-    assert is_dr[0]
-    assert is_dr[1]
-    assert total_ancient == 1
-    assert sample_size == 2
-    assert group_levels == 1
+def test_single_sample_sumstats():
+  # 4 individuals, 5 loci
+  test_ga = allel.GenotypeArray([[[ 0, 0],[ 0, 0],[ 0, 0],[ 0, 0]],
+                                 [[ 0, 1],[ 0, 1],[ 0, 1],[ 1, 1]],
+                                 [[-1,-1],[-1,-1],[-1,-1],[-1,-1]],
+                                 [[ 1, 1],[ 1, 1],[ 0, 1],[ 1, 1]],
+                                 [[ 0, 1],[ 0, 0],[ 0, 1],[ 0,-1]]], dtype='i1')
+  test_pos = (10,123,234,299,340)
+  test_chr_end = 400
+  test_w_s = 50
+  segsites, pi, min_pi, max_pi, mean_pi, variance_pi, skewness_pi,\
+         kurtosis_pi, min_W_theta, max_W_theta, mean_W_theta,\
+         variance_W_theta, skewness_W_theta, kurtosis_W_theta, Taj_D,\
+         min_Taj_D, max_Taj_D, mean_Taj_D, variance_Taj_D, skewness_Taj_D,\
+         kurtosis_Taj_D, roh_distribution\
+         = single_sample_sumstats(test_ga, test_pos, test_chr_end, test_w_s)
+  assert segsites==3
+  assert pi == pytest.approx(0.003154762)
+  assert min_pi == pytest.approx(0.)
+  assert max_pi == pytest.approx(0.01071429)
+  assert mean_pi == pytest.approx(0.003154762)
+  assert min_W_theta == pytest.approx(0.)
+  assert max_W_theta == pytest.approx(0.0077135)
+  assert mean_W_theta == pytest.approx(0.002892563)
+  test_ga = allel.GenotypeArray([[[ 0, 1],[ 0, 1],[ 1, 1],[ 0, 0]],
+                                 [[ 0, 1],[ 0, 1],[ 0, 1],[ 1, 1]],
+                                 [[ 0, 1],[ 0, 1],[-1,-1],[ 1, 1]],
+                                 [[ 0, 1],[ 0, 0],[ 0, 1],[ 1, 1]],
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]],
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]],
+                                 [[ 1, 1],[ 0, 1],[ 0, 1],[ 1, 1]],
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]],
+                                 [[ 1, 1],[ 0, 1],[ 0, 0],[ 0, 1]],
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]],
+                                 [[ 1, 1],[ 0, 1],[ 0, 1],[ 1, 1]],
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]],
+                                 [[ 0, 0],[ 0, 1],[ 0, 1],[ 0, 1]],
+                                 [[-1,-1],[-1,-1],[-1,-1],[ 1, 1]],
+                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]],
+                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]],
+                                 [[ 1, 1],[ 0, 1],[ 0, 0],[ 0, 1]],
+                                 [[ 1, 1],[ 1, 1],[ 1, 0],[ 1, 1]],
+                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]],
+                                 [[ 0, 1],[ 0, 0],[ 0, 1],[-1,-1]]], dtype='i1')
+  test_pos = (4,10,50,77,99,123,134,150,178,201,209,234,256,270,299,311,315,340,358,378)
+  segsites, pi, min_pi, max_pi, mean_pi, variance_pi, skewness_pi,\
+         kurtosis_pi, min_W_theta, max_W_theta, mean_W_theta,\
+         variance_W_theta, skewness_W_theta, kurtosis_W_theta, Taj_D,\
+         min_Taj_D, max_Taj_D, mean_Taj_D, variance_Taj_D, skewness_Taj_D,\
+         kurtosis_Taj_D, roh_distribution\
+         = single_sample_sumstats(test_ga, test_pos, test_chr_end, test_w_s)
+  assert max_Taj_D == pytest.approx(1.71931236)
+  assert (roh_distribution == [3,25,1,0]).all()
+
+### end CALCULATE SUMMARY STATISTICS : SINGLE SAMPLE  ····························
 
 
 
 
+### CALCULATE SUMMARY STATISTICS : ROH  ····························
 
+def roh(gv,pos):
+  het_sites = np.where(gv.to_n_alt(fill=-1)==1)[0]
+  roh_limits = list(map(pos.__getitem__, list(het_sites)))
+  roh = np.diff(roh_limits)
+  return roh
 
+def distribution_roh(ga,pos,chr_end):
+  # verify that positions are monotonically increasing
+  if np.all(pos[1:] > pos[:-1]):
+    roh_distribution = np.full(int(round(np.log10(chr_end)))+1, 0)
+    for ind in range(0,ga.n_samples):
+      gv = ga[:,ind]
+      roh_lenghts = roh(gv, pos)
+      for roh_size in range(0,int(round(np.log10(chr_end)))+1):
+        roh_distribution[roh_size] += sum( roh_lenghts >= 10**(roh_size) ) - sum( roh_lenghts >= 10**(roh_size+1) )
+  
+    if (roh_distribution < 0).any():
+      msg = "Negative number of ROH. Possibly wrong vector of positions"
+      raise ValueError(msg)
+  
+    return roh_distribution
 
+def test_roh():
+  test_ga = allel.GenotypeArray([[[0,1]],[[0,1]],[[0,0]],
+                                 [[0,1]],[[0,1]],[[0,0]],
+                                 [[0,1]],[[0,1]],[[1,1]],
+                                 [[0,1]],[[0,1]]], dtype='i1')
+  test_pos = (5,10,15,20,100,200,300,1300,3000,10000,20000)
+  test_roh = roh(test_ga,test_pos)
+  assert (test_roh == [5,10,80,200,1000,8700,10000]).all()
 
-
-
-
-
-
+def test_distribution_roh():
+  test_ga = allel.GenotypeArray([[[0,1],[0,1],[0,0]],
+                                 [[0,1],[0,1],[0,1]],
+                                 [[0,0],[-1,-1],[1,1]],
+                                 [[0,1],[1,1],[0,1]],
+                                 [[0,1],[0,1],[0,1]],
+                                 [[0,0],[0,0],[-1,-1]],
+                                 [[0,1],[0,1],[0,1]],
+                                 [[0,1],[0,1],[0,1]],
+                                 [[1,1],[0,0],[0,1]],
+                                 [[0,1],[0,1],[0,1]],
+                                 [[0,1],[0,1],[0,0]]], dtype='i1')
+  test_pos = [5,10,15,20,100,200,300,1300,3000,10000,20000]
+  d_roh = distribution_roh(test_ga,test_pos,30000)
+  assert (d_roh == [2,5,3,7,2]).all()
 
 
