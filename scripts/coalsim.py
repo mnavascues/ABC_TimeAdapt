@@ -8,16 +8,11 @@ import timeadapt
 
 def main():
   # get options for project and simulation:
-  project, batch, sim, genome_file, sample_file, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut = \
+  project, batch, sim, genome_file, _, _, _, N, _, _, _, seed_coal, _ = \
            timeadapt.get_options(proj_options_file = sys.argv[1], sim_options_file = sys.argv[2])
   
   # get recombination map:
-  num_of_chr, chrom_rates, chrom_ends = timeadapt.get_genome_map(gf = genome_file)
-
-  # make_recombination map:
-  positions, rates = timeadapt.make_rec_map(nchr = num_of_chr,
-                                            c_rates = chrom_rates,
-                                            c_ends = chrom_ends)
+  _, rates, positions = timeadapt.get_recombination_map(gf = genome_file)
   rate_map = msprime.RateMap(position = positions, rate = rates) 
 
   # simulate with msprime
@@ -27,7 +22,8 @@ def main():
                                 model              = "dtwf",
                                 recombination_rate = rate_map,
                                 random_seed        = seed_coal)
-  # make tree sequence a SLiM tree sequence
+
+  # make tree-sequence a SLiM-tree-sequence
   slim_ts = pyslim.annotate_defaults(msp_ts, model_type="WF", slim_generation=1)
   
   # save tree
