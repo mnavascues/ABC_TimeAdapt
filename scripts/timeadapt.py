@@ -279,14 +279,14 @@ def sequencing(ts, ssize, ttr, seq_error, dr, cov):
           ") do not match"
     raise ValueError(msg)
 
-  geno_data = empty_genotype_array(n_loci=ts.num_mutations,
+  geno_data = empty_genotype_array(n_loci=ts.num_sites,
                                    n_samples=ssize,
                                    ploidy=2)
   positions = []
   locus = 0
   for variant in ts.variants():
     positions.append(round(variant.position))
-    # print(positions)
+    #print(variant.position)
     var_genotypes = variant.genotypes
     # print("--------------------------------")
     # print(var_genotypes)
@@ -296,12 +296,17 @@ def sequencing(ts, ssize, ttr, seq_error, dr, cov):
       transversion_snp = False
     # print(num_reads)
     for i in range(0, 2 * ssize, 2):
-      geno_data[locus, int(i / 2)] = snp_calling(true_genotype=var_genotypes[i:(i + 2)],
-                                                 f_num_reads=num_reads[int(i / 2)],
-                                                 error_rate=seq_error,
-                                                 dr=dr[int(i / 2)],
-                                                 transversion=transversion_snp)
+      if len(variant.alleles)==2:
+        genotype_call = snp_calling(true_genotype=var_genotypes[i:(i + 2)],
+                                                  f_num_reads=num_reads[int(i / 2)],
+                                                  error_rate=seq_error,
+                                                  dr=dr[int(i / 2)],
+                                                  transversion=transversion_snp)
+      else:
+        genotype_call = [-1, -1] # this removes all SNP with more than two alleles
+      geno_data[locus, int(i / 2)] = genotype_call
     locus = locus + 1
+    #print(locus)
   return geno_data, positions
 
 #def test_sequencing():
@@ -315,6 +320,9 @@ def sequencing(ts, ssize, ttr, seq_error, dr, cov):
 
 def single_sample_sumstats(ga,pos,chr_end,w_size):
   ac = ga.count_alleles()
+  print("length positions"+str(len(pos)))
+  print("length allele count"+str(len(ac)))
+  
   sfs = allel.sfs_folded(ac)
   # total number of segregating sites (excluding monomorphic and all missing data)
   segsites = sum(sfs)-sfs[0]

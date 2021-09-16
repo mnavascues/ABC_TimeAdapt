@@ -50,7 +50,9 @@ def main():
                                      random_seed = np.random.randint(1, 2 ^ 32 - 1))
 
   print("Number of mutations " + str(mut_treesq.num_mutations))
-  if mut_treesq.num_mutations == 0:
+  print("Number of sites " + str(mut_treesq.num_sites))
+  # TODO : what do you do when num of mutations > num of sites ?????
+  if mut_treesq.num_sites == 0:
     print("No mutations")
     # TODO: Create empty sumstats
   else:
@@ -60,12 +62,17 @@ def main():
                                                 seq_error=seq_error,
                                                 dr=chrono_order_is_dr,
                                                 cov=chrono_order_coverage)
+                                                
+    print("length geno_data "+str(len(geno_data)))
+    print("length positions "+str(len(positions)))
+    # print("geno_data"+str(geno_data))
+    print("map_positions[-1] "+str(map_positions[-1]))
     segsites, pi, min_pi, max_pi, mean_pi, variance_pi, skewness_pi,\
          kurtosis_pi, min_W_theta, max_W_theta, mean_W_theta,\
          variance_W_theta, skewness_W_theta, kurtosis_W_theta, Taj_D,\
          min_Taj_D, max_Taj_D, mean_Taj_D, variance_Taj_D, skewness_Taj_D,\
          kurtosis_Taj_D, roh_distribution\
-         = timeadapt.single_sample_sumstats(geno_data, positions, max(positions), 50000)
+         = timeadapt.single_sample_sumstats(geno_data, positions, map_positions[-1], 50000)
     print("segsites: "+ str(segsites))
     print("pi: "+ str(pi))
     print("Taj_D: "+ str(Taj_D))
