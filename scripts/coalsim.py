@@ -1,7 +1,6 @@
 import sys
 import msprime
 import pyslim
-#import numpy as np
 import timeadapt
 
 ## how to run:
