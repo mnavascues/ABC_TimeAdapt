@@ -140,7 +140,59 @@ def get_genome_map(gf):
   lengths = table["Length"]
   ends = pd.Series(lengths).cumsum()
   return nchr, rates, ends
-  
+
+def get_recombination_map(gf):
+  table = pd.read_table(filepath_or_buffer=gf, sep=r'\s+')
+  nchr = max(table["Chromosome"])
+  chromosomes = list(table["Chromosome"])
+  rates = list(table["Recombination_rate"])
+  positions = list(table["Position"])
+  chr_ends_index = list(np.append(np.where(np.diff(chromosomes)==1)[0],len(chromosomes)-1))
+  chr_ends = list(map(positions.__getitem__,chr_ends_index))
+  rescaling_values = np.append(0,np.cumsum(chr_ends))
+  chromo = 0
+  # sum lenght of previous chromosomes to positions
+  for i in range(0,len(positions)):
+    positions[i] = positions[i] + rescaling_values[chromo]
+    if (i in chr_ends_index):
+      chromo += 1
+  # insert recombination rate between chromosomes
+  for chromo in range(0,nchr-1):
+    positions.insert(chr_ends_index[chromo]+1+chromo,positions[chr_ends_index[chromo]+chromo]+1)
+    rates.insert(chr_ends_index[chromo]+1+chromo,math.log(2))
+  positions.insert(0,0) # insert first position
+  return nchr, rates, positions
+
+def test_get_recombination_map():
+    _, temporary_file_name = tempfile.mkstemp()
+    with open(temporary_file_name, 'w') as f:
+      f.write("Chromosome	Position	Recombination_rate\n")
+      f.write("1	 1000000	1E-08\n")
+      f.write("1	 2000000	1E-07\n")
+      f.write("1	10000000	1E-08\n")
+      f.write("2	 1000000	1E-08\n")
+      f.write("2	 2000000	1E-10\n")
+      f.write("2	10000000	1E-07\n")
+      f.write("3	 2000000	1E-08\n")
+      f.write("3	 4000000	1E-09\n")
+      f.write("3	10000000	1E-08\n")
+      f.write("4	 3000000	1E-08\n")
+      f.write("4	 5000000	1E-10\n")
+      f.write("4	10000000	1E-07\n")
+    num_of_chr, rates, positions = get_recombination_map(temporary_file_name)
+    assert num_of_chr==4
+    assert (rates == [1E-08,1E-07,1E-08,math.log(2),
+                      1E-08,1E-10,1E-07,math.log(2),
+                      1E-08,1E-09,1E-08,math.log(2),
+                      1E-08,1E-10,1E-07])
+    assert (positions == [       0, 1000000, 2000000,10000000,
+                          10000001,11000000,12000000,20000000,
+                          20000001,22000000,24000000,30000000,
+                          30000001,33000000,35000000,40000000])
+
+
+
+
 
 def test_get_genome_map():
   num_of_chr, chrom_rates, chrom_ends = get_genome_map(gf="tests/input/human_genome.txt")
@@ -177,7 +229,7 @@ def make_rec_map(nchr, c_rates, c_ends):
 def test_make_rec_map():
   positions, rates = make_rec_map(nchr=3, c_rates=[1e-8,2e-8,3e-8], c_ends=[10,20,30])
   assert positions == [0,10,11,20,21,30]
-  assert rates ==  [1e-8,math.log(2),2e-8,math.log(2),3e-8]
+  assert rates ==  pytest.approx([1e-8,math.log(2),2e-8,math.log(2),3e-8])
 
 
 ### end MAKE RECOMBINATION MAP ························································
@@ -339,6 +391,7 @@ def single_sample_sumstats(ga,pos,chr_end,w_size):
   max_W_theta = minmax_W_theta[1]
   # Tajima's D
   Taj_D = allel.tajima_d(ac, pos, start=1, stop=chr_end)
+  #print("Taj_D:"+str(Taj_D))
   w_Taj_D, _, _ = allel.windowed_tajima_d(pos, ac, size=w_size, start=1, stop=chr_end)
   _, minmax_Taj_D, mean_Taj_D, variance_Taj_D, skewness_Taj_D,\
              kurtosis_Taj_D = st.describe(w_Taj_D, nan_policy='omit')

@@ -73,28 +73,30 @@ read_sample_info <- function(file){
 read_genome_info <- function(file){
   info <- read.table(file,header=T)
   #expected_header <- c("ID","chromosome_start","chromosome_end","centromere_start","centromere_end","recombination_rate")
-  expected_header <- c("Chromosome","Length","Recombination_rate") # for the moment these are the only columns used
+  expected_header <- c("Chromosome","Position","Recombination_rate") # for the moment these are the only columns used
   header_ok <- FALSE
   header_ok <- check_file_header(expected_header, file_header = colnames(info))
   if(header_ok){
-    chromosome_end <- cumsum(info$Length)-1
-    number_of_chromosomes <- nrow(info)
-    rec_map_SLiM_rates <- numeric()
-    rec_map_SLiM_ends <- numeric()
-    for (chr in seq_len(number_of_chromosomes-1)){
-      rec_map_SLiM_rates <- c(rec_map_SLiM_rates,
-                              info$Recombination_rate[chr],
-                              0.5)
-      rec_map_SLiM_ends  <- c(rec_map_SLiM_ends, 
-                              chromosome_end[chr], 
-                              chromosome_end[chr]+1)
+    nchr <- nlevels(as.factor(info$Chromosome))
+    chr_ends_index <- c(which(diff(info$Chromosome)!=0), length(info$Chromosome))
+    rescaling_values <- c(0,cumsum(info$Position[chr_ends_index]))  
+    chromo = 1
+    for (i in seq_along(info$Position)){
+      info$Position[i] = info$Position[i] + rescaling_values[chromo]
+      if (any(i == chr_ends_index)) chromo = chromo + 1
     }
-    rec_map_SLiM_rates <- c(rec_map_SLiM_rates,
-                            info$Recombination_rate[number_of_chromosomes])
-    rec_map_SLiM_ends  <- c(rec_map_SLiM_ends, 
-                            chromosome_end[number_of_chromosomes])
-    return( list(number_of_chromosomes = number_of_chromosomes,
-                 L = as.integer(chromosome_end[number_of_chromosomes]), # total genome length
+    rec_map_SLiM_ends <- numeric()
+    rec_map_SLiM_rates <- numeric()
+    for (chromo in seq_len(nchr)){
+      rec_map_SLiM_ends <- c(rec_map_SLiM_ends,info$Position[which(info$Chromosome==chromo)]-1)
+      rec_map_SLiM_rates <- c(rec_map_SLiM_rates,info$Recombination_rate[which(info$Chromosome==chromo)])
+      if (chromo!=max(info$Chromosome)){
+        rec_map_SLiM_ends <- c(rec_map_SLiM_ends,info$Position[chr_ends_index[chromo]])
+        rec_map_SLiM_rates <- c(rec_map_SLiM_rates,0.5)
+      }
+    }
+    return( list(number_of_chromosomes = nchr,
+                 L = as.integer(rec_map_SLiM_ends[length(rec_map_SLiM_ends)]), # total genome length
                  rec_map_SLiM = data.frame(ends=as.integer(rec_map_SLiM_ends),
                                            rates=rec_map_SLiM_rates) ))
   }else{

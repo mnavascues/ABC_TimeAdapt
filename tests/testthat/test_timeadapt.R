@@ -42,7 +42,7 @@ test_that("Reading sample info file gets right values", {
 # read_genome_info()
 test_that("Reading genome info file gets right values", {
   fname <- tempfile()
-  write("Chromosome Length   Recombination_rate", fname)
+  write("Chromosome Position Recombination_rate", fname)
   write("1          500000	 1.11E-09", fname, append=T)
   write("2          1000000  1.01E-09", fname, append=T)
   Genome <- read_genome_info(fname)

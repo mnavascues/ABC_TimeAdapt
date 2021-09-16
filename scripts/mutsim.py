@@ -18,6 +18,9 @@ def main():
     sample_size, group_levels, \
     groups = timeadapt.read_sample_info(sample_info_file=sample_file)
 
+  _, _, map_positions = timeadapt.get_recombination_map(gf = genome_file)
+
+
   # check sample size from sample file equal to simulated sampled size in config file
   if sum(ss) != sample_size:
     msg = "Number of samples from *.ini file (sum of ss=" + str(sum(ss)) + \
