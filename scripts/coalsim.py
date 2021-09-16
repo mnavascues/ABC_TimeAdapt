@@ -11,9 +11,6 @@ def main():
   project, batch, sim, genome_file, sample_file, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut = \
            timeadapt.get_options(proj_options_file = sys.argv[1], sim_options_file = sys.argv[2])
   
-  # set random seed:
-  # np.random.seed(seed_coal) # (use seed directly on sim_ancestry, no need of numpy)
-
   # get recombination map:
   num_of_chr, chrom_rates, chrom_ends = timeadapt.get_genome_map(gf = genome_file)
 
@@ -29,7 +26,6 @@ def main():
                                 population_size    = N[0],
                                 model              = "dtwf",
                                 recombination_rate = rate_map,
-                                #random_seed        = np.random.randint(1, 2 ^ 32 - 1))
                                 random_seed        = seed_coal)
   # make tree sequence a SLiM tree sequence
   slim_ts = pyslim.annotate_defaults(msp_ts, model_type="WF", slim_generation=1)
