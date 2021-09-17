@@ -144,7 +144,7 @@ TimeAdapt implements the method described by Pavinato et al. (2020). The code pu
 
 ### Funding
 
-
+This project has received funding from the European Union’s Horizon 2020 research and innovation programme under the Marie Skłodowska-Curie grant agreement No 791695 (TimeAdapt).
 
 ### Licence
 
