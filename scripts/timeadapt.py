@@ -384,43 +384,61 @@ def sequencing(ts, ssize, ttr, seq_error, dr, cov):
 ### end SIMULATE SEQUENCING  ····························
 
 
+
+def save_moments_2_dict(moments,sumstats,sample_name,sep,stat_name):
+  sumstats[sample_name+sep+"min"+stat_name] = np.ma.getdata(moments[1][0])
+  sumstats[sample_name+sep+"max"+stat_name] = np.ma.getdata(moments[1][1])
+  sumstats[sample_name+sep+"m"+stat_name] = np.ma.getdata(moments[2])
+  sumstats[sample_name+sep+"v"+stat_name] = np.ma.getdata(moments[3])
+  sumstats[sample_name+sep+"s"+stat_name] = np.ma.getdata(moments[4])
+  sumstats[sample_name+sep+"k"+stat_name] = np.ma.getdata(moments[5])
+
 ### CALCULATE SUMMARY STATISTICS : SINGLE SAMPLE  ····························
 
-def single_sample_sumstats(ga,pos,chr_end,w_size):
+def single_sample_sumstats(ga,pos,chr_end,w_size,sumstats,name="",sep="_",quiet=True):
   ac = ga.count_alleles()
-  print("length positions"+str(len(pos)))
-  print("length allele count"+str(len(ac)))
-  
   sfs = allel.sfs_folded(ac)
+
   # total number of segregating sites (excluding monomorphic and all missing data)
   segsites = sum(sfs)-sfs[0]
+  sumstats[name+sep+"S"]=segsites
+  if quiet is False: print("Segregating sites: "+ str(segsites))
+
+  # Observed heterozygosity and Inbreeding coefficient
+  ho = st.describe(allel.heterozygosity_observed(ga), nan_policy='omit')
+  save_moments_2_dict(ho,sumstats,name,sep,"Ho")
+  fis = st.describe(allel.inbreeding_coefficient(ga), nan_policy='omit')
+  save_moments_2_dict(fis,sumstats,name,sep,"Fis")
+  if quiet is False: print("Ho: " + str(ho) + "; Fis: " + str(fis) )
+
   # pairwise genetic diversity
-  pi = allel.sequence_diversity(pos, ac, start=1, stop=chr_end)
+  total_pi = allel.sequence_diversity(pos, ac, start=1, stop=chr_end)
+  sumstats[name+sep+"Pi"]=total_pi
   w_pi, _, _, _ = allel.windowed_diversity(pos, ac, size=w_size, start=1, stop=chr_end)
-  _, minmax_pi, mean_pi, variance_pi, skewness_pi, kurtosis_pi = st.describe(w_pi)
-  min_pi = minmax_pi[0]
-  max_pi = minmax_pi[1]
+  pi = st.describe(w_pi)
+  save_moments_2_dict(pi,sumstats,name,sep,"Pi")
+  if quiet is False: print("π: "+ str(total_pi) + " ; " + str(pi))
+  
   # Watterson theta (from number of segregating sites)
   w_W_theta, _, _, _ = allel.windowed_watterson_theta(pos, ac, size=w_size, start=1, stop=chr_end)
-  _, minmax_W_theta, mean_W_theta, variance_W_theta, skewness_W_theta, kurtosis_W_theta = st.describe(w_W_theta)
-  min_W_theta = minmax_W_theta[0]
-  max_W_theta = minmax_W_theta[1]
+  W_theta = st.describe(w_W_theta)
+  save_moments_2_dict(W_theta,sumstats,name,sep,"WT")
+  if quiet is False: print("Watterson θ: "+ str(W_theta))
+  
   # Tajima's D
-  Taj_D = allel.tajima_d(ac, pos, start=1, stop=chr_end)
-  #print("Taj_D:"+str(Taj_D))
+  total_Taj_D = allel.tajima_d(ac, pos, start=1, stop=chr_end)
+  sumstats[name+sep+"TD"]=total_Taj_D
   w_Taj_D, _, _ = allel.windowed_tajima_d(pos, ac, size=w_size, start=1, stop=chr_end)
-  _, minmax_Taj_D, mean_Taj_D, variance_Taj_D, skewness_Taj_D,\
-             kurtosis_Taj_D = st.describe(w_Taj_D, nan_policy='omit')
-  min_Taj_D = minmax_Taj_D[0]
-  max_Taj_D = minmax_Taj_D[1]
+  Taj_D = st.describe(w_Taj_D, nan_policy='omit')
+  save_moments_2_dict(Taj_D,sumstats,name,sep,"TD")
+  if quiet is False: print("Tajima's D: "+ str(total_Taj_D)+ " ; " + str(Taj_D))
+
   # distribution of sizes for naive runs of homozygosity (distance between heterozygous positions)
   roh_distribution = distribution_roh(ga,pos,chr_end)
-  
-  return segsites, pi, min_pi, max_pi, mean_pi, variance_pi, skewness_pi,\
-         kurtosis_pi, min_W_theta, max_W_theta, mean_W_theta,\
-         variance_W_theta, skewness_W_theta, kurtosis_W_theta, Taj_D,\
-         min_Taj_D, max_Taj_D, mean_Taj_D, variance_Taj_D, skewness_Taj_D,\
-         kurtosis_Taj_D, roh_distribution
+  sumstats[name+sep+"RoHD"]=roh_distribution
+  if quiet is False: print("Distribution of Runs of Homozygosity: "+ str(roh_distribution))
+
+  return
 
 
 def test_single_sample_sumstats():
@@ -433,20 +451,16 @@ def test_single_sample_sumstats():
   test_pos = (10,123,234,299,340)
   test_chr_end = 400
   test_w_s = 50
-  segsites, pi, min_pi, max_pi, mean_pi, variance_pi, skewness_pi,\
-         kurtosis_pi, min_W_theta, max_W_theta, mean_W_theta,\
-         variance_W_theta, skewness_W_theta, kurtosis_W_theta, Taj_D,\
-         min_Taj_D, max_Taj_D, mean_Taj_D, variance_Taj_D, skewness_Taj_D,\
-         kurtosis_Taj_D, roh_distribution\
-         = single_sample_sumstats(test_ga, test_pos, test_chr_end, test_w_s)
-  assert segsites==3
-  assert pi == pytest.approx(0.003154762)
-  assert min_pi == pytest.approx(0.)
-  assert max_pi == pytest.approx(0.01071429)
-  assert mean_pi == pytest.approx(0.003154762)
-  assert min_W_theta == pytest.approx(0.)
-  assert max_W_theta == pytest.approx(0.0077135)
-  assert mean_W_theta == pytest.approx(0.002892563)
+  test_sumstats = {}
+  single_sample_sumstats(test_ga, test_pos, test_chr_end, test_w_s, test_sumstats)
+  assert test_sumstats["_S"]==3
+  assert test_sumstats["_Pi"] == pytest.approx(0.003154762)
+  assert test_sumstats["_minPi"] == pytest.approx(0.)
+  assert test_sumstats["_maxPi"] == pytest.approx(0.01071429)
+  assert test_sumstats["_mPi"] == pytest.approx(0.003154762)
+  assert test_sumstats["_minWT"] == pytest.approx(0.)
+  assert test_sumstats["_maxWT"] == pytest.approx(0.0077135)
+  assert test_sumstats["_mWT"] == pytest.approx(0.002892563)
   test_ga = allel.GenotypeArray([[[ 0, 1],[ 0, 1],[ 1, 1],[ 0, 0]],
                                  [[ 0, 1],[ 0, 1],[ 0, 1],[ 1, 1]],
                                  [[ 0, 1],[ 0, 1],[-1,-1],[ 1, 1]],
@@ -468,14 +482,11 @@ def test_single_sample_sumstats():
                                  [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]],
                                  [[ 0, 1],[ 0, 0],[ 0, 1],[-1,-1]]], dtype='i1')
   test_pos = (4,10,50,77,99,123,134,150,178,201,209,234,256,270,299,311,315,340,358,378)
-  segsites, pi, min_pi, max_pi, mean_pi, variance_pi, skewness_pi,\
-         kurtosis_pi, min_W_theta, max_W_theta, mean_W_theta,\
-         variance_W_theta, skewness_W_theta, kurtosis_W_theta, Taj_D,\
-         min_Taj_D, max_Taj_D, mean_Taj_D, variance_Taj_D, skewness_Taj_D,\
-         kurtosis_Taj_D, roh_distribution\
-         = single_sample_sumstats(test_ga, test_pos, test_chr_end, test_w_s)
-  assert max_Taj_D == pytest.approx(1.71931236)
-  assert (roh_distribution == [3,25,1,0]).all()
+  test_sumstats = {}
+  test_name = "test"
+  single_sample_sumstats(test_ga, test_pos, test_chr_end, test_w_s, test_sumstats, test_name)
+  assert test_sumstats["test_maxTD"] == pytest.approx(1.71931236)
+  assert (test_sumstats["test_RoHD"] == [3,25,1,0]).all()
 
 ### end CALCULATE SUMMARY STATISTICS : SINGLE SAMPLE  ····························
 

@@ -64,61 +64,50 @@ def main():
   # read tree sequence from SLiM output file:
   treesq = pyslim.load("results/"+project+"/"+batch+"/forwsim_"+sim+".trees")
 
+  # Simulate neutral mutation over the tree sequence
   mut_treesq = msprime.sim_mutations(treesq,
                                      rate = mu,
                                      random_seed = np.random.randint(1, 2 ^ 32 - 1))
+  # print("Number of mutations " + str(mut_treesq.num_mutations))
+  # print("Number of sites " + str(mut_treesq.num_sites))
 
-  print("Number of mutations " + str(mut_treesq.num_mutations))
-  print("Number of sites " + str(mut_treesq.num_sites))
-  # TODO : what do you do when num of mutations > num of sites ?????
+
+  #### CALCULATE SUMMARY STATISTICS
+  ####------------------------------
+  
+  # open file to save summary statistics
+  outfile = open("results/" + project + "/" + batch + "/sumstats_" + sim + ".txt", "w")
+
+  ref_table_sumstats = {}
+  
   if mut_treesq.num_sites == 0:
     print("No mutations")
     # TODO: Create empty sumstats
   else:
-    geno_data, positions = timeadapt.sequencing(ts=mut_treesq,
-                                                ssize=sample_size,
-                                                ttr=ttratio,
-                                                seq_error=seq_error,
-                                                dr=chrono_order_is_dr,
-                                                cov=chrono_order_coverage)
-                                                
-    print("length geno_data "+str(len(geno_data)))
-    print("length positions "+str(len(positions)))
-    # print("geno_data"+str(geno_data))
-    print("map_positions[-1] "+str(map_positions[-1]))
-    segsites, pi, min_pi, max_pi, mean_pi, variance_pi, skewness_pi,\
-         kurtosis_pi, min_W_theta, max_W_theta, mean_W_theta,\
-         variance_W_theta, skewness_W_theta, kurtosis_W_theta, Taj_D,\
-         min_Taj_D, max_Taj_D, mean_Taj_D, variance_Taj_D, skewness_Taj_D,\
-         kurtosis_Taj_D, roh_distribution\
-         = timeadapt.single_sample_sumstats(geno_data, positions, map_positions[-1], 50000)
-    print("segsites: "+ str(segsites))
-    print("pi: "+ str(pi))
-    print("Taj_D: "+ str(Taj_D))
-    print("roh_distribution: "+ str(roh_distribution))
-    print(np.all(positions[1:] > positions[:-1]))
- 
-    print("-------------------------------------------------------------------")
-    #print("Genotype data matrix:")
-    #print(geno_data)
-    #allele_counts = geno_data.count_alleles()
-    #print("Allele count=\n"+str(allele_counts))
-    # TODO : make a function to calculate single sample summary stats, call it here and below
-    #pi_per_lg = allel.sequence_diversity(positions, allele_counts,
-    #                                     start=1,
-    #                                     stop=40000000)
-    #he_per_site = allel.mean_pairwise_difference(allele_counts)
-    #pi_per_window, windows, n_bases, \
-    #  n_sites = allel.windowed_diversity(positions, allele_counts,
-    #                                     size=50000,
-    #                                     start=1,
-    #                                     stop=40000000)
-    #allele_counts_per_group = {}
-    #for lev in range(0, group_levels):
-    #  for g in range(0, number_of_groups[lev]):
-    #    allele_counts_per_group['level' + str(lev) + 'group' + str(g)] = \
-    #      geno_data.count_alleles(subpop=groups_in_level['level' + str(lev) + 'group' + str(g)])
-        # TODO : call here function for single sample sumstats
+    geno_data, positions = timeadapt.sequencing(ts = mut_treesq,
+                                                ssize = sample_size,
+                                                ttr = ttratio,
+                                                seq_error = seq_error,
+                                                dr = chrono_order_is_dr,
+                                                cov = chrono_order_coverage)
+    sumstats = timeadapt.single_sample_sumstats(ga = geno_data,
+                                                pos = positions,
+                                                chr_end = map_positions[-1],
+                                                w_size = 50000,
+                                                sumstats = ref_table_sumstats,
+                                                sep = "")
+    
+    for lev in range(0, group_levels):
+      print("level "+str(lev))
+      for g in range(0, number_of_groups[lev]):
+        print("  group "+str(g)+":"+str(groups_in_level['level' + str(lev) + 'group' + str(g)]))
+        sumstats = timeadapt.single_sample_sumstats(ga = geno_data[:, groups_in_level['level'+str(lev)+'group'+str(g)]],
+                                                    pos = positions,
+                                                    chr_end = map_positions[-1],
+                                                    w_size = 50000,
+                                                    sumstats = ref_table_sumstats,
+                                                    name = 'l'+str(lev)+'g'+str(g))
+
 
     #for lev in range(0, group_levels):
     #  for g in range(0, number_of_groups[lev]):
@@ -129,9 +118,6 @@ def main():
     #      print("Level: " + str(lev) + ". Groups: " + str(g) + " " + str(h) +
     #            ". Pairwise difference: " + str(pairwise_diff))
                                               
-
-  outfile = open("results/" + project + "/" + batch + "/sumstats_" + sim + ".txt",
-                   "w")
 
 
 
