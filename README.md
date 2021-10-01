@@ -14,6 +14,7 @@ The code has been tested with the following versions (on Ubuntu 20.04):
   - scipy 1.5.4
   - pytest 6.2.4
   - pandas 1.2.4
+  - dill 0.3.4
 - R 3.6.3
   - ini 0.3.1
   - extraDistr 1.8.11
@@ -33,6 +34,7 @@ conda install scikit-allel
 pip install msprime
 conda install pyslim
 conda install pytest
+conda install dill
 conda install -c r r-rcarbon
 conda install -c r r-ini
 conda install -c r r-extraDistr

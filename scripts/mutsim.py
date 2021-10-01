@@ -19,7 +19,9 @@ import msprime
 import pyslim
 import numpy as np
 import allel
+import dill
 import timeadapt
+
 
 def main():
   # get options for project and simulation:
@@ -75,9 +77,6 @@ def main():
   #### CALCULATE SUMMARY STATISTICS
   ####------------------------------
   
-  # open file to save summary statistics
-  outfile = open("results/" + project + "/" + batch + "/sumstats_" + sim + ".txt", "w")
-
   ref_table_sumstats = {}
   
   if mut_treesq.num_sites == 0:
@@ -107,6 +106,7 @@ def main():
                                          w_size = 50000,
                                          sumstats = ref_table_sumstats,
                                          name = 'l'+str(lev)+'g'+str(g))
+    
 
 
     #for lev in range(0, group_levels):
@@ -118,8 +118,9 @@ def main():
     #      print("Level: " + str(lev) + ". Groups: " + str(g) + " " + str(h) +
     #            ". Pairwise difference: " + str(pairwise_diff))
                                               
-
-
+  # save binary with row of summary statistics for the reference table:
+  dill.dump(ref_table_sumstats, file = open("results/" + project + "/" + batch + "/sumstats_" + sim + ".pkl", "wb"))
+  #ref_table_sumstats = dill.load(file = open("results/" + project + "/" + batch + "/sumstats_" + sim + ".pkl", "rb"))
 
 ############################################################################################################
 if __name__ == "__main__":

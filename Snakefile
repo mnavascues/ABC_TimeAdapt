@@ -19,7 +19,7 @@ sims = range(1,num_of_sims+1)
 
 # run simulations
 rule sim:
-    input: sumstats_files = expand('results/{p}/{b}/sumstats_{s}.txt',p=project,b=batch,s=sims)
+    input: sumstats_files = expand('results/{p}/{b}/sumstats_{s}.pkl',p=project,b=batch,s=sims)
 
 
 # simulation of mutations with msprime
@@ -29,7 +29,7 @@ rule mutsim:
         sim_ini='results/{p}/{b}/sim_{s}.ini',
         forwsim_trees='results/{p}/{b}/forwsim_{s}.trees'
     output:
-        sumstats_files='results/{p}/{b}/sumstats_{s}.txt'
+        sumstats_files='results/{p}/{b}/sumstats_{s}.pkl'
     shell:
         'python {input.script} {options_file} {input.sim_ini}'
 
