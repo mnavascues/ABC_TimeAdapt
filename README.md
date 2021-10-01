@@ -24,7 +24,7 @@ The code has been tested with the following versions (on Ubuntu 20.04):
 
 ### Usage
 
-These instructions are written for myself and might need to be adapted to other configurations.
+TimeAdapt is a collection of scripts in R and Pyhton. Here it is described how to use them using a conda environment and a snakemake workflow to run them to perform an analysis.
 
 Creation of the environment from scratch:
 ```shell
@@ -47,23 +47,42 @@ Creation of the environment via yml file:
 conda env create -f timeadapt.yml
 ```
 
-Run (using snakemake) tests (testthat for R, pytest for Python)
+You need to prepare four files:
+
+*config file*: a ini file with options regarding the Setting, Model, Prior and Statistics to be used in your analysis
+*sample file*: a text file (in the form of a space separated table) with metadata of your samples (ID, age, sequencing coverage, etc)
+*genome file*: a text file with a description of the genome organization (chromosomes, recombination map)
+*data file*: a vcf file with the genetic data
+
+To run different parts of the analysis with snakemake edit snakefile to change the path and name of the file (`options_file`, line 4):
+
+```python
+import configparser
+
+# READ OPTIONS FILE
+options_file = 'path/to/your/config_file.ini'
+...
+```
+
+Before running your analysis is highly recommended to performs some tests. Unit tests (using testthat for R, pytest for Python) con be run using:
+
 ```shell
 conda activate timeadapt
 snakemake test
 ```
+As intergration test you can use the distributed snakefile (that is with: `options_file = 'tests/input/config_project.ini'`) to run one batch of simulations with Snakefile and get directed acyclic graph of pipeline:
 
-Run one batch of simulations with Snakefile and get directed acyclic graph of pipeline
 ```shell
 conda activate timeadapt
 snakemake sim
 snakemake --dag | dot -Tsvg > results/workflow_dag.svg
 ```
 
-Alternatively you can create your own pipeline. For simulations, simulations.R generates files slim_\*.sh and pyslim_\*.sh with the SLiM and Python command lines that produce each simulation (SLiM must be run first, then Python).
+You can remove all files (all projects, all batches) from your results folder, or remove results from your project (all batches) or to remove files from a single batch:
 
-Remove *all* results from project folder
 ```shell
+snakemeke clean_batch
+snakemake clean_project
 snakemake clean_all
 ```
 
