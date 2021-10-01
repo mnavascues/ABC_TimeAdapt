@@ -90,23 +90,23 @@ def main():
                                                 seq_error = seq_error,
                                                 dr = chrono_order_is_dr,
                                                 cov = chrono_order_coverage)
-    sumstats = timeadapt.single_sample_sumstats(ga = geno_data,
-                                                pos = positions,
-                                                chr_end = map_positions[-1],
-                                                w_size = 50000,
-                                                sumstats = ref_table_sumstats,
-                                                sep = "")
+    timeadapt.single_sample_sumstats(ga = geno_data,
+                                     pos = positions,
+                                     chr_end = map_positions[-1],
+                                     w_size = 50000,
+                                     sumstats = ref_table_sumstats,
+                                     sep = "")
     
     for lev in range(0, group_levels):
       print("level "+str(lev))
       for g in range(0, number_of_groups[lev]):
         print("  group "+str(g)+":"+str(groups_in_level['level' + str(lev) + 'group' + str(g)]))
-        sumstats = timeadapt.single_sample_sumstats(ga = geno_data[:, groups_in_level['level'+str(lev)+'group'+str(g)]],
-                                                    pos = positions,
-                                                    chr_end = map_positions[-1],
-                                                    w_size = 50000,
-                                                    sumstats = ref_table_sumstats,
-                                                    name = 'l'+str(lev)+'g'+str(g))
+        timeadapt.single_sample_sumstats(ga = geno_data[:, groups_in_level['level'+str(lev)+'group'+str(g)]],
+                                         pos = positions,
+                                         chr_end = map_positions[-1],
+                                         w_size = 50000,
+                                         sumstats = ref_table_sumstats,
+                                         name = 'l'+str(lev)+'g'+str(g))
 
 
     #for lev in range(0, group_levels):
