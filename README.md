@@ -7,8 +7,8 @@ TimeAdapt makes (i.e. will eventually make) a joint inference of demography and 
 The code has been tested with the following versions (on Ubuntu 20.04):
 
 - Python 3.8.10
-  - scikit-allel 1.3.2
-  - msprime 1.0.1
+  - scikit-allel 1.3.5
+  - msprime 1.0.2
   - numpy 1.20.3
   - pyslim 0.403
   - scipy 1.5.4
@@ -50,8 +50,11 @@ conda env create -f timeadapt.yml
 You need to prepare four files:
 
 *config file*: a ini file with options regarding the Setting, Model, Prior and Statistics to be used in your analysis
+
 *sample file*: a text file (in the form of a space separated table) with metadata of your samples (ID, age, sequencing coverage, etc)
+
 *genome file*: a text file with a description of the genome organization (chromosomes, recombination map)
+
 *data file*: a vcf file with the genetic data
 
 To run different parts of the analysis with snakemake edit snakefile to change the path and name of the file (`options_file`, line 4):
