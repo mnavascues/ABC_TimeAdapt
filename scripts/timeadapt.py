@@ -23,8 +23,6 @@ import math
 import tempfile # for creating temporal files on testing
 import pytest
 
-
-
 ### GET OPTIONS ··············································································
 def get_options(proj_options_file,sim_options_file):
   proj_options = configparser.ConfigParser()
@@ -47,8 +45,6 @@ def get_options(proj_options_file,sim_options_file):
   seed_mut     = sim_options.getint('Seeds','seed_mut')
 
   return project, batch, sim, genome_file, sample_file, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut
-
-
 def test_get_options():
   project, batch, sim, genome_file, sample_file, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut = \
            get_options(proj_options_file = "tests/input/config_project.ini", sim_options_file  = "tests/input/sim_1.ini")
@@ -63,16 +59,9 @@ def test_get_options():
   assert N[0] == 11
   assert seed_coal == 1066941363
   assert seed_mut == 4083239485
- 
-
 ### end GET OPTIONS ··········································································
 
-
-
-
-
 ### READ SAMPLE INFO FILE .........
-
 def read_sample_info(sample_info_file):
     """
     Read text file with information on sample. Format of the file:
@@ -120,8 +109,6 @@ def read_sample_info(sample_info_file):
 
     return sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
            sample_size, group_levels, groups
-
-
 def test_read_sample_info():
     _, temporary_file_name = tempfile.mkstemp()
     with open(temporary_file_name, 'w') as f:
@@ -143,10 +130,7 @@ def test_read_sample_info():
     assert total_ancient == 1
     assert sample_size == 2
     assert group_levels == 1
-
 ### end READ SAMPLE INFO FILE .........
-
-
 
 ### GET GENOME MAP ····································································
 def get_genome_map(gf):
@@ -156,7 +140,6 @@ def get_genome_map(gf):
   lengths = table["Length"]
   ends = pd.Series(lengths).cumsum()
   return nchr, rates, ends
-
 def get_recombination_map(gf):
   table = pd.read_table(filepath_or_buffer=gf, sep=r'\s+')
   nchr = max(table["Chromosome"])
@@ -172,13 +155,13 @@ def get_recombination_map(gf):
     positions[i] = positions[i] + rescaling_values[chromo]
     if (i in chr_ends_index):
       chromo += 1
+  chr_ends = list(map(positions.__getitem__,chr_ends_index))
   # insert recombination rate between chromosomes
   for chromo in range(0,nchr-1):
     positions.insert(chr_ends_index[chromo]+1+chromo,positions[chr_ends_index[chromo]+chromo]+1)
     rates.insert(chr_ends_index[chromo]+1+chromo,math.log(2))
   positions.insert(0,0) # insert first position
-  return nchr, rates, positions
-
+  return nchr, chr_ends, rates, positions
 def test_get_recombination_map():
     _, temporary_file_name = tempfile.mkstemp()
     with open(temporary_file_name, 'w') as f:
@@ -195,8 +178,9 @@ def test_get_recombination_map():
       f.write("4	 3000000	1E-08\n")
       f.write("4	 5000000	1E-10\n")
       f.write("4	10000000	1E-07\n")
-    num_of_chr, rates, positions = get_recombination_map(temporary_file_name)
+    num_of_chr, chr_ends, rates, positions = get_recombination_map(temporary_file_name)
     assert num_of_chr==4
+    assert (chr_ends == [10000000,20000000,30000000,40000000])
     assert (rates == [1E-08,1E-07,1E-08,math.log(2),
                       1E-08,1E-10,1E-07,math.log(2),
                       1E-08,1E-09,1E-08,math.log(2),
@@ -205,11 +189,6 @@ def test_get_recombination_map():
                           10000001,11000000,12000000,20000000,
                           20000001,22000000,24000000,30000000,
                           30000001,33000000,35000000,40000000])
-
-
-
-
-
 def test_get_genome_map():
   num_of_chr, chrom_rates, chrom_ends = get_genome_map(gf="tests/input/human_genome.txt")
   assert num_of_chr == 22
@@ -223,8 +202,6 @@ def test_get_genome_map():
                    1943767673,2077042982,2191407310,2298451028,2400442217,
                    2490780562,2574038003,2654411288,2713028904,2777473071,
                    2824183054,2875001522]).all()
-
-
 ### end GET GENOME MAP ································································
 
 ### MAKE RECOMBINATION MAP ····························································
@@ -240,16 +217,11 @@ def make_rec_map(nchr, c_rates, c_ends):
   pos.append(c_ends[nchr-1])
   rat.append(c_rates[nchr-1])
   return pos, rat
-
-
 def test_make_rec_map():
   positions, rates = make_rec_map(nchr=3, c_rates=[1e-8,2e-8,3e-8], c_ends=[10,20,30])
   assert positions == [0,10,11,20,21,30]
   assert rates ==  pytest.approx([1e-8,math.log(2),2e-8,math.log(2),3e-8])
-
-
 ### end MAKE RECOMBINATION MAP ························································
-
 
 ### MAKE EMPTY GENOTYPE ARRAY ····························································
 def empty_genotype_array(n_loci, n_samples, ploidy=2, allele=-1):
@@ -261,7 +233,6 @@ def empty_genotype_array(n_loci, n_samples, ploidy=2, allele=-1):
   """
   empty_ga = allel.GenotypeArray(np.full((n_loci, n_samples, ploidy), allele, dtype='i1'), dtype='i1')
   return empty_ga
-
 def test_empty_genotype_array():
   test_ga = empty_genotype_array(3, 4, ploidy=2, allele=-1)
   assert type(test_ga) is allel.model.ndarray.GenotypeArray
@@ -270,15 +241,10 @@ def test_empty_genotype_array():
   assert all(test_ga[2,3] == [-1,-1])
   test_ga = empty_genotype_array(3, 4, ploidy=2, allele=0)
   assert all(test_ga[1,1] == [0,0])
-
 ### end MAKE EMPTY GENOTYPE ARRAY ····························································
 
-
-
 ### SNP CALLING FROM SIMULATED READS (WITH SEQUENCING ERROR)  ····························
-
-def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=8,
-                score_th=10, ratio_th=3, dr=True, transversion=True):
+def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=8, score_th=10, ratio_th=3, dr=True, transversion=True):
     """
     snp_calling function takes perfect simulated data from one locus of one 
     diploid individual and adds missing data and error according to the number 
@@ -324,7 +290,6 @@ def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=8,
     else:
         genotype_call = [-1, -1]
     return genotype_call
-
 def test_snp_calling():
   np.random.seed(1234)
   genotype_call = snp_calling( [0, 1], 100, error_rate=0.005, reads_th=1,
@@ -333,13 +298,9 @@ def test_snp_calling():
   genotype_call = snp_calling( [0, 1], 1, error_rate=0.005, reads_th=10,
                 score_th=10, ratio_th=3, dr=True, transversion=True)
   assert genotype_call == [-1,-1]
-
 ### end SNP CALLING FROM SIMULATED READS (WITH SEQUENCING ERROR)  ····························
 
-
-
 ### SIMULATE SEQUENCING  ····························
-
 def sequencing(ts, ssize, ttr, seq_error, dr, cov):
   if len(cov) != ssize:
     msg = "Number of coverage values (length=" + str(len(cov)) + \

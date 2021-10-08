@@ -28,7 +28,7 @@ def main():
            timeadapt.get_options(proj_options_file = sys.argv[1], sim_options_file = sys.argv[2])
   
   # get recombination map:
-  _, rates, positions = timeadapt.get_recombination_map(gf = genome_file)
+  _, _, rates, positions = timeadapt.get_recombination_map(gf = genome_file)
   rate_map = msprime.RateMap(position = positions, rate = rates) 
 
   # simulate with msprime

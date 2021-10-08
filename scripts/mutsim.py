@@ -22,7 +22,6 @@ import allel
 import dill
 import timeadapt
 
-
 def main():
   # get options for project and simulation:
   project, batch, sim, genome_file, sample_file, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut = \
@@ -36,8 +35,12 @@ def main():
     sample_size, group_levels, \
     groups = timeadapt.read_sample_info(sample_info_file=sample_file)
 
-  _, _, map_positions = timeadapt.get_recombination_map(gf = genome_file)
+  nchr, chr_ends, map_rates, map_positions = timeadapt.get_recombination_map(gf = genome_file)
 
+  print(nchr)
+  print(chr_ends)
+  print(map_rates)
+  print(map_positions)
 
   # check sample size from sample file equal to simulated sampled size in config file
   if sum(ss) != sample_size:
@@ -57,7 +60,7 @@ def main():
   for lev in range(0, group_levels):
     chrono_order_groups[lev] = [groups[lev][i] for i in chrono_order]
     number_of_groups[lev] = len(np.unique(groups[lev]))
-    total_number_of_groups += number_of_groups[lev]
+    # total_number_of_groups += number_of_groups[lev]
     num_of_pair_comparisons += int((number_of_groups[lev] * (number_of_groups[lev] - 1)) / 2)
     for g in range(0, number_of_groups[lev]):
       groups_in_level['level' + str(lev) + 'group' + str(g)] = np.where(chrono_order_groups[lev] == g)[0]
@@ -89,9 +92,11 @@ def main():
                                                 seq_error = seq_error,
                                                 dr = chrono_order_is_dr,
                                                 cov = chrono_order_coverage)
+    print(map_positions)
     timeadapt.single_sample_sumstats(ga = geno_data,
                                      pos = positions,
-                                     chr_end = map_positions[-1],
+                                     nchr = 1,
+                                     chr_ends = [map_positions[-1]],
                                      w_size = 50000,
                                      sumstats = ref_table_sumstats,
                                      sep = "")
@@ -102,7 +107,8 @@ def main():
         print("  group "+str(g)+":"+str(groups_in_level['level' + str(lev) + 'group' + str(g)]))
         timeadapt.single_sample_sumstats(ga = geno_data[:, groups_in_level['level'+str(lev)+'group'+str(g)]],
                                          pos = positions,
-                                         chr_end = map_positions[-1],
+                                         nchr = 1,
+                                         chr_ends = [map_positions[-1]],
                                          w_size = 50000,
                                          sumstats = ref_table_sumstats,
                                          name = 'l'+str(lev)+'g'+str(g))
