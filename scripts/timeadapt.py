@@ -337,14 +337,10 @@ def sequencing(ts, ssize, ttr, seq_error, dr, cov):
     locus = locus + 1
     #print(locus)
   return geno_data, positions
-
 #def test_sequencing():
-#  np.random.seed(1234)
+  # np.random.seed(1234)
   # TODO create a ts and some test from it
-
 ### end SIMULATE SEQUENCING  ····························
-
-
 
 def save_moments_2_dict(moments,sumstats,sample_name,sep,stat_name):
   sumstats[sample_name+sep+"min"+stat_name] = np.ma.getdata(moments[1][0])
@@ -355,8 +351,7 @@ def save_moments_2_dict(moments,sumstats,sample_name,sep,stat_name):
   sumstats[sample_name+sep+"k"+stat_name] = np.ma.getdata(moments[5])
 
 ### CALCULATE SUMMARY STATISTICS : SINGLE SAMPLE  ····························
-
-def single_sample_sumstats(ga,pos,chr_end,w_size,sumstats,name="",sep="_",quiet=True):
+def single_sample_sumstats(ga,pos,nchr,chr_ends,w_size,sumstats,name="",sep="_",quiet=True):
   ac = ga.count_alleles()
   sfs = allel.sfs_folded(ac)
 
@@ -373,47 +368,57 @@ def single_sample_sumstats(ga,pos,chr_end,w_size,sumstats,name="",sep="_",quiet=
   if quiet is False: print("Ho: " + str(ho) + "; Fis: " + str(fis) )
 
   # pairwise genetic diversity
-  total_pi = allel.sequence_diversity(pos, ac, start=1, stop=chr_end)
+  total_pi = allel.sequence_diversity(pos, ac, start=1, stop=chr_ends[nchr-1])
   sumstats[name+sep+"Pi"]=total_pi
-  w_pi, _, _, _ = allel.windowed_diversity(pos, ac, size=w_size, start=1, stop=chr_end)
+  w_pi, _, _, _ = allel.windowed_diversity(pos, ac, size=w_size, start= 1, stop=chr_ends[0])
+  for chromo in range(1,nchr):
+    temp, _, _, _ = allel.windowed_diversity(pos, ac, size=w_size, start= 1+chr_ends[chromo-1], stop=chr_ends[chromo])
+    np.append(w_pi,temp)
   pi = st.describe(w_pi)
   save_moments_2_dict(pi,sumstats,name,sep,"Pi")
   if quiet is False: print("π: "+ str(total_pi) + " ; " + str(pi))
   
   # Watterson theta (from number of segregating sites)
-  w_W_theta, _, _, _ = allel.windowed_watterson_theta(pos, ac, size=w_size, start=1, stop=chr_end)
+  w_W_theta, _, _, _ = allel.windowed_watterson_theta(pos, ac, size=w_size, start=1, stop=chr_ends[0])
+  for chromo in range(1,nchr):
+    temp, _, _, _ = allel.windowed_watterson_theta(pos, ac, size=w_size, start=1+chr_ends[chromo-1], stop=chr_ends[chromo])
+    np.append(w_W_theta,temp)
   W_theta = st.describe(w_W_theta)
   save_moments_2_dict(W_theta,sumstats,name,sep,"WT")
   if quiet is False: print("Watterson θ: "+ str(W_theta))
   
   # Tajima's D
-  total_Taj_D = allel.tajima_d(ac, pos, start=1, stop=chr_end)
+  total_Taj_D = allel.tajima_d(ac, pos, start=1, stop=chr_ends[nchr-1])
   sumstats[name+sep+"TD"]=total_Taj_D
-  w_Taj_D, _, _ = allel.windowed_tajima_d(pos, ac, size=w_size, start=1, stop=chr_end)
+  w_Taj_D, _, _ = allel.windowed_tajima_d(pos, ac, size=w_size, start=1, stop=chr_ends[0])
+  for chromo in range(1,nchr):
+    temp, _, _, _ = allel.windowed_tajima_d(pos, ac, size=w_size, start=1+chr_ends[chromo-1], stop=chr_ends[chromo])
+    np.append(w_Taj_D,temp)
   Taj_D = st.describe(w_Taj_D, nan_policy='omit')
   save_moments_2_dict(Taj_D,sumstats,name,sep,"TD")
   if quiet is False: print("Tajima's D: "+ str(total_Taj_D)+ " ; " + str(Taj_D))
 
   # distribution of sizes for naive runs of homozygosity (distance between heterozygous positions)
-  roh_distribution = distribution_roh(ga,pos,chr_end)
+  number_of_bins = int(round(np.log10(chr_ends[nchr-1]-1)))+1
+  roh_distribution = distribution_roh(ga,pos,0,np.size(pos),number_of_bins)
   sumstats[name+sep+"RoHD"]=roh_distribution
   if quiet is False: print("Distribution of Runs of Homozygosity: "+ str(roh_distribution))
 
   return
-
-
+  
 def test_single_sample_sumstats():
-  # 4 individuals, 5 loci
+  # 4 individuals (columns), 5 loci (rows)
   test_ga = allel.GenotypeArray([[[ 0, 0],[ 0, 0],[ 0, 0],[ 0, 0]],
                                  [[ 0, 1],[ 0, 1],[ 0, 1],[ 1, 1]],
                                  [[-1,-1],[-1,-1],[-1,-1],[-1,-1]],
                                  [[ 1, 1],[ 1, 1],[ 0, 1],[ 1, 1]],
                                  [[ 0, 1],[ 0, 0],[ 0, 1],[ 0,-1]]], dtype='i1')
   test_pos = (10,123,234,299,340)
-  test_chr_end = 400
+  test_nchr = 1
+  test_chr_end = [400]
   test_w_s = 50
   test_sumstats = {}
-  single_sample_sumstats(test_ga, test_pos, test_chr_end, test_w_s, test_sumstats)
+  single_sample_sumstats(test_ga, test_pos, test_nchr, test_chr_end, test_w_s, test_sumstats)
   assert test_sumstats["_S"]==3
   assert test_sumstats["_Pi"] == pytest.approx(0.003154762)
   assert test_sumstats["_minPi"] == pytest.approx(0.)
@@ -422,6 +427,7 @@ def test_single_sample_sumstats():
   assert test_sumstats["_minWT"] == pytest.approx(0.)
   assert test_sumstats["_maxWT"] == pytest.approx(0.0077135)
   assert test_sumstats["_mWT"] == pytest.approx(0.002892563)
+  # 4 individuals (columns), 20 loci (rows)
   test_ga = allel.GenotypeArray([[[ 0, 1],[ 0, 1],[ 1, 1],[ 0, 0]],
                                  [[ 0, 1],[ 0, 1],[ 0, 1],[ 1, 1]],
                                  [[ 0, 1],[ 0, 1],[-1,-1],[ 1, 1]],
@@ -445,7 +451,7 @@ def test_single_sample_sumstats():
   test_pos = (4,10,50,77,99,123,134,150,178,201,209,234,256,270,299,311,315,340,358,378)
   test_sumstats = {}
   test_name = "test"
-  single_sample_sumstats(test_ga, test_pos, test_chr_end, test_w_s, test_sumstats, test_name)
+  single_sample_sumstats(test_ga, test_pos, test_nchr, test_chr_end, test_w_s, test_sumstats, test_name)
   assert test_sumstats["test_maxTD"] == pytest.approx(1.71931236)
   assert (test_sumstats["test_RoHD"] == [3,25,1,0]).all()
 
@@ -456,36 +462,75 @@ def test_single_sample_sumstats():
 
 ### CALCULATE SUMMARY STATISTICS : ROH  ····························
 
-def roh(gv,pos):
-  het_sites = np.where(gv.to_n_alt(fill=-1)==1)[0]
-  roh_limits = list(map(pos.__getitem__, list(het_sites)))
-  roh = np.diff(roh_limits)
+def roh(gv,pos,missing_threshold=3):
+  num_of_alt = gv.to_n_alt(fill=-1)
+  missing_sites = np.where(num_of_alt==-1)[0]
+  if missing_threshold > np.size(missing_sites) :
+    het_sites = np.where(num_of_alt==1)[0]
+    roh_limits = list(map(pos.__getitem__, list(het_sites)))
+    roh = np.diff(roh_limits)
+  else :
+    roh = np.array([])
   return roh
 
-def distribution_roh(ga,pos,chr_end):
+def distribution_roh(ga, pos, w_start, w_stop, number_of_bins):
   # verify that positions are monotonically increasing
   if np.all(pos[1:] > pos[:-1]):
-    roh_distribution = np.full(int(round(np.log10(chr_end)))+1, 0)
+    roh_distribution = np.full(number_of_bins, 0)
     for ind in range(0,ga.n_samples):
-      gv = ga[:,ind]
+      gv = ga[w_start:w_stop,ind]
       roh_lenghts = roh(gv, pos)
-      for roh_size in range(0,int(round(np.log10(chr_end)))+1):
+      for roh_size in range(0,number_of_bins):
         roh_distribution[roh_size] += sum( roh_lenghts >= 10**(roh_size) ) - sum( roh_lenghts >= 10**(roh_size+1) )
   
     if (roh_distribution < 0).any():
       msg = "Negative number of ROH. Possibly wrong vector of positions"
       raise ValueError(msg)
-  
     return roh_distribution
 
+def windowed_distribution_roh(ga, pos, size, start, stop):
+  windows = allel.position_windows(pos, size=size, start=start, stop=stop, step=size)
+  locs = allel.window_locations(pos, windows)
+  number_of_bins = int(round(np.log10(size)))+1
+  roh_distribution = np.full(number_of_bins, 0)
+  for window_start, window_stop in locs :
+    roh_distribution = roh_distribution + distribution_roh(ga, pos, window_start, window_stop, number_of_bins)
+  return roh_distribution
+
+
 def test_roh():
-  test_ga = allel.GenotypeArray([[[0,1]],[[0,1]],[[0,0]],
-                                 [[0,1]],[[0,1]],[[0,0]],
-                                 [[0,1]],[[0,1]],[[1,1]],
-                                 [[0,1]],[[0,1]]], dtype='i1')
+  # one individual, 11 loci
+  test_ga = allel.GenotypeArray([[[0,1]],
+                                 [[0,1]],
+                                 [[0,0]],
+                                 [[0,1]],
+                                 [[0,1]],
+                                 [[0,0]],
+                                 [[0,1]],
+                                 [[0,1]],
+                                 [[1,1]],
+                                 [[0,1]],
+                                 [[0,1]]], dtype='i1')
   test_pos = (5,10,15,20,100,200,300,1300,3000,10000,20000)
   test_roh = roh(test_ga,test_pos)
   assert (test_roh == [5,10,80,200,1000,8700,10000]).all()
+  test_ga = allel.GenotypeArray([[[ 0, 1]],
+                                 [[ 0, 1]],
+                                 [[ 0, 0]],
+                                 [[-1,-1]],
+                                 [[ 0, 1]],
+                                 [[ 0, 0]],
+                                 [[ 0, 1]],
+                                 [[-1,-1]],
+                                 [[-1,-1]],
+                                 [[ 0, 1]],
+                                 [[ 0, 1]]], dtype='i1')
+  test_roh = roh(test_ga,test_pos)
+  assert np.size(test_roh) == 0
+  test_roh = roh(test_ga,test_pos,4)
+  assert (test_roh == [5,90,200,9700,10000]).all()
+
+
 
 def test_distribution_roh():
   test_ga = allel.GenotypeArray([[[0,1],[0,1],[0,0]],
@@ -500,7 +545,10 @@ def test_distribution_roh():
                                  [[0,1],[0,1],[0,1]],
                                  [[0,1],[0,1],[0,0]]], dtype='i1')
   test_pos = [5,10,15,20,100,200,300,1300,3000,10000,20000]
-  d_roh = distribution_roh(test_ga,test_pos,30000)
+  test_start = 0
+  test_end = 11
+  number_of_bins = 5
+  d_roh = distribution_roh(test_ga,test_pos,test_start,test_end,number_of_bins)
   assert (d_roh == [2,5,3,7,2]).all()
 
 
