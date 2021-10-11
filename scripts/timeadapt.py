@@ -399,8 +399,10 @@ def single_sample_sumstats(ga,pos,nchr,chr_ends,w_size,sumstats,name="",sep="_",
   if quiet is False: print("Tajima's D: "+ str(total_Taj_D)+ " ; " + str(Taj_D))
 
   # distribution of sizes for naive runs of homozygosity (distance between heterozygous positions)
-  number_of_bins = int(round(np.log10(chr_ends[nchr-1]-1)))+1
-  roh_distribution = distribution_roh(ga,pos,0,np.size(pos),number_of_bins)
+  roh_distribution = np.full(int(round(np.log10(w_size)))+1, 0)
+  roh_distribution = roh_distribution + windowed_distribution_roh(ga, pos, w_size, start=1, stop=chr_ends[0])
+  for chromo in range(1,nchr):
+    roh_distribution + windowed_distribution_roh(ga, pos, w_size, start=1+chr_ends[chromo-1], stop=chr_ends[chromo])
   sumstats[name+sep+"RoHD"]=roh_distribution
   if quiet is False: print("Distribution of Runs of Homozygosity: "+ str(roh_distribution))
 
@@ -428,36 +430,40 @@ def test_single_sample_sumstats():
   assert test_sumstats["_maxWT"] == pytest.approx(0.0077135)
   assert test_sumstats["_mWT"] == pytest.approx(0.002892563)
   # 4 individuals (columns), 20 loci (rows)
-  test_ga = allel.GenotypeArray([[[ 0, 1],[ 0, 1],[ 1, 1],[ 0, 0]],
-                                 [[ 0, 1],[ 0, 1],[ 0, 1],[ 1, 1]],
-                                 [[ 0, 1],[ 0, 1],[-1,-1],[ 1, 1]],
-                                 [[ 0, 1],[ 0, 0],[ 0, 1],[ 1, 1]],
-                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]],
-                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]],
-                                 [[ 1, 1],[ 0, 1],[ 0, 1],[ 1, 1]],
-                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]],
-                                 [[ 1, 1],[ 0, 1],[ 0, 0],[ 0, 1]],
-                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]],
-                                 [[ 1, 1],[ 0, 1],[ 0, 1],[ 1, 1]],
-                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]],
-                                 [[ 0, 0],[ 0, 1],[ 0, 1],[ 0, 1]],
-                                 [[-1,-1],[-1,-1],[-1,-1],[ 1, 1]],
-                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]],
-                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]],
-                                 [[ 1, 1],[ 0, 1],[ 0, 0],[ 0, 1]],
-                                 [[ 1, 1],[ 1, 1],[ 1, 0],[ 1, 1]],
-                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]],
-                                 [[ 0, 1],[ 0, 0],[ 0, 1],[-1,-1]]], dtype='i1')
+  test_ga = allel.GenotypeArray([[[ 0, 1],[ 0, 1],[ 1, 1],[ 0, 0]], #  0
+                                 [[ 0, 1],[ 0, 1],[ 0, 1],[ 1, 1]], #  1
+                                 [[ 0, 1],[ 0, 1],[-1,-1],[ 1, 1]], #  2
+                                 [[ 0, 1],[ 0, 0],[ 0, 1],[ 1, 1]], #  3
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], #  4
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], #  5
+                                 [[ 1, 1],[ 0, 1],[ 0, 1],[ 1, 1]], #  6
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], #  7
+                                 [[ 1, 1],[ 0, 1],[ 0, 0],[ 0, 1]], #  8
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], #  9
+                                 [[ 1, 1],[ 0, 1],[ 0, 1],[ 1, 1]], # 10
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], # 11
+                                 [[ 0, 0],[ 0, 1],[ 0, 1],[ 0, 1]], # 12
+                                 [[-1,-1],[-1,-1],[-1,-1],[ 1, 1]], # 13
+                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]], # 14
+                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]], # 15
+                                 [[ 1, 1],[ 0, 1],[ 0, 0],[ 0, 1]], # 16
+                                 [[ 1, 1],[ 1, 1],[ 1, 0],[ 1, 1]], # 17
+                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]], # 18
+                                 [[ 0, 1],[ 0, 0],[ 0, 1],[-1,-1]]],# 19
+                                 dtype='i1')
+  #           0  1  2  3  4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
   test_pos = (4,10,50,77,99,123,134,150,178,201,209,234,256,270,299,311,315,340,358,378)
   test_sumstats = {}
   test_name = "test"
   single_sample_sumstats(test_ga, test_pos, test_nchr, test_chr_end, test_w_s, test_sumstats, test_name)
   assert test_sumstats["test_maxTD"] == pytest.approx(1.71931236)
+  assert (test_sumstats["test_RoHD"] == [3,8,0]).all()
+  single_sample_sumstats(test_ga, test_pos, test_nchr, test_chr_end, 400, test_sumstats, test_name)
   assert (test_sumstats["test_RoHD"] == [3,25,1,0]).all()
 
+
+
 ### end CALCULATE SUMMARY STATISTICS : SINGLE SAMPLE  ····························
-
-
 
 
 ### CALCULATE SUMMARY STATISTICS : ROH  ····························
@@ -472,31 +478,6 @@ def roh(gv,pos,missing_threshold=3):
   else :
     roh = np.array([])
   return roh
-
-def distribution_roh(ga, pos, w_start, w_stop, number_of_bins):
-  # verify that positions are monotonically increasing
-  if np.all(pos[1:] > pos[:-1]):
-    roh_distribution = np.full(number_of_bins, 0)
-    for ind in range(0,ga.n_samples):
-      gv = ga[w_start:w_stop,ind]
-      roh_lenghts = roh(gv, pos)
-      for roh_size in range(0,number_of_bins):
-        roh_distribution[roh_size] += sum( roh_lenghts >= 10**(roh_size) ) - sum( roh_lenghts >= 10**(roh_size+1) )
-  
-    if (roh_distribution < 0).any():
-      msg = "Negative number of ROH. Possibly wrong vector of positions"
-      raise ValueError(msg)
-    return roh_distribution
-
-def windowed_distribution_roh(ga, pos, size, start, stop):
-  windows = allel.position_windows(pos, size=size, start=start, stop=stop, step=size)
-  locs = allel.window_locations(pos, windows)
-  number_of_bins = int(round(np.log10(size)))+1
-  roh_distribution = np.full(number_of_bins, 0)
-  for window_start, window_stop in locs :
-    roh_distribution = roh_distribution + distribution_roh(ga, pos, window_start, window_stop, number_of_bins)
-  return roh_distribution
-
 
 def test_roh():
   # one individual, 11 loci
@@ -531,24 +512,79 @@ def test_roh():
   assert (test_roh == [5,90,200,9700,10000]).all()
 
 
+def distribution_roh(ga, pos, w_start, w_stop, number_of_bins):
+  # w_start and w_stop are the limits of the windows as positions in the genotype array, not positions in the genome
+  if number_of_bins>1:
+    roh_distribution = np.full(number_of_bins, 0)
+  else:
+    msg = "Negative value or zero. Number of bins has to be a positive integer"
+    raise ValueError(msg)
+  for ind in range(0,ga.n_samples):
+    gv = ga[w_start:w_stop,ind]
+    roh_lenghts = roh(gv, pos[w_start:w_stop])
+    for roh_size in range(0,number_of_bins):
+      roh_distribution[roh_size] += sum( roh_lenghts >= 10**(roh_size) ) - sum( roh_lenghts >= 10**(roh_size+1) )
+  if (roh_distribution < 0).any():
+    msg = "Negative value. Number of observations of RoH bin sizes has to be zero or higher"
+    raise ValueError(msg)
+  return roh_distribution
 
 def test_distribution_roh():
-  test_ga = allel.GenotypeArray([[[0,1],[0,1],[0,0]],
-                                 [[0,1],[0,1],[0,1]],
-                                 [[0,0],[-1,-1],[1,1]],
-                                 [[0,1],[1,1],[0,1]],
-                                 [[0,1],[0,1],[0,1]],
-                                 [[0,0],[0,0],[-1,-1]],
-                                 [[0,1],[0,1],[0,1]],
-                                 [[0,1],[0,1],[0,1]],
-                                 [[1,1],[0,0],[0,1]],
-                                 [[0,1],[0,1],[0,1]],
-                                 [[0,1],[0,1],[0,0]]], dtype='i1')
-  test_pos = [5,10,15,20,100,200,300,1300,3000,10000,20000]
+  # 3 individuals, 11 loci
+  test_ga = allel.GenotypeArray([[[ 0, 1],[ 0, 1],[ 0, 0]], #  0
+                                 [[ 0, 1],[ 0, 1],[ 0, 1]], #  1
+                                 [[ 0, 0],[-1,-1],[ 1, 1]], #  2
+                                 [[ 0, 1],[ 1, 1],[ 0, 1]], #  3
+                                 [[ 0, 1],[ 0, 1],[ 0, 1]], #  4
+                                 [[ 0, 0],[ 0, 0],[-1,-1]], #  5
+                                 [[ 0, 1],[ 0, 1],[ 0, 1]], #  6
+                                 [[ 0, 1],[ 0, 1],[ 0, 1]], #  7
+                                 [[ 1, 1],[ 0, 0],[ 0, 1]], #  8
+                                 [[ 0, 1],[ 0, 1],[ 0, 1]], #  9
+                                 [[ 0, 1],[ 0, 1],[ 0, 0]]],# 10
+                                 dtype='i1')
+  #            0   1   2   3    4    5    6     7     8      9     10
+  test_pos = [ 5, 10, 15, 20, 100, 200, 300, 1300, 3000, 10000, 20000]
   test_start = 0
   test_end = 11
   number_of_bins = 5
-  d_roh = distribution_roh(test_ga,test_pos,test_start,test_end,number_of_bins)
+  d_roh = distribution_roh(test_ga, test_pos, test_start, test_end, number_of_bins)
   assert (d_roh == [2,5,3,7,2]).all()
+
+
+def windowed_distribution_roh(ga, pos, size, start, stop):
+  # start and stop are the limts (in bp) of the genome whre the RoH are computed
+  number_of_bins = int(round(np.log10(size)))+1
+  roh_distribution = np.full(number_of_bins, 0)
+  # verify that positions are monotonically increasing
+  if np.all(pos[1:] > pos[:-1]):
+    windows = allel.position_windows(pos, size=size, start=start, stop=stop, step=size)
+    locs = allel.window_locations(pos, windows)
+    for window_start, window_stop in locs :
+      roh_distribution = roh_distribution + distribution_roh(ga, pos, window_start, window_stop, number_of_bins)
+  else:
+    msg = "Wrong order. Vector of positions has to be monotonically increasing"
+    raise ValueError(msg)
+  return roh_distribution
+
+def test_windowed_distribution_roh():
+  # 3 individuals, 11 loci
+  test_ga = allel.GenotypeArray([[[ 0, 1],[ 0, 1],[ 0, 0]], #  0
+                                 [[ 0, 1],[ 0, 1],[ 0, 1]], #  1
+                                 [[ 0, 0],[-1,-1],[ 1, 1]], #  2
+                                 [[ 0, 1],[ 1, 1],[ 0, 1]], #  3
+                                 [[ 0, 1],[ 0, 1],[ 0, 1]], #  4
+                                 [[ 0, 0],[ 0, 0],[-1,-1]], #  5
+                                 [[ 0, 1],[ 0, 1],[ 0, 1]], #  6
+                                 [[ 0, 1],[ 0, 1],[ 0, 1]], #  7
+                                 [[ 1, 1],[ 0, 0],[ 0, 1]], #  8
+                                 [[ 0, 1],[ 0, 1],[ 0, 1]], #  9
+                                 [[ 0, 1],[ 0, 1],[ 0, 0]]],# 10
+                                 dtype='i1')
+  #            0   1   2   3    4    5    6     7     8      9     10
+  test_pos = [ 5, 10, 15, 20, 100, 200, 300, 1300, 3000, 10000, 20000]
+  test_size = 5000
+  d_roh = windowed_distribution_roh(test_ga, test_pos, test_size, 1, 20000)
+  assert (d_roh == [2,5,3,4,0]).all()
 
 
