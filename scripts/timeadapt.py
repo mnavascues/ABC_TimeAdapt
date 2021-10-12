@@ -582,4 +582,30 @@ def test_windowed_distribution_roh():
   d_roh = windowed_distribution_roh(test_ga, test_pos, test_size, 1, 20000)
   assert (d_roh == [2,5,3,4,0]).all()
 
+### CALCULATE SUMMARY STATISTICS : TWO SAMPLE  ····························
+def two_samples_sumstats(ga,pair_of_groups,pos,nchr,chr_ends,w_size,sumstats,name="",sep="_"):
+  a, b, c = allel.weir_cockerham_fst(g       = ga,
+                                     subpops = pair_of_groups)
+  fst = np.sum(a) / (np.sum(a) + np.sum(b) + np.sum(c))
+  sumstats[name+sep+"Fst"]=fst
+  fst_per_variant = (np.sum(a, axis=1) / (np.sum(a, axis=1) + np.sum(b, axis=1) + np.sum(c, axis=1)))
+  moments_fst_per_variant = st.describe(fst_per_variant, nan_policy='omit')
+  save_moments_2_dict(moments_fst_per_variant,sumstats,name,sep,"l_Fst")
+  fst_per_window, _, _ = allel.windowed_weir_cockerham_fst(pos     = pos,
+                                                           g       = ga,
+                                                           subpops = pair_of_groups,
+                                                           size    = w_size,
+                                                           start   = 1,
+                                                           stop    = chr_ends[0])
+  for chromo in range(1,nchr):
+    temp, _, _ = allel.windowed_weir_cockerham_fst(pos     = pos,
+                                                   g       = ga,
+                                                   subpops = pair_of_groups,
+                                                   size    = w_size,
+                                                   start   = 1+chr_ends[chromo-1],
+                                                   stop    = chr_ends[chromo])
+    np.append(fst_per_window,temp)
+  moments_fst_per_window = st.describe(fst_per_window)
+  save_moments_2_dict(moments_fst_per_window,sumstats,name,sep,"w_Fst")
+  return
 
