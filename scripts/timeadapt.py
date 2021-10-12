@@ -354,19 +354,16 @@ def save_moments_2_dict(moments,sumstats,sample_name,sep,stat_name):
 def single_sample_sumstats(ga,pos,nchr,chr_ends,w_size,sumstats,name="",sep="_",quiet=True):
   ac = ga.count_alleles()
   sfs = allel.sfs_folded(ac)
-
   # total number of segregating sites (excluding monomorphic and all missing data)
   segsites = sum(sfs)-sfs[0]
   sumstats[name+sep+"S"]=segsites
   if quiet is False: print("Segregating sites: "+ str(segsites))
-
   # Observed heterozygosity and Inbreeding coefficient
   ho = st.describe(allel.heterozygosity_observed(ga), nan_policy='omit')
   save_moments_2_dict(ho,sumstats,name,sep,"Ho")
   fis = st.describe(allel.inbreeding_coefficient(ga), nan_policy='omit')
   save_moments_2_dict(fis,sumstats,name,sep,"Fis")
   if quiet is False: print("Ho: " + str(ho) + "; Fis: " + str(fis) )
-
   # pairwise genetic diversity
   total_pi = allel.sequence_diversity(pos, ac, start=1, stop=chr_ends[nchr-1])
   sumstats[name+sep+"Pi"]=total_pi
@@ -377,7 +374,6 @@ def single_sample_sumstats(ga,pos,nchr,chr_ends,w_size,sumstats,name="",sep="_",
   pi = st.describe(w_pi)
   save_moments_2_dict(pi,sumstats,name,sep,"Pi")
   if quiet is False: print("π: "+ str(total_pi) + " ; " + str(pi))
-  
   # Watterson theta (from number of segregating sites)
   w_W_theta, _, _, _ = allel.windowed_watterson_theta(pos, ac, size=w_size, start=1, stop=chr_ends[0])
   for chromo in range(1,nchr):
@@ -386,7 +382,6 @@ def single_sample_sumstats(ga,pos,nchr,chr_ends,w_size,sumstats,name="",sep="_",
   W_theta = st.describe(w_W_theta)
   save_moments_2_dict(W_theta,sumstats,name,sep,"WT")
   if quiet is False: print("Watterson θ: "+ str(W_theta))
-  
   # Tajima's D
   total_Taj_D = allel.tajima_d(ac, pos, start=1, stop=chr_ends[nchr-1])
   sumstats[name+sep+"TD"]=total_Taj_D
@@ -397,7 +392,6 @@ def single_sample_sumstats(ga,pos,nchr,chr_ends,w_size,sumstats,name="",sep="_",
   Taj_D = st.describe(w_Taj_D, nan_policy='omit')
   save_moments_2_dict(Taj_D,sumstats,name,sep,"TD")
   if quiet is False: print("Tajima's D: "+ str(total_Taj_D)+ " ; " + str(Taj_D))
-
   # distribution of sizes for naive runs of homozygosity (distance between heterozygous positions)
   roh_distribution = np.full(int(round(np.log10(w_size)))+1, 0)
   roh_distribution = roh_distribution + windowed_distribution_roh(ga, pos, w_size, start=1, stop=chr_ends[0])
@@ -405,7 +399,6 @@ def single_sample_sumstats(ga,pos,nchr,chr_ends,w_size,sumstats,name="",sep="_",
     roh_distribution + windowed_distribution_roh(ga, pos, w_size, start=1+chr_ends[chromo-1], stop=chr_ends[chromo])
   sumstats[name+sep+"RoHD"]=roh_distribution
   if quiet is False: print("Distribution of Runs of Homozygosity: "+ str(roh_distribution))
-
   return
   
 def test_single_sample_sumstats():
@@ -458,7 +451,8 @@ def test_single_sample_sumstats():
   single_sample_sumstats(test_ga, test_pos, test_nchr, test_chr_end, test_w_s, test_sumstats, test_name)
   assert test_sumstats["test_maxTD"] == pytest.approx(1.71931236)
   assert (test_sumstats["test_RoHD"] == [3,8,0]).all()
-  single_sample_sumstats(test_ga, test_pos, test_nchr, test_chr_end, 400, test_sumstats, test_name)
+  test_sumstats = {}
+  single_sample_sumstats(test_ga, test_pos, test_nchr, test_chr_end, 390, test_sumstats, test_name)
   assert (test_sumstats["test_RoHD"] == [3,25,1,0]).all()
 
 
