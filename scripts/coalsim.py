@@ -23,6 +23,8 @@ import timeadapt
 #  python scripts/coalsim.py tests/input/config_project.ini tests/input/sim_1.ini
 
 def main():
+  verbose=10
+
   # get options for project and simulation:
   project, batch, sim, genome_file, _, _, _, N, _, _, _, seed_coal, _ = \
            timeadapt.get_options(proj_options_file = sys.argv[1], sim_options_file = sys.argv[2])

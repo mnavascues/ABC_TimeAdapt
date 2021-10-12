@@ -23,6 +23,8 @@ import dill
 import timeadapt
 
 def main():
+  verbose=10
+  
   # get options for project and simulation:
   project, batch, sim, genome_file, sample_file, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut = \
            timeadapt.get_options(proj_options_file = sys.argv[1], sim_options_file = sys.argv[2])
@@ -37,10 +39,10 @@ def main():
 
   nchr, chr_ends, map_rates, map_positions = timeadapt.get_recombination_map(gf = genome_file)
 
-  print(nchr)
-  print(chr_ends)
-  print(map_rates)
-  print(map_positions)
+  if verbose>=100 : print(nchr)
+  if verbose>=100 : print(chr_ends)
+  if verbose>=100 : print(map_rates)
+  if verbose>=100 : print(map_positions)
 
   # check sample size from sample file equal to simulated sampled size in config file
   if sum(ss) != sample_size:
@@ -54,17 +56,27 @@ def main():
   chrono_order_is_dr = [is_dr[i] for i in chrono_order]
   chrono_order_groups = np.zeros([group_levels, sample_size], dtype='int')
   groups_in_level = {}
+  unique_groups = {}
   num_of_pair_comparisons = 0
   number_of_groups = np.zeros(group_levels, dtype='int')
   total_number_of_groups = 0
   for lev in range(0, group_levels):
+    if verbose>=100 : print("level "+str(lev))
     chrono_order_groups[lev] = [groups[lev][i] for i in chrono_order]
     number_of_groups[lev] = len(np.unique(groups[lev]))
     # total_number_of_groups += number_of_groups[lev]
     num_of_pair_comparisons += int((number_of_groups[lev] * (number_of_groups[lev] - 1)) / 2)
     for g in range(0, number_of_groups[lev]):
-      groups_in_level['level' + str(lev) + 'group' + str(g)] = np.where(chrono_order_groups[lev] == g)[0]
+      new_group = np.where(chrono_order_groups[lev] == g)[0]
+      if verbose>=100 : print("  group "+str(g)+":"+str(new_group))
+      unique_groups['level' + str(lev) + 'group' + str(g)] = True
+      for key, value in groups_in_level.items():
+        if verbose>=100 : print("key: "+str(key)+" ; value: "+str(value))
+        if np.size(value)==np.size(new_group):
+          if (value==new_group).all() : unique_groups['level' + str(lev) + 'group' + str(g)] = False
+      groups_in_level['level' + str(lev) + 'group' + str(g)] = new_group
 
+  if verbose>=100 : print(unique_groups)
 
   # read tree sequence from SLiM output file:
   treesq = pyslim.load("results/"+project+"/"+batch+"/forwsim_"+sim+".trees")
@@ -73,8 +85,8 @@ def main():
   mut_treesq = msprime.sim_mutations(treesq,
                                      rate = mu,
                                      random_seed = np.random.randint(1, 2 ^ 32 - 1))
-  # print("Number of mutations " + str(mut_treesq.num_mutations))
-  # print("Number of sites " + str(mut_treesq.num_sites))
+  if verbose>=100 : print("Number of mutations " + str(mut_treesq.num_mutations))
+  if verbose>=100 : print("Number of sites " + str(mut_treesq.num_sites))
 
 
   #### CALCULATE SUMMARY STATISTICS
@@ -92,7 +104,8 @@ def main():
                                                 seq_error = seq_error,
                                                 dr = chrono_order_is_dr,
                                                 cov = chrono_order_coverage)
-    print(map_positions)
+    if verbose>=100 : print(map_positions)
+    # Calculate summary statistics from total sample
     timeadapt.single_sample_sumstats(ga = geno_data,
                                      pos = positions,
                                      nchr = 1,
@@ -100,33 +113,30 @@ def main():
                                      w_size = 50000,
                                      sumstats = ref_table_sumstats,
                                      sep = "")
-    
+    # Calculate summary statistics from single group
     for lev in range(0, group_levels):
-      print("level "+str(lev))
       for g in range(0, number_of_groups[lev]):
-        print("  group "+str(g)+":"+str(groups_in_level['level' + str(lev) + 'group' + str(g)]))
-        timeadapt.single_sample_sumstats(ga = geno_data[:, groups_in_level['level'+str(lev)+'group'+str(g)]],
-                                         pos = positions,
-                                         nchr = 1,
-                                         chr_ends = [map_positions[-1]],
-                                         w_size = 50000,
-                                         sumstats = ref_table_sumstats,
-                                         name = 'l'+str(lev)+'g'+str(g))
-    
+        if unique_groups['level'+str(lev)+'group'+str(g)] is True:
+          timeadapt.single_sample_sumstats(ga = geno_data[:, groups_in_level['level'+str(lev)+'group'+str(g)]],
+                                           pos = positions,
+                                           nchr = 1,
+                                           chr_ends = [map_positions[-1]],
+                                           w_size = 50000,
+                                           sumstats = ref_table_sumstats,
+                                           name = 'l'+str(lev)+'g'+str(g))
 
-
-    #for lev in range(0, group_levels):
-    #  for g in range(0, number_of_groups[lev]):
-    #    for h in range(g + 1, number_of_groups[lev]):
-    #      gr1 = allele_counts_per_group['level' + str(lev) + 'group' + str(g)]
-    #      gr2 = allele_counts_per_group['level' + str(lev) + 'group' + str(h)]
-    #      pairwise_diff = allel.mean_pairwise_difference_between(gr1, gr2)
-    #      print("Level: " + str(lev) + ". Groups: " + str(g) + " " + str(h) +
-    #            ". Pairwise difference: " + str(pairwise_diff))
+    # Calculate summary statistics from pair of groups
+    for lev in range(0, group_levels):
+      for g1 in range(0, number_of_groups[lev]):
+        for g2 in range(g1+1, number_of_groups[lev]):
+          if verbose>=10 : print("PAIR:")
+          if verbose>=10 : print("  1st group: "+str(groups_in_level['level'+str(lev)+'group'+str(g1)]))
+          if verbose>=10 : print("  2nd group: "+str(groups_in_level['level'+str(lev)+'group'+str(g2)]))
+ 
                                               
   # save binary with row of summary statistics for the reference table:
   dill.dump(ref_table_sumstats, file = open("results/" + project + "/" + batch + "/sumstats_" + sim + ".pkl", "wb"))
-  #ref_table_sumstats = dill.load(file = open("results/" + project + "/" + batch + "/sumstats_" + sim + ".pkl", "rb"))
+  # THIS IS HOW YOU LOAD THE DATA AGAIN: ref_table_sumstats = dill.load(file = open("results/" + project + "/" + batch + "/sumstats_" + sim + ".pkl", "rb"))
 
 ############################################################################################################
 if __name__ == "__main__":

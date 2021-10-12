@@ -217,6 +217,7 @@ def make_rec_map(nchr, c_rates, c_ends):
   pos.append(c_ends[nchr-1])
   rat.append(c_rates[nchr-1])
   return pos, rat
+
 def test_make_rec_map():
   positions, rates = make_rec_map(nchr=3, c_rates=[1e-8,2e-8,3e-8], c_ends=[10,20,30])
   assert positions == [0,10,11,20,21,30]
