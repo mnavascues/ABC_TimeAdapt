@@ -343,6 +343,58 @@ def sequencing(ts, ssize, ttr, seq_error, dr, cov):
   # TODO create a ts and some test from it
 ### end SIMULATE SEQUENCING  ····························
 
+### TEST DATA FOR SUMMARY STATISTISCS
+#                                  ind 0   ind 1   ind 2   ind 3  
+test_ga_A = allel.GenotypeArray([[[ 0, 0],[ 0, 0],[ 0, 0],[ 0, 0]], # locus 0
+                                 [[ 0, 1],[ 0, 1],[ 0, 1],[ 1, 1]], # locus 1
+                                 [[-1,-1],[-1,-1],[-1,-1],[-1,-1]], # locus 2
+                                 [[ 1, 1],[ 1, 1],[ 0, 1],[ 1, 1]], # locus 3
+                                 [[ 0, 1],[ 0, 0],[ 0, 1],[ 0,-1]]],# locus 4
+                                 dtype='i1')
+#              0   1   2   3   4
+test_pos_A = (10,123,234,299,340)
+#                                  ind 0   ind 1   ind 2   ind 3  
+test_ga_B = allel.GenotypeArray([[[ 0, 1],[ 0, 1],[ 1, 1],[ 0, 0]], # locus 0
+                                 [[ 0, 1],[ 0, 1],[ 0, 1],[ 1, 1]], # locus 1
+                                 [[ 0, 1],[ 0, 1],[-1,-1],[ 1, 1]], # locus 2
+                                 [[ 0, 1],[ 0, 0],[ 0, 1],[ 1, 1]], # locus 3
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], # locus 4
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], # locus 5
+                                 [[ 1, 1],[ 0, 1],[ 0, 1],[ 1, 1]], # locus 6
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], # locus 7
+                                 [[ 1, 1],[ 0, 1],[ 0, 0],[ 0, 1]], # locus 8
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], # locus 9
+                                 [[ 1, 1],[ 0, 1],[ 0, 1],[ 1, 1]], # locus 10
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], # locus 11
+                                 [[ 0, 0],[ 0, 1],[ 0, 1],[ 0, 1]], # locus 12
+                                 [[-1,-1],[-1,-1],[-1,-1],[ 1, 1]], # locus 13
+                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]], # locus 14
+                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]], # locus 15
+                                 [[ 1, 1],[ 0, 1],[ 0, 0],[ 0, 1]], # locus 16
+                                 [[ 1, 1],[ 1, 1],[ 1, 0],[ 1, 1]], # locus 17
+                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]], # locus 18
+                                 [[ 0, 1],[ 0, 0],[ 0, 1],[-1,-1]]],# locus 19
+                                 dtype='i1')
+#             0  1  2  3  4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+test_pos_B = (4,10,50,77,99,123,134,150,178,201,209,234,256,270,299,311,315,340,358,378)
+
+#                                 ga,        pos, nchr, chr_ends, w_size, expected_S
+testdata_S = [pytest.param(test_ga_A, test_pos_A,    1,    [400],     50,          3, id="A"),
+              pytest.param(test_ga_B, test_pos_B,    1,    [400],     50,         19, id="B")]
+#                                 ga,        pos, nchr, chr_ends, w_size, expected_Pi
+testdata_Pi = [pytest.param(test_ga_A, test_pos_A,    1,    [400],     50, 0.00315476, id="A"),
+               pytest.param(test_ga_B, test_pos_B,    1,    [400],     50, 0.02418452, id="B")]
+#                                 ga,        pos, nchr, chr_ends, w_size,  expected_WT
+testdata_WT = [pytest.param(test_ga_A, test_pos_A,    1,    [400],     50, 0.00289256, id="A"),
+               pytest.param(test_ga_B, test_pos_B,    1,    [400],     50, 0.01831956, id="B")]
+
+
+
+
+
+
+
+### SAVE RESULTS from st.describe() INTO DICT ····························
 def save_moments_2_dict(moments,sumstats,sample_name,sep,stat_name):
   sumstats[sample_name+sep+"min"+stat_name] = np.ma.getdata(moments[1][0])
   sumstats[sample_name+sep+"max"+stat_name] = np.ma.getdata(moments[1][1])
@@ -350,6 +402,7 @@ def save_moments_2_dict(moments,sumstats,sample_name,sep,stat_name):
   sumstats[sample_name+sep+"v"+stat_name] = np.ma.getdata(moments[3])
   sumstats[sample_name+sep+"s"+stat_name] = np.ma.getdata(moments[4])
   sumstats[sample_name+sep+"k"+stat_name] = np.ma.getdata(moments[5])
+### end SAVE RESULTS from st.describe() INTO DICT  ····························
 
 ### CALCULATE SUMMARY STATISTICS : SINGLE SAMPLE  ····························
 def single_sample_sumstats(ga,pos,nchr,chr_ends,w_size,sumstats,name="",sep="_",quiet=True):
@@ -401,28 +454,35 @@ def single_sample_sumstats(ga,pos,nchr,chr_ends,w_size,sumstats,name="",sep="_",
   sumstats[name+sep+"RoHD"]=roh_distribution
   if quiet is False: print("Distribution of Runs of Homozygosity: "+ str(roh_distribution))
   return
-  
+
+@pytest.mark.parametrize("ga,pos,nchr,chr_ends,w_size,expected_S", testdata_S)
+def test_single_sample_sumstats_S(ga,pos,nchr,chr_ends,w_size,expected_S):
+  test_sumstats = {}
+  single_sample_sumstats(ga, pos, nchr, chr_ends, w_size, test_sumstats)
+  assert test_sumstats["_S"] == expected_S
+  assert test_sumstats["_S"] >= 0
+
+@pytest.mark.parametrize("ga,pos,nchr,chr_ends,w_size,expected_Pi", testdata_Pi)
+def test_single_sample_sumstats_Pi(ga,pos,nchr,chr_ends,w_size,expected_Pi):
+  test_sumstats = {}
+  single_sample_sumstats(ga, pos, nchr, chr_ends, w_size, test_sumstats)
+  assert test_sumstats["_Pi"] == pytest.approx(expected_Pi)
+  assert test_sumstats["_Pi"] >= 0
+  assert test_sumstats["_mPi"] == pytest.approx(expected_Pi)
+
+@pytest.mark.parametrize("ga,pos,nchr,chr_ends,w_size,expected_WT", testdata_WT)
+def test_single_sample_sumstats_WT(ga,pos,nchr,chr_ends,w_size,expected_WT):
+  test_sumstats = {}
+  single_sample_sumstats(ga, pos, nchr, chr_ends, w_size, test_sumstats)
+  assert test_sumstats["_mWT"] >= 0
+  assert test_sumstats["_mWT"] == pytest.approx(expected_WT)
+
+
+
 def test_single_sample_sumstats():
-  # 4 individuals (columns), 5 loci (rows)
-  test_ga = allel.GenotypeArray([[[ 0, 0],[ 0, 0],[ 0, 0],[ 0, 0]],
-                                 [[ 0, 1],[ 0, 1],[ 0, 1],[ 1, 1]],
-                                 [[-1,-1],[-1,-1],[-1,-1],[-1,-1]],
-                                 [[ 1, 1],[ 1, 1],[ 0, 1],[ 1, 1]],
-                                 [[ 0, 1],[ 0, 0],[ 0, 1],[ 0,-1]]], dtype='i1')
-  test_pos = (10,123,234,299,340)
   test_nchr = 1
   test_chr_end = [400]
   test_w_s = 50
-  test_sumstats = {}
-  single_sample_sumstats(test_ga, test_pos, test_nchr, test_chr_end, test_w_s, test_sumstats)
-  assert test_sumstats["_S"]==3
-  assert test_sumstats["_Pi"] == pytest.approx(0.003154762)
-  assert test_sumstats["_minPi"] == pytest.approx(0.)
-  assert test_sumstats["_maxPi"] == pytest.approx(0.01071429)
-  assert test_sumstats["_mPi"] == pytest.approx(0.003154762)
-  assert test_sumstats["_minWT"] == pytest.approx(0.)
-  assert test_sumstats["_maxWT"] == pytest.approx(0.0077135)
-  assert test_sumstats["_mWT"] == pytest.approx(0.002892563)
   # 4 individuals (columns), 20 loci (rows)
   test_ga = allel.GenotypeArray([[[ 0, 1],[ 0, 1],[ 1, 1],[ 0, 0]], #  0
                                  [[ 0, 1],[ 0, 1],[ 0, 1],[ 1, 1]], #  1
