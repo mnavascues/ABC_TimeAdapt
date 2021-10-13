@@ -83,7 +83,7 @@ rule test:
     shell:
         '''
         echo "----------- RUNNING TESTTHAT (R) ---------------\n"
-        Rscript -e "library(testthat); test_file(\'tests/testthat/test_timeadapt.R\')"
+        Rscript -e "library(testthat); test_file(\'scripts/test_timeadapt.R\')"
         echo "\n----------- RUNNING PYTEST (PYTHON) ---------------\n"
         pytest -v scripts/timeadapt.py
         '''
