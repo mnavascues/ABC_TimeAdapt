@@ -27,8 +27,8 @@ def main():
   
   verbose=10
   # Ignoring some warnings when calculating summary stats with missing data,
-  # typically on Tajima's D and Fst (division by zero) 
-  np.seterr(invalid='ignore') 
+  # typically on Tajima's D and Fst (division by zero, etc) 
+  np.seterr(invalid='ignore',divide='ignore')
   
   # get options for project and simulation:
   project, batch, sim, genome_file, sample_file, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut = \
@@ -113,8 +113,8 @@ def main():
     # Calculate summary statistics from total sample
     timeadapt.single_sample_sumstats(ga = geno_data,
                                      pos = positions,
-                                     nchr = 1,
-                                     chr_ends = [map_positions[-1]],
+                                     nchr = nchr,
+                                     chr_ends = chr_ends,
                                      w_size = window_size,
                                      sumstats = ref_table_sumstats,
                                      sep = "")
@@ -124,48 +124,35 @@ def main():
         if unique_groups['level'+str(lev)+'group'+str(g)] is True:
           timeadapt.single_sample_sumstats(ga = geno_data[:, groups_in_level['level'+str(lev)+'group'+str(g)]],
                                            pos = positions,
-                                           nchr = 1,
-                                           chr_ends = [map_positions[-1]],
+                                           nchr = nchr,
+                                           chr_ends = chr_ends,
                                            w_size = window_size,
                                            sumstats = ref_table_sumstats,
                                            name = 'l'+str(lev)+'g'+str(g))
 
     # Calculate summary statistics from pair of groups
-    #for lev in range(0, group_levels):
-    #  for g1 in range(0, number_of_groups[lev]):
-    #    for g2 in range(g1+1, number_of_groups[lev]):
-    #      pair_of_groups = [groups_in_level['level'+str(lev)+'group'+str(g1)],
-    #                        groups_in_level['level'+str(lev)+'group'+str(g2)]]
+    for lev in range(0, group_levels):
+      if verbose>=100 : print("Level: " + str(lev))
+      for g1 in range(0, number_of_groups[lev]):
+        for g2 in range(g1+1, number_of_groups[lev]):
+          pair = [groups_in_level['level'+str(lev)+'group'+str(g1)],
+                  groups_in_level['level'+str(lev)+'group'+str(g2)]]
+          if verbose>=100 : print(" Pair:")
+          if verbose>=100 : print("  1st group: " + str(pair[0]))
+          if verbose>=100 : print("  2nd group: " + str(pair[1]))
+          timeadapt.two_samples_sumstats(ga = geno_data,
+                                         pair_of_groups = pair,
+                                         pos = positions,
+                                         nchr = nchr,
+                                         chr_ends = chr_ends,
+                                         w_size =  window_size,
+                                         sumstats = ref_table_sumstats,
+                                         name = 'l'+str(lev)+'p'+str(g1)+str(g2) )
 
-    lev=0
-    g1=0
-    g2=1
-    pair_of_groups = [groups_in_level['level'+str(lev)+'group'+str(g1)],
-                      groups_in_level['level'+str(lev)+'group'+str(g2)]]
-    if verbose>=10 : print("PAIR:")
-    if verbose>=10 : print("  1st group: " + str(pair_of_groups[0]))
-    if verbose>=10 : print("  2nd group: " + str(pair_of_groups[1]))
-    a, b, c = allel.weir_cockerham_fst(g       = geno_data,
-                                       subpops = pair_of_groups)
-    fst1 = np.sum(a) / (np.sum(a) + np.sum(b) + np.sum(c))
-    if verbose>=10 : print("Weir and Cockerham Fst= "+str(fst1))
-    fst2 = (np.sum(a, axis=1) / (np.sum(a, axis=1) + np.sum(b, axis=1) + np.sum(c, axis=1)))
-    if verbose>=10 : print("Weir and Cockerham Fst= "+str(fst2))
-    fst3, _, _ = allel.windowed_weir_cockerham_fst(pos     = positions,
-                                             g       = geno_data,
-                                             subpops = pair_of_groups,
-                                             size    = window_size,
-                                             start   = 1,
-                                             stop    = map_positions[-1])
-    if verbose>=10 : print("Weir and Cockerham Fst= "+str(fst3))
-    ac1 = geno_data.count_alleles(subpop=pair_of_groups[0])
-    ac2 = geno_data.count_alleles(subpop=pair_of_groups[1])
-    num, den = allel.hudson_fst(ac1, ac2)
-    fst10 = np.sum(num) / np.sum(den)
-    if verbose>=10 : print("Hudson Fst= "+str(fst10))
-    fst20 = num / den
-    if verbose>=10 : print("Hudson Fst= "+str(fst20))
-    
+  # Print summary statistics to screen
+  if verbose>=100:
+    for key,value in ref_table_sumstats.items():
+      print(key, ':', value)
   # save binary with row of summary statistics for the reference table:
   dill.dump(ref_table_sumstats, file = open("results/" + project + "/" + batch + "/sumstats_" + sim + ".pkl", "wb"))
   # THIS IS HOW YOU LOAD THE DATA AGAIN: ref_table_sumstats = dill.load(file = open("results/" + project + "/" + batch + "/sumstats_" + sim + ".pkl", "rb"))
