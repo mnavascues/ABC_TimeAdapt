@@ -19,7 +19,8 @@ library(rcarbon, quietly=TRUE)
 set_options_type <- function(options){
   
   options$Settings$seed              <- as.integer(options$Settings$seed)
-  options$Settings$quiet             <- as.logical(options$Settings$quiet)
+  options$Settings$verbose           <- as.integer(options$Settings$verbose)
+  # options$Settings$quiet             <- as.logical(options$Settings$quiet)
   options$Settings$num_of_sims       <- as.integer(options$Settings$num_of_sims)
 
   options$Model$generations_forward  <- as.integer(options$Model$generations_forward) 

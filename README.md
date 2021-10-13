@@ -95,6 +95,7 @@ snakemake clean_all
 | Parameter name | type | description |
 |---|---|---------------|
 |**[Settings]**|||
+| *verbose* | integer | Level of information to output on screen (0 = minimal; 1,2,3,... = increasing detailed output; -1 = none).|
 | *project_name* | string | name of the analysis project, a folder with that name is created in results folder and all output written inside.|
 | *batch* | integer | identifier of a batch of simulations for the project. A folder named with that identifier is created within the project folder and results from the simulations of that bacth written inside.|
 | *sample_file* | string |  path + file name containing sample information (see below)|

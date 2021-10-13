@@ -14,12 +14,12 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-print_info_simulation <- function(){
+print_info_script <- function(){
   write("#########################################",stdout())
   write("#                                       #",stdout())
   write("#      TimeAdapt - getparams            #",stdout())
   write("#      by Miguel de Navascués           #",stdout())
-  write("#      Uppsala universitet & INRAE      #",stdout())
+  write("#      INRAE & Uppsala universitet      #",stdout())
   write("#      miguel.navascues@inrae.fr        #",stdout())
   write("#                                       #",stdout())
   write("#########################################",stdout())
@@ -35,7 +35,7 @@ if (interactive()){ # if interactive uses test values
 }else{
   args = commandArgs(trailingOnly=TRUE)
   if (length(args)==0){
-    stop("Options file (format *.ini) needs to be provided")
+    stop("Options file (format *.ini) needs to be provided as a command line argument")
   }else{
     options_file <- args[1]
   }
@@ -43,7 +43,7 @@ if (interactive()){ # if interactive uses test values
 options <- set_options_type(read.ini(options_file))
 
 # print script info to screen
-if (!interactive() & !options$Settings$quiet){print_info_simulation()}
+if ( !interactive() & options$Settings$verbose>=0 ){print_info_script()}
 
 # set seed for random number generator
 set.seed(options$Settings$seed)
@@ -57,25 +57,25 @@ dir.create(batch_dir, showWarnings = FALSE)
 
 # read sample and genome information from tables in text files
 Sample <- read_sample_info(options$Settings$sample_file)
-if (!options$Settings$quiet) {cat("Sample:\n");(Sample)}
+if (options$Settings$verbose>=4) {cat("Sample:\n");(Sample)}
 Genome <- read_genome_info(options$Settings$genome_file)
-if (!options$Settings$quiet) {cat("Genome:\n");(Genome)}
+if (options$Settings$verbose>=4) {cat("Genome:\n");(Genome)}
 
 
 # number of generations to simulate in forward (in SLiM)
 times_of_change_forw     <- as.integer(seq(from = options$Model$generations_forward/options$Model$periods_forward,
                                            to   = options$Model$generations_forward-1,
                                            by   = options$Model$generations_forward/options$Model$periods_forward))
-if (!options$Settings$quiet) {cat("Periods in forward:\n");(times_of_change_forw)}
+if (options$Settings$verbose>=4) {cat("Periods in forward:\n");(times_of_change_forw)}
 
 # calculate probability distribution curves for calibrated age of ancient samples
 # (from 14C ages)
 if(any(Sample$is_ancient)){
   if (file.exists(paste(project_dir,"cal_age_PDF.RDS",sep="/"))){
-    if (!options$Settings$quiet) cat("RDS file exists: importing calibrated age PDF\n")
+    if (options$Settings$verbose>=1) cat("RDS file exists: importing calibrated age PDF\n")
     cal_age_PDF <- readRDS(file = paste(project_dir,"cal_age_PDF.RDS",sep="/"))
   }else{
-    if (!options$Settings$quiet) cat("RDS file does not exists: calculating calibrated age PDF\n")
+    if (options$Settings$verbose>=1) cat("RDS file does not exists: calculating calibrated age PDF\n")
     cal_age_PDF <- get_sample_cal_age_PDF(Sample)
     saveRDS(cal_age_PDF,file = paste(project_dir,"cal_age_PDF.RDS",sep="/"))
   }  
@@ -89,7 +89,7 @@ max_sample_age <- maximum_age_of_sample(Sample,
                                         cal_age_PDF,
                                         options$Priors$gen_len_prior_min)
 if(max_sample_age+2 < options$Model$generations_forward){
-  if (!options$Settings$quiet) cat("Length of simulation forward OK.\n")
+  if (options$Settings$verbose>=2) cat("Length of simulation forward OK.\n")
 }else{
   message("Insufficient length of forward time simulation. ",
           "It is necessary to simulate more than ", max_sample_age+2," generations ",
@@ -118,7 +118,7 @@ sim_u <- rlnorm(options$Settings$num_of_sims,
                 options$Priors$mut_rate_prior_sd)
 
 for (sim in seq_len(options$Settings$num_of_sims)){
-  if (!options$Settings$quiet) cat(paste("\n\nSimulation",sim,"\n----------------------------------\n"))
+  if (options$Settings$verbose>=2) cat(paste("Simulation",sim," ----------------------------------\n"))
   # simulate ages of aDNA from their calibrated age distribution
   sim_sample_time <- sample_ages_from_prior(Sample,
                                             options$Model$generations_forward,
