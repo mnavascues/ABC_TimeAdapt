@@ -388,7 +388,7 @@ def single_sample_sumstats(ga,pos,nchr,chr_ends,w_size,sumstats,name="",sep="_",
   sumstats[name+sep+"TD"]=total_Taj_D
   w_Taj_D, _, _ = allel.windowed_tajima_d(pos, ac, size=w_size, start=1, stop=chr_ends[0])
   for chromo in range(1,nchr):
-    temp, _, _, _ = allel.windowed_tajima_d(pos, ac, size=w_size, start=1+chr_ends[chromo-1], stop=chr_ends[chromo])
+    temp, _, _ = allel.windowed_tajima_d(pos, ac, size=w_size, start=1+chr_ends[chromo-1], stop=chr_ends[chromo])
     np.append(w_Taj_D,temp)
   Taj_D = st.describe(w_Taj_D, nan_policy='omit')
   save_moments_2_dict(Taj_D,sumstats,name,sep,"TD")
