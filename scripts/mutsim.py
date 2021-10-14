@@ -24,8 +24,19 @@ import timeadapt
 
 def main():
   window_size = 50000
-  
-  verbose=10
+  verbose=0
+  if verbose >=1 :
+    print("#########################################")
+    print("#                                       #")
+  if verbose >=0 :
+    print("#      TimeAdapt - mutsim.py            #")
+  if verbose >=1 :
+    print("#      by Miguel de Navascués           #")
+    print("#      INRAE & Uppsala universitet      #")
+    print("#      miguel.navascues@inrae.fr        #")
+    print("#                                       #")
+    print("#########################################")
+
   # Ignoring some warnings when calculating summary stats with missing data,
   # typically on Tajima's D and Fst (division by zero, etc) 
   np.seterr(invalid='ignore',divide='ignore')

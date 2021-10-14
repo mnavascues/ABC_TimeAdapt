@@ -17,7 +17,7 @@
 print_info_script <- function(){
   write("#########################################",stdout())
   write("#                                       #",stdout())
-  write("#      TimeAdapt - getparams            #",stdout())
+  write("#      TimeAdapt - getparams.R          #",stdout())
   write("#      by Miguel de Navascués           #",stdout())
   write("#      INRAE & Uppsala universitet      #",stdout())
   write("#      miguel.navascues@inrae.fr        #",stdout())

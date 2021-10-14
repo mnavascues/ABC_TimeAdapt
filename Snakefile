@@ -43,7 +43,7 @@ rule forwsim:
     output:
         forwsim_trees='results/{p}/{b}/forwsim_{s}.trees'
     shell:
-        'slim -d "option_file=\'{input.slim_options}\'" {input.script}'
+        'slim -l 0 -d "option_file=\'{input.slim_options}\'" {input.script}'
 
 # simulation of tree sequence with msprime
 rule coalsim:

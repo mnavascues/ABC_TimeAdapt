@@ -23,7 +23,21 @@ import timeadapt
 #  python scripts/coalsim.py tests/input/config_project.ini tests/input/sim_1.ini
 
 def main():
-  verbose=10
+  verbose=0
+
+  if verbose >=1 :
+    print("#########################################")
+    print("#                                       #")
+  if verbose >=0 :
+    print("#      TimeAdapt - coalsim.py           #")
+  if verbose >=1 :
+    print("#      by Miguel de Navascués           #")
+    print("#      INRAE & Uppsala universitet      #")
+    print("#      miguel.navascues@inrae.fr        #")
+    print("#                                       #")
+    print("#########################################")
+
+
 
   # get options for project and simulation:
   project, batch, sim, genome_file, _, _, _, N, _, _, _, seed_coal, _ = \
