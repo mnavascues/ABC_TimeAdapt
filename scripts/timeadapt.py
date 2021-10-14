@@ -23,7 +23,6 @@ import math
 import tempfile # for creating temporal files on testing
 import pytest
 
-### GET OPTIONS ··············································································
 def get_options(proj_options_file,sim_options_file):
   proj_options = configparser.ConfigParser()
   proj_options.read(proj_options_file)
@@ -32,34 +31,28 @@ def get_options(proj_options_file,sim_options_file):
 
   project      = proj_options.get('Settings','project')
   batch        = proj_options.get('Settings','batch')
+  try:
+    verbose      = proj_options.getint('Settings','verbose')
+  except:
+    verbose      = int(proj_options.getfloat('Settings','verbose'))
   genome_file  = proj_options.get('Settings','genome_file')
   sample_file  = proj_options.get('Settings','sample_file')
   sim          = sim_options.get('Simulation','sim')
   ss           = [int(i) for i in sim_options.get("Sample","ss").split()]
   chrono_order = [int(i) for i in sim_options.get("Sample","chrono_order").split()]
-  N            = [int(i) for i in sim_options.get("Demography","N").split()]   
+  assert sum(ss)==len(chrono_order), "Verify number of samples, inconsistent sample size across simulation options file"
+  N            = [int(i) for i in sim_options.get("Demography","N").split()]
+  for i in N:
+    assert i>0, "Verify population sizes, they can be only positive values (excluding zero)"
   mu           = sim_options.getfloat('Genome','mu')
+  assert mu>=0, "Verify mutation rate, it can be only positive values and zero"
   ttratio      = sim_options.getfloat('Genome','ttratio')
   seq_error    = sim_options.getfloat('Genome','seq_error')
   seed_coal    = sim_options.getint('Seeds','seed_coal')
   seed_mut     = sim_options.getint('Seeds','seed_mut')
 
-  return project, batch, sim, genome_file, sample_file, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut
-def test_get_options():
-  project, batch, sim, genome_file, sample_file, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut = \
-           get_options(proj_options_file = "tests/input/config_project.ini", sim_options_file  = "tests/input/sim_1.ini")
-  assert project == "test"
-  assert batch == "1"
-  assert sim == "1"
-  assert genome_file == "tests/input/test_genome.txt"
-  assert sample_file == "tests/input/test_sample.txt"
-  assert ss == [4,1,1,1,1,1,1,1,1,1,1,1,1,1]
-  assert chrono_order == [0,1,2,3,10,9,4,8,6,5,7,12,13,16,11,15,14]
-  assert N == [11,85,200,200,200,37,10,30,71]
-  assert N[0] == 11
-  assert seed_coal == 1066941363
-  assert seed_mut == 4083239485
-### end GET OPTIONS ··········································································
+  return project, batch, sim, genome_file, sample_file, verbose, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut
+
 
 ### READ SAMPLE INFO FILE .........
 def read_sample_info(sample_info_file):

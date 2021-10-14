@@ -24,7 +24,17 @@ import timeadapt
 
 def main():
   window_size = 50000
-  verbose=0
+
+  # Ignoring some warnings when calculating summary stats with missing data,
+  # typically on Tajima's D and Fst (division by zero, etc) 
+  np.seterr(invalid='ignore',divide='ignore')
+  
+  # get options for project and simulation:
+  project, batch, sim, genome_file, sample_file, verbose, ss, chrono_order, N, mu, ttratio, \
+           seq_error, seed_coal, seed_mut = \
+           timeadapt.get_options(proj_options_file = sys.argv[1], sim_options_file = sys.argv[2])
+
+  # print program name
   if verbose >=1 :
     print("#########################################")
     print("#                                       #")
@@ -36,14 +46,6 @@ def main():
     print("#      miguel.navascues@inrae.fr        #")
     print("#                                       #")
     print("#########################################")
-
-  # Ignoring some warnings when calculating summary stats with missing data,
-  # typically on Tajima's D and Fst (division by zero, etc) 
-  np.seterr(invalid='ignore',divide='ignore')
-  
-  # get options for project and simulation:
-  project, batch, sim, genome_file, sample_file, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut = \
-           timeadapt.get_options(proj_options_file = sys.argv[1], sim_options_file = sys.argv[2])
 
   # set random seed:
   np.random.seed(seed_mut)
@@ -75,7 +77,7 @@ def main():
   unique_groups = {}
   num_of_pair_comparisons = 0
   number_of_groups = np.zeros(group_levels, dtype='int')
-  total_number_of_groups = 0
+  # total_number_of_groups = 0
   for lev in range(0, group_levels):
     if verbose>=100 : print("level "+str(lev))
     chrono_order_groups[lev] = [groups[lev][i] for i in chrono_order]

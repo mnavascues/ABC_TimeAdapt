@@ -15,74 +15,99 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 import timeadapt
+import tempfile # for creating temporal files on testing
 import allel
 import pytest
 
-### TEST DATA FOR SUMMARY STATISTISCS
-#                                  ind 0   ind 1   ind 2   ind 3  
-test_ga_A = allel.GenotypeArray([[[ 0, 0],[ 0, 0],[ 0, 0],[ 0, 0]], # locus 0
-                                 [[ 0, 1],[ 0, 1],[ 0, 1],[ 1, 1]], # locus 1
-                                 [[-1,-1],[-1,-1],[-1,-1],[-1,-1]], # locus 2
-                                 [[ 1, 1],[ 1, 1],[ 0, 1],[ 1, 1]], # locus 3
-                                 [[ 0, 1],[ 0, 0],[ 0, 1],[ 0,-1]]],# locus 4
-                                 dtype='i1')
-#              0   1   2   3   4
-test_pos_A = (10,123,234,299,340)
-#                                  ind 0   ind 1   ind 2   ind 3  
-test_ga_B = allel.GenotypeArray([[[ 0, 1],[ 0, 1],[ 1, 1],[ 0, 0]], # locus 0
-                                 [[ 0, 1],[ 0, 1],[ 0, 1],[ 1, 1]], # locus 1
-                                 [[ 0, 1],[ 0, 1],[-1,-1],[ 1, 1]], # locus 2
-                                 [[ 0, 1],[ 0, 0],[ 0, 1],[ 1, 1]], # locus 3
-                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], # locus 4
-                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], # locus 5
-                                 [[ 1, 1],[ 0, 1],[ 0, 1],[ 1, 1]], # locus 6
-                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], # locus 7
-                                 [[ 1, 1],[ 0, 1],[ 0, 0],[ 0, 1]], # locus 8
-                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], # locus 9
-                                 [[ 1, 1],[ 0, 1],[ 0, 1],[ 1, 1]], # locus 10
-                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], # locus 11
-                                 [[ 0, 0],[ 0, 1],[ 0, 1],[ 0, 1]], # locus 12
-                                 [[-1,-1],[-1,-1],[-1,-1],[ 1, 1]], # locus 13
-                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]], # locus 14
-                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]], # locus 15
-                                 [[ 1, 1],[ 0, 1],[ 0, 0],[ 0, 1]], # locus 16
-                                 [[ 1, 1],[ 1, 1],[ 1, 0],[ 1, 1]], # locus 17
-                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]], # locus 18
-                                 [[ 0, 1],[ 0, 0],[ 0, 1],[-1,-1]]],# locus 19
-                                 dtype='i1')
-#             0  1  2  3  4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
-test_pos_B = (4,10,50,77,99,123,134,150,178,201,209,234,256,270,299,311,315,340,358,378)
+_, temp_config_file_1 = tempfile.mkstemp()
+with open(temp_config_file_1, 'w') as f:
+  f.write("[Settings]\n")
+  f.write("verbose = 0\n")
+  f.write("project = test\n")
+  f.write("batch = 1\n")
+  f.write("sample_file = data/sample.txt\n")
+  f.write("genome_file = data/genome.txt\n")
 
-#                                 ga,        pos, nchr, chr_ends, w_size, expected_S
-testdata_S = [pytest.param(test_ga_A, test_pos_A,    1,    [400],     50,          3, id="A"),
-              pytest.param(test_ga_B, test_pos_B,    1,    [400],     50,         19, id="B")]
-#                                 ga,        pos, nchr, chr_ends, w_size, expected_Pi
-testdata_Pi = [pytest.param(test_ga_A, test_pos_A,    1,    [400],     50, 0.00315476, id="A"),
-               pytest.param(test_ga_B, test_pos_B,    1,    [400],     50, 0.02418452, id="B")]
-#                                 ga,        pos, nchr, chr_ends, w_size,  expected_WT
-testdata_WT = [pytest.param(test_ga_A, test_pos_A,    1,    [400],     50, 0.00289256, id="A"),
-               pytest.param(test_ga_B, test_pos_B,    1,    [400],     50, 0.01831956, id="B")]
+_, temp_config_file_2 = tempfile.mkstemp()
+with open(temp_config_file_2, 'w') as f:
+  f.write("[Settings]\n")
+  f.write("verbose = 1.2\n")
+  f.write("project = test\n")
+  f.write("batch = 1\n")
+  f.write("sample_file = data/sample.txt\n")
+  f.write("genome_file = data/genome.txt\n")
 
+_, temp_sim_file_1 = tempfile.mkstemp()
+with open(temp_sim_file_1, 'w') as f:
+  f.write("[Simulation]\n")
+  f.write("sim=1\n")
+  f.write("[Sample]\n")
+  f.write("ss=4 1 1 1 1 1 1 1 1 1 1 1 1 1\n")
+  f.write("chrono_order=0 1 2 3 10 9 4 8 6 5 7 12 13 16 11 15 14\n")
+  f.write("[Demography]\n")
+  f.write("N=11 85 200 200 200 37 10 30 71\n")
+  f.write("[Genome]\n")
+  f.write("mu=8.6106e-08\n")
+  f.write("ttratio=2\n")
+  f.write("seq_error=0.005\n")
+  f.write("[Seeds]\n")
+  f.write("seed_coal=106\n")
+  f.write("seed_mut=408\n")
+  
+result_config_1_sim_1 = {"project":"test", "batch":"1", "sim":"1",
+                         "verbose":0,
+                         "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
+                         "ss":[4,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                         "chrono_order":[0,1,2,3,10,9,4,8,6,5,7,12,13,16,11,15,14],
+                         "N":[11,85,200,200,200,37,10,30,71],
+                         "mu":8.6106e-08,
+                         "ttratio":2, "seq_error":0.005,
+                         "seed_coal":106, "seed_mut":408}
 
-@pytest.mark.parametrize("ga,pos,nchr,chr_ends,w_size,expected_S", testdata_S)
-def test_single_sample_sumstats_S(ga,pos,nchr,chr_ends,w_size,expected_S):
-  test_sumstats = {}
-  timeadapt.single_sample_sumstats(ga, pos, nchr, chr_ends, w_size, test_sumstats)
-  assert test_sumstats["_S"] == expected_S
-  assert test_sumstats["_S"] >= 0
+result_config_2_sim_1 = {"project":"test", "batch":"1", "sim":"1",
+                         "verbose":1,
+                         "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
+                         "ss":[4,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                         "chrono_order":[0,1,2,3,10,9,4,8,6,5,7,12,13,16,11,15,14],
+                         "N":[11,85,200,200,200,37,10,30,71],
+                         "mu":8.6106e-08,
+                         "ttratio":2, "seq_error":0.005,
+                         "seed_coal":106, "seed_mut":408}
 
-@pytest.mark.parametrize("ga,pos,nchr,chr_ends,w_size,expected_Pi", testdata_Pi)
-def test_single_sample_sumstats_Pi(ga,pos,nchr,chr_ends,w_size,expected_Pi):
-  test_sumstats = {}
-  timeadapt.single_sample_sumstats(ga, pos, nchr, chr_ends, w_size, test_sumstats)
-  assert test_sumstats["_Pi"] == pytest.approx(expected_Pi)
-  assert test_sumstats["_Pi"] >= 0
-  assert test_sumstats["_mPi"] == pytest.approx(expected_Pi)
+test_input_files = [pytest.param(temp_config_file_1, temp_sim_file_1, result_config_1_sim_1, id="1_1"),
+                    pytest.param(temp_config_file_2, temp_sim_file_1, result_config_2_sim_1, id="2_1")]
 
-@pytest.mark.parametrize("ga,pos,nchr,chr_ends,w_size,expected_WT", testdata_WT)
-def test_single_sample_sumstats_WT(ga,pos,nchr,chr_ends,w_size,expected_WT):
-  test_sumstats = {}
-  timeadapt.single_sample_sumstats(ga, pos, nchr, chr_ends, w_size, test_sumstats)
-  assert test_sumstats["_mWT"] >= 0
-  assert test_sumstats["_mWT"] == pytest.approx(expected_WT)
-
+@pytest.mark.parametrize("temp_config_file,temp_sim_file,expected_result", test_input_files)
+def test_get_options(temp_config_file,temp_sim_file,expected_result):
+  project, batch, sim, genome_file, sample_file, verbose, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut = \
+           timeadapt.get_options(proj_options_file = temp_config_file, sim_options_file = temp_sim_file)
+  assert type(project) is str
+  assert project == expected_result["project"]
+  assert type(batch) is str
+  assert batch == expected_result["batch"]
+  assert type(sim) is str
+  assert sim == expected_result["sim"]
+  assert type(verbose) is int
+  assert verbose ==  expected_result["verbose"]
+  assert type(genome_file) is str
+  assert genome_file == expected_result["genome_file"]
+  assert type(sample_file) is str
+  assert sample_file == expected_result["sample_file"]
+  assert type(ss) is list
+  for i in ss:
+    assert type(i) is int
+  assert ss == expected_result["ss"]
+  assert type(chrono_order) is list
+  for i in chrono_order:
+    assert type(i) is int
+  assert chrono_order == expected_result["chrono_order"]
+  assert type(N) is list
+  for i in N:
+    assert type(i) is int
+  assert N == expected_result["N"]
+  assert type(mu) is float
+  assert mu == pytest.approx(expected_result["mu"])
+  assert type(seed_coal) is int
+  assert seed_coal == expected_result["seed_coal"]
+  assert type(seed_mut) is int
+  assert seed_mut == expected_result["seed_mut"]
