@@ -60,5 +60,6 @@ jobs:
           
       - name: Test with pytest
         run: |
-          pytest scripts/timeadapt.py          
+          pytest scripts/timeadapt.py
+          pytest scripts/test_timeadapt.py
           
