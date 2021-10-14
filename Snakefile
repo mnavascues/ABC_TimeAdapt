@@ -86,6 +86,7 @@ rule test:
         Rscript -e "library(testthat); test_file(\'scripts/test_timeadapt.R\')"
         echo "\n----------- RUNNING PYTEST (PYTHON) ---------------\n"
         pytest -v scripts/timeadapt.py
+        pytest -v scripts/test_timeadapt.py
         '''
 
 
