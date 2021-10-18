@@ -23,11 +23,9 @@ import math
 import tempfile # for creating temporal files on testing
 import pytest
 
-def get_options(proj_options_file,sim_options_file):
+def get_project_options(proj_options_file):
   proj_options = configparser.ConfigParser()
   proj_options.read(proj_options_file)
-  sim_options = configparser.ConfigParser()
-  sim_options.read(sim_options_file)
 
   project      = proj_options.get('Settings','project')
   batch        = proj_options.get('Settings','batch')
@@ -37,6 +35,13 @@ def get_options(proj_options_file,sim_options_file):
     verbose      = int(proj_options.getfloat('Settings','verbose'))
   genome_file  = proj_options.get('Settings','genome_file')
   sample_file  = proj_options.get('Settings','sample_file')
+  
+  return project, batch, genome_file, sample_file, verbose
+
+def get_sim_options(sim_options_file):
+  sim_options = configparser.ConfigParser()
+  sim_options.read(sim_options_file)
+
   sim          = sim_options.get('Simulation','sim')
   ss           = [int(i) for i in sim_options.get("Sample","ss").split()]
   chrono_order = [int(i) for i in sim_options.get("Sample","chrono_order").split()]
@@ -50,6 +55,13 @@ def get_options(proj_options_file,sim_options_file):
   seq_error    = sim_options.getfloat('Genome','seq_error')
   seed_coal    = sim_options.getint('Seeds','seed_coal')
   seed_mut     = sim_options.getint('Seeds','seed_mut')
+
+  return sim, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut
+
+
+def get_options(proj_options_file,sim_options_file):
+  project, batch, genome_file, sample_file, verbose = get_project_options(proj_options_file)
+  sim, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut = get_sim_options(sim_options_file)
 
   return project, batch, sim, genome_file, sample_file, verbose, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut
 

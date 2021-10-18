@@ -19,17 +19,28 @@ sims = range(1,num_of_sims+1)
 
 # run simulations
 rule sim:
-    input: sumstats_files = expand('results/{p}/{b}/sumstats_{s}.pkl',p=project,b=batch,s=sims)
+    input:
+        ref_table_file = expand('results/{p}/{b}/reftable.pkl',p=project,b=batch)
 
+# pool stats and params in a single reference table
+rule reftable:
+    input:
+        script = 'scripts/reftable.py',
+        sumstats_files = expand('results/{p}/{b}/sumstats_{s}.pkl',p=project,b=batch,s=sims)
+        # params_files = ????
+    output:
+        # ref_table_file = expand('results/{p}/{b}/reftable.pkl',p=project,b=batch)
+    shell:
+        'python {input.script} {options_file}'
 
 # simulation of mutations with msprime
 rule mutsim:
     input:
-        script='scripts/mutsim.py',
-        sim_ini='results/{p}/{b}/sim_{s}.ini',
-        forwsim_trees='results/{p}/{b}/forwsim_{s}.trees'
+        script = 'scripts/mutsim.py',
+        sim_ini = 'results/{p}/{b}/sim_{s}.ini',
+        forwsim_trees = 'results/{p}/{b}/forwsim_{s}.trees'
     output:
-        sumstats_files='results/{p}/{b}/sumstats_{s}.pkl'
+        sumstats_files = 'results/{p}/{b}/sumstats_{s}.pkl'
     shell:
         'python {input.script} {options_file} {input.sim_ini}'
 

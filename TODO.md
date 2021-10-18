@@ -20,6 +20,7 @@
 
 - [ ] *Refactor getparams from R to Python.* **LOW** The only R package that will be kept is rcarbon for simulating age for subfossil samples: use rpy2.
 - [ ] *Script to pool stats and parameters into a single reference table* **HIGH**
+- [x] *Separate function to read project options from simulation options* **HIGH**
 
 ### Documentation
 
