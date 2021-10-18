@@ -29,17 +29,19 @@ def get_project_options(proj_options_file):
   project      = proj_options.get('Settings','project')
   batch        = proj_options.get('Settings','batch')
   try:
-    verbose      = proj_options.getint('Settings','verbose')
+    verbose    = proj_options.getint('Settings','verbose')
   except:
-    verbose      = int(proj_options.getfloat('Settings','verbose'))
+    verbose    = int(proj_options.getfloat('Settings','verbose'))
   genome_file  = proj_options.get('Settings','genome_file')
   sample_file  = proj_options.get('Settings','sample_file')
+  num_of_sims  = proj_options.getint('Settings','num_of_sims')
   
   return {"project":project,
           "batch":batch,
           "genome_file":genome_file, 
           "sample_file":sample_file, 
-          "verbose":verbose}
+          "verbose":verbose,
+          "num_of_sims":num_of_sims}
 
 def get_sim_options(sim_options_file):
   sim_options = configparser.ConfigParser()

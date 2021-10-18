@@ -15,12 +15,14 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 import sys
+import dill
+import pandas as pd
 import timeadapt
 
 def main():
   # get options for project and simulation:
   options = timeadapt.get_project_options(proj_options_file = sys.argv[1])
-  sims        = range(1,num_of_sims+1)
+  sims        = range(1,options["num_of_sims"]+1)
 
   # print program name
   if options["verbose"] >=1 :
@@ -36,8 +38,9 @@ def main():
     print("#########################################")
     
   for sim in sims:
-    print("simulation"+str(sim))
-    
+    if options["verbose"] >=0 : print("simulation "+str(sim))
+    sumstats_sim = dill.load(file = open("results/"+options["project"]+"/"+options["batch"]+"/sumstats_"+str(sim)+".pkl", "rb"))
+    print(pd.DataFrame.from_dict(sumstats_sim))
     
     
 

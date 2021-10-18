@@ -169,7 +169,6 @@ def main():
       print(key, ':', value)
   # save binary with row of summary statistics for the reference table:
   dill.dump(ref_table_sumstats, file = open("results/" + options["project"] + "/" + options["batch"] + "/sumstats_" + options["sim"] + ".pkl", "wb"))
-  # THIS IS HOW YOU LOAD THE DATA AGAIN: ref_table_sumstats = dill.load(file = open("results/" + options["project"] + "/" + options["batch"] + "/sumstats_" + options["sim"] + ".pkl", "rb"))
 
 ############################################################################################################
 if __name__ == "__main__":

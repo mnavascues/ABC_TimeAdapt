@@ -27,6 +27,7 @@ with open(temp_config_file_1, 'w') as f:
   f.write("batch = 1\n")
   f.write("sample_file = data/sample.txt\n")
   f.write("genome_file = data/genome.txt\n")
+  f.write("num_of_sims = 10000\n")
 
 _, temp_config_file_2 = tempfile.mkstemp()
 with open(temp_config_file_2, 'w') as f:
@@ -36,6 +37,7 @@ with open(temp_config_file_2, 'w') as f:
   f.write("batch = 1\n")
   f.write("sample_file = data/sample.txt\n")
   f.write("genome_file = data/genome.txt\n")
+  f.write("num_of_sims = 10\n")
 
 _, temp_sim_file_1 = tempfile.mkstemp()
 with open(temp_sim_file_1, 'w') as f:
@@ -55,7 +57,7 @@ with open(temp_sim_file_1, 'w') as f:
   f.write("seed_mut=408\n")
   
 result_config_1_sim_1 = {"project":"test", "batch":"1", "sim":"1",
-                         "verbose":0,
+                         "verbose":0, "num_of_sims":10000,
                          "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
                          "ss":[4,1,1,1,1,1,1,1,1,1,1,1,1,1],
                          "chrono_order":[0,1,2,3,10,9,4,8,6,5,7,12,13,16,11,15,14],
@@ -65,7 +67,7 @@ result_config_1_sim_1 = {"project":"test", "batch":"1", "sim":"1",
                          "seed_coal":106, "seed_mut":408}
 
 result_config_2_sim_1 = {"project":"test", "batch":"1", "sim":"1",
-                         "verbose":1,
+                         "verbose":1, "num_of_sims":10,
                          "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
                          "ss":[4,1,1,1,1,1,1,1,1,1,1,1,1,1],
                          "chrono_order":[0,1,2,3,10,9,4,8,6,5,7,12,13,16,11,15,14],
@@ -88,14 +90,16 @@ def test_get_options(temp_config_file,temp_sim_file,expected_result):
   assert options["project"] == expected_result["project"]
   assert type(options["batch"]) is str
   assert options["batch"] == expected_result["batch"]
-  assert type(options["sim"]) is str
-  assert options["sim"] == expected_result["sim"]
   assert type(options["verbose"]) is int
   assert options["verbose"] ==  expected_result["verbose"]
   assert type(options["genome_file"]) is str
   assert options["genome_file"] == expected_result["genome_file"]
   assert type(options["sample_file"]) is str
   assert options["sample_file"] == expected_result["sample_file"]
+  assert type(options["num_of_sims"]) is int
+  assert options["num_of_sims"] ==  expected_result["num_of_sims"]
+  assert type(options["sim"]) is str
+  assert options["sim"] == expected_result["sim"]
   assert type(options["ss"]) is list
   for i in options["ss"]:
     assert type(i) is int
