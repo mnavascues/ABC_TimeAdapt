@@ -19,21 +19,27 @@ import timeadapt
 
 def main():
   # get options for project and simulation:
-  project, batch, genome_file, _, verbose = \
-           timeadapt.get_project_options(proj_options_file = sys.argv[1])
+  options = timeadapt.get_project_options(proj_options_file = sys.argv[1])
+  sims        = range(1,num_of_sims+1)
 
   # print program name
-  if verbose >=1 :
+  if options["verbose"] >=1 :
     print("#########################################")
     print("#                                       #")
-  if verbose >=0 :
-    print("#      TimeAdapt - reftable.py           #")
-  if verbose >=1 :
+  if options["verbose"] >=0 :
+    print("#      TimeAdapt - reftable.py          #")
+  if options["verbose"] >=1 :
     print("#      by Miguel de Navascués           #")
     print("#      INRAE & Uppsala universitet      #")
     print("#      miguel.navascues@inrae.fr        #")
     print("#                                       #")
     print("#########################################")
+    
+  for sim in sims:
+    print("simulation"+str(sim))
+    
+    
+    
 
 ############################################################################################################
 if __name__ == "__main__":

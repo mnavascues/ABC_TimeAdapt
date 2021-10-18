@@ -79,35 +79,38 @@ test_input_files = [pytest.param(temp_config_file_1, temp_sim_file_1, result_con
 
 @pytest.mark.parametrize("temp_config_file,temp_sim_file,expected_result", test_input_files)
 def test_get_options(temp_config_file,temp_sim_file,expected_result):
-  project, batch, sim, genome_file, sample_file, verbose, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut = \
-           timeadapt.get_options(proj_options_file = temp_config_file, sim_options_file = temp_sim_file)
-  assert type(project) is str
-  assert project == expected_result["project"]
-  assert type(batch) is str
-  assert batch == expected_result["batch"]
-  assert type(sim) is str
-  assert sim == expected_result["sim"]
-  assert type(verbose) is int
-  assert verbose ==  expected_result["verbose"]
-  assert type(genome_file) is str
-  assert genome_file == expected_result["genome_file"]
-  assert type(sample_file) is str
-  assert sample_file == expected_result["sample_file"]
-  assert type(ss) is list
-  for i in ss:
+  #project, batch, sim, genome_file, sample_file, verbose, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut = \
+  #         timeadapt.get_options(proj_options_file = temp_config_file, sim_options_file = temp_sim_file)
+  
+  options = timeadapt.get_options(proj_options_file = temp_config_file, sim_options_file = temp_sim_file)
+  
+  assert type(options["project"]) is str
+  assert options["project"] == expected_result["project"]
+  assert type(options["batch"]) is str
+  assert options["batch"] == expected_result["batch"]
+  assert type(options["sim"]) is str
+  assert options["sim"] == expected_result["sim"]
+  assert type(options["verbose"]) is int
+  assert options["verbose"] ==  expected_result["verbose"]
+  assert type(options["genome_file"]) is str
+  assert options["genome_file"] == expected_result["genome_file"]
+  assert type(options["sample_file"]) is str
+  assert options["sample_file"] == expected_result["sample_file"]
+  assert type(options["ss"]) is list
+  for i in options["ss"]:
     assert type(i) is int
-  assert ss == expected_result["ss"]
-  assert type(chrono_order) is list
-  for i in chrono_order:
+  assert options["ss"] == expected_result["ss"]
+  assert type(options["chrono_order"]) is list
+  for i in options["chrono_order"]:
     assert type(i) is int
-  assert chrono_order == expected_result["chrono_order"]
-  assert type(N) is list
-  for i in N:
+  assert options["chrono_order"] == expected_result["chrono_order"]
+  assert type(options["N"]) is list
+  for i in options["N"]:
     assert type(i) is int
-  assert N == expected_result["N"]
-  assert type(mu) is float
-  assert mu == pytest.approx(expected_result["mu"])
-  assert type(seed_coal) is int
-  assert seed_coal == expected_result["seed_coal"]
-  assert type(seed_mut) is int
-  assert seed_mut == expected_result["seed_mut"]
+  assert options["N"] == expected_result["N"]
+  assert type(options["mu"]) is float
+  assert options["mu"] == pytest.approx(expected_result["mu"])
+  assert type(options["seed_coal"]) is int
+  assert options["seed_coal"] == expected_result["seed_coal"]
+  assert type(options["seed_mut"]) is int
+  assert options["seed_mut"] == expected_result["seed_mut"]

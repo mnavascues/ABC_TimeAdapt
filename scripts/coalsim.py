@@ -24,16 +24,15 @@ import timeadapt
 
 def main():
   # get options for project and simulation:
-  project, batch, sim, genome_file, _, verbose, _, _, N, _, _, _, seed_coal, _ = \
-           timeadapt.get_options(proj_options_file = sys.argv[1], sim_options_file = sys.argv[2])
+  options = timeadapt.get_options(proj_options_file = sys.argv[1], sim_options_file = sys.argv[2])
 
   # print program name
-  if verbose >=1 :
+  if options["verbose"] >=1 :
     print("#########################################")
     print("#                                       #")
-  if verbose >=0 :
-    print("#      TimeAdapt - coalsim.py           #")
-  if verbose >=1 :
+  if options["verbose"] >=0 :
+    print("#      TimeAdapt - coalsim.py           # "+str(options["sim"]))
+  if options["verbose"] >=1 :
     print("#      by Miguel de Navascués           #")
     print("#      INRAE & Uppsala universitet      #")
     print("#      miguel.navascues@inrae.fr        #")
@@ -41,22 +40,22 @@ def main():
     print("#########################################")
   
   # get recombination map:
-  _, _, rates, positions = timeadapt.get_recombination_map(gf = genome_file)
+  _, _, rates, positions = timeadapt.get_recombination_map(gf = options["genome_file"])
   rate_map = msprime.RateMap(position = positions, rate = rates) 
 
   # simulate with msprime
   # https://tskit.dev/msprime/docs/latest/intro.html
-  msp_ts = msprime.sim_ancestry(samples            = N[0],
-                                population_size    = N[0],
+  msp_ts = msprime.sim_ancestry(samples            = options["N"][0],
+                                population_size    = options["N"][0],
                                 model              = "dtwf",
                                 recombination_rate = rate_map,
-                                random_seed        = seed_coal)
+                                random_seed        = options["seed_coal"])
 
   # make tree-sequence a SLiM-tree-sequence
   slim_ts = pyslim.annotate_defaults(msp_ts, model_type="WF", slim_generation=1)
   
   # save tree
-  slim_ts.dump("results/"+project+"/"+batch+"/coalsim_"+sim+".trees")
+  slim_ts.dump("results/"+options["project"]+"/"+options["batch"]+"/coalsim_"+options["sim"]+".trees")
 
 
 ############################################################################################################

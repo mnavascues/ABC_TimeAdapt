@@ -26,7 +26,6 @@ import pytest
 def get_project_options(proj_options_file):
   proj_options = configparser.ConfigParser()
   proj_options.read(proj_options_file)
-
   project      = proj_options.get('Settings','project')
   batch        = proj_options.get('Settings','batch')
   try:
@@ -36,12 +35,15 @@ def get_project_options(proj_options_file):
   genome_file  = proj_options.get('Settings','genome_file')
   sample_file  = proj_options.get('Settings','sample_file')
   
-  return project, batch, genome_file, sample_file, verbose
+  return {"project":project,
+          "batch":batch,
+          "genome_file":genome_file, 
+          "sample_file":sample_file, 
+          "verbose":verbose}
 
 def get_sim_options(sim_options_file):
   sim_options = configparser.ConfigParser()
   sim_options.read(sim_options_file)
-
   sim          = sim_options.get('Simulation','sim')
   ss           = [int(i) for i in sim_options.get("Sample","ss").split()]
   chrono_order = [int(i) for i in sim_options.get("Sample","chrono_order").split()]
@@ -56,14 +58,20 @@ def get_sim_options(sim_options_file):
   seed_coal    = sim_options.getint('Seeds','seed_coal')
   seed_mut     = sim_options.getint('Seeds','seed_mut')
 
-  return sim, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut
-
+  return {"sim":sim,
+          "ss":ss, 
+          "chrono_order":chrono_order, 
+          "N":N, 
+          "mu":mu, 
+          "ttratio":ttratio, 
+          "seq_error":seq_error, 
+          "seed_coal":seed_coal, 
+          "seed_mut":seed_mut}
 
 def get_options(proj_options_file,sim_options_file):
-  project, batch, genome_file, sample_file, verbose = get_project_options(proj_options_file)
-  sim, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut = get_sim_options(sim_options_file)
-
-  return project, batch, sim, genome_file, sample_file, verbose, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut
+  options = get_project_options(proj_options_file)
+  options.update(get_sim_options(sim_options_file))
+  return options
 
 
 ### READ SAMPLE INFO FILE .........
