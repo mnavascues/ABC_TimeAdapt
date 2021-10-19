@@ -76,6 +76,19 @@ rule getparams:
     shell:
         'Rscript {input.script} {options_file}'
 
+
+# read parameters and sample from priors
+rule getparams2:
+    input:
+        script='scripts/getparams.py'
+    output:
+        #slim_options=expand('results/{p}/{b}/sim_{s}.eidos',p=project,b=batch,s=sims),
+        #sim_ini=expand('results/{p}/{b}/sim_{s}.ini',p=project,b=batch,s=sims) 
+    shell:
+        'python {input.script} {options_file}'
+
+
+
 # delete all files in batch directory
 rule clean_batch:
     shell: 'rm -rf results/'+project+'/'+str(batch)

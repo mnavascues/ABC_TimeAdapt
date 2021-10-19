@@ -27,7 +27,7 @@ def print_info(script_name,verbose):
   if verbose >=1 :
     print("#########################################")
   if verbose >=0 :
-    print("TimeAdapt - "+script_name)
+    print("TimeAdapt - {}".format(script_name))
   if verbose >=1 :
     print("by Miguel de Navascués")
     print("INRAE & Uppsala universitet")
@@ -48,13 +48,15 @@ def get_project_options(proj_options_file):
   genome_file  = proj_options.get('Settings','genome_file')
   sample_file  = proj_options.get('Settings','sample_file')
   num_of_sims  = proj_options.getint('Settings','num_of_sims')
+  seed         = proj_options.getint('Settings','seed')
   
   return {"project":project,
           "batch":batch,
           "genome_file":genome_file, 
           "sample_file":sample_file, 
           "verbose":verbose,
-          "num_of_sims":num_of_sims}
+          "num_of_sims":num_of_sims,
+          "seed":seed}
 
 def get_sim_options(sim_options_file):
   sim_options = configparser.ConfigParser()
@@ -134,6 +136,7 @@ def get_genome_map(gf):
   lengths = table["Length"]
   ends = pd.Series(lengths).cumsum()
   return nchr, rates, ends
+
 def get_recombination_map(gf):
   table = pd.read_table(filepath_or_buffer=gf, sep=r'\s+')
   nchr = max(table["Chromosome"])
@@ -156,6 +159,7 @@ def get_recombination_map(gf):
     rates.insert(chr_ends_index[chromo]+1+chromo,math.log(2))
   positions.insert(0,0) # insert first position
   return nchr, chr_ends, rates, positions
+
 def test_get_recombination_map():
     _, temporary_file_name = tempfile.mkstemp()
     with open(temporary_file_name, 'w') as f:

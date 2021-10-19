@@ -30,6 +30,7 @@ with open(temp_config_file_1, 'w') as f:
   f.write("sample_file = data/sample.txt\n")
   f.write("genome_file = data/genome.txt\n")
   f.write("num_of_sims = 10000\n")
+  f.write("seed = 1234567\n")
 
 _, temp_config_file_2 = tempfile.mkstemp()
 with open(temp_config_file_2, 'w') as f:
@@ -40,6 +41,7 @@ with open(temp_config_file_2, 'w') as f:
   f.write("sample_file = data/sample.txt\n")
   f.write("genome_file = data/genome.txt\n")
   f.write("num_of_sims = 10\n")
+  f.write("seed = 987654\n")
 
 _, temp_sim_file_1 = tempfile.mkstemp()
 with open(temp_sim_file_1, 'w') as f:
@@ -57,26 +59,23 @@ with open(temp_sim_file_1, 'w') as f:
   f.write("[Seeds]\n")
   f.write("seed_coal=106\n")
   f.write("seed_mut=408\n")
-  
-result_config_1_sim_1 = {"project":"test", "batch":"1", "sim":"1",
-                         "verbose":0, "num_of_sims":10000,
-                         "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
-                         "ss":[4,1,1,1,1,1,1,1,1,1,1,1,1,1],
-                         "chrono_order":[0,1,2,3,10,9,4,8,6,5,7,12,13,16,11,15,14],
-                         "N":[11,85,200,200,200,37,10,30,71],
-                         "mu":8.6106e-08,
-                         "ttratio":2, "seq_error":0.005,
-                         "seed_coal":106, "seed_mut":408}
 
-result_config_2_sim_1 = {"project":"test", "batch":"1", "sim":"1",
-                         "verbose":1, "num_of_sims":10,
-                         "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
-                         "ss":[4,1,1,1,1,1,1,1,1,1,1,1,1,1],
-                         "chrono_order":[0,1,2,3,10,9,4,8,6,5,7,12,13,16,11,15,14],
-                         "N":[11,85,200,200,200,37,10,30,71],
-                         "mu":8.6106e-08,
-                         "ttratio":2, "seq_error":0.005,
-                         "seed_coal":106, "seed_mut":408}
+result_config_1 = {"project":"test", "batch":"1", "sim":"1",
+                   "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
+                   "verbose":0, "num_of_sims":10000, "seed":1234567}
+result_config_2 = {"project":"test", "batch":"1", "sim":"1",
+                   "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
+                   "verbose":1, "num_of_sims":10, "seed":987654}
+result_sim_1 = {"ss":[4,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                "chrono_order":[0,1,2,3,10,9,4,8,6,5,7,12,13,16,11,15,14],
+                "N":[11,85,200,200,200,37,10,30,71],
+                "mu":8.6106e-08,
+                "ttratio":2, "seq_error":0.005,
+                "seed_coal":106, "seed_mut":408}
+result_config_1_sim_1 = dict(result_config_1)
+result_config_1_sim_1.update(result_sim_1)
+result_config_2_sim_1 = dict(result_config_2)
+result_config_2_sim_1.update(result_sim_1)
 
 test_config_files = [pytest.param(temp_config_file_1, temp_sim_file_1, result_config_1_sim_1, id="1_1"),
                      pytest.param(temp_config_file_2, temp_sim_file_1, result_config_2_sim_1, id="2_1")]
@@ -117,6 +116,8 @@ def test_get_options(temp_config_file,temp_sim_file,expected_result):
   assert options["seed_coal"] == expected_result["seed_coal"]
   assert type(options["seed_mut"]) is int
   assert options["seed_mut"] == expected_result["seed_mut"]
+  assert type(options["seed"]) is int
+  assert options["seed"] == expected_result["seed"]
 
 # TEST READ SAMPLE INFO #############################################################################################
 
