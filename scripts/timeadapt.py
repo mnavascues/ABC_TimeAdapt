@@ -394,12 +394,12 @@ testdata_WT = [pytest.param(test_ga_A, test_pos_A,    1,    [400],     50, 0.002
 
 ### SAVE RESULTS from st.describe() INTO DICT ····························
 def save_moments_2_dict(moments,sumstats,sample_name,sep,stat_name):
-  sumstats[sample_name+sep+"min"+stat_name] = np.ma.getdata(moments[1][0])
-  sumstats[sample_name+sep+"max"+stat_name] = np.ma.getdata(moments[1][1])
-  sumstats[sample_name+sep+"m"+stat_name] = np.ma.getdata(moments[2])
-  sumstats[sample_name+sep+"v"+stat_name] = np.ma.getdata(moments[3])
-  sumstats[sample_name+sep+"s"+stat_name] = np.ma.getdata(moments[4])
-  sumstats[sample_name+sep+"k"+stat_name] = np.ma.getdata(moments[5])
+  sumstats[sample_name+sep+"min"+stat_name] = float(np.ma.getdata(moments[1][0]))
+  sumstats[sample_name+sep+"max"+stat_name] = float(np.ma.getdata(moments[1][1]))
+  sumstats[sample_name+sep+"m"+stat_name] = float(np.ma.getdata(moments[2]))
+  sumstats[sample_name+sep+"v"+stat_name] = float(np.ma.getdata(moments[3]))
+  sumstats[sample_name+sep+"s"+stat_name] = float(np.ma.getdata(moments[4]))
+  sumstats[sample_name+sep+"k"+stat_name] = float(np.ma.getdata(moments[5]))
 ### end SAVE RESULTS from st.describe() INTO DICT  ····························
 
 ### CALCULATE SUMMARY STATISTICS : SINGLE SAMPLE  ····························
@@ -449,7 +449,8 @@ def single_sample_sumstats(ga,pos,nchr,chr_ends,w_size,sumstats,name="",sep="_",
   roh_distribution = roh_distribution + windowed_distribution_roh(ga, pos, w_size, start=1, stop=chr_ends[0])
   for chromo in range(1,nchr):
     roh_distribution + windowed_distribution_roh(ga, pos, w_size, start=1+chr_ends[chromo-1], stop=chr_ends[chromo])
-  sumstats[name+sep+"RoHD"]=roh_distribution
+  for i in range(0,len(roh_distribution)):
+    sumstats[name+sep+"RoHD"+sep+str(i)]=roh_distribution[i]
   if quiet is False: print("Distribution of Runs of Homozygosity: "+ str(roh_distribution))
   return
 
@@ -509,10 +510,17 @@ def test_single_sample_sumstats():
   test_name = "test"
   single_sample_sumstats(test_ga, test_pos, test_nchr, test_chr_end, test_w_s, test_sumstats, test_name)
   assert test_sumstats["test_maxTD"] == pytest.approx(1.71931236)
-  assert (test_sumstats["test_RoHD"] == [3,8,0]).all()
+  #assert (test_sumstats["test_RoHD"] == [3,8,0]).all()
+  assert test_sumstats["test_RoHD_0"] == 3
+  assert test_sumstats["test_RoHD_1"] == 8
+  assert test_sumstats["test_RoHD_2"] == 0
   test_sumstats = {}
   single_sample_sumstats(test_ga, test_pos, test_nchr, test_chr_end, 390, test_sumstats, test_name)
-  assert (test_sumstats["test_RoHD"] == [3,25,1,0]).all()
+  #assert (test_sumstats["test_RoHD"] == [3,25,1,0]).all()
+  assert test_sumstats["test_RoHD_0"] == 3
+  assert test_sumstats["test_RoHD_1"] == 25
+  assert test_sumstats["test_RoHD_2"] == 1
+  assert test_sumstats["test_RoHD_3"] == 0
 
 
 

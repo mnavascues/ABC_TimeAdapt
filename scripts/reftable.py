@@ -26,12 +26,17 @@ def main():
 
   # print program name
   timeadapt.print_info(sys.argv[0],options["verbose"])
+  
+  reference_table = pd.DataFrame()
     
   for sim in sims:
     if options["verbose"] >=0 : print("simulation "+str(sim))
     sumstats_sim = dill.load(file = open("results/"+options["project"]+"/"+options["batch"]+"/sumstats_"+str(sim)+".pkl", "rb"))
-    print(pd.DataFrame.from_dict(sumstats_sim))
-    
+    if options["verbose"] >=100 : print(sumstats_sim)
+    if options["verbose"] >=100 : print(pd.DataFrame(sumstats_sim,index=[sim]))
+    reference_table = reference_table.append(pd.DataFrame(sumstats_sim,index=[sim]))
+
+  if options["verbose"] >=0 : print(reference_table)    
     
 
 ############################################################################################################
