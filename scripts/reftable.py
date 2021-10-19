@@ -25,17 +25,7 @@ def main():
   sims        = range(1,options["num_of_sims"]+1)
 
   # print program name
-  if options["verbose"] >=1 :
-    print("#########################################")
-    print("#                                       #")
-  if options["verbose"] >=0 :
-    print("#      TimeAdapt - reftable.py          #")
-  if options["verbose"] >=1 :
-    print("#      by Miguel de Navascués           #")
-    print("#      INRAE & Uppsala universitet      #")
-    print("#      miguel.navascues@inrae.fr        #")
-    print("#                                       #")
-    print("#########################################")
+  timeadapt.print_info(sys.argv[0],options["verbose"])
     
   for sim in sims:
     if options["verbose"] >=0 : print("simulation "+str(sim))

@@ -27,17 +27,7 @@ def main():
   options = timeadapt.get_options(proj_options_file = sys.argv[1], sim_options_file = sys.argv[2])
 
   # print program name
-  if options["verbose"] >=1 :
-    print("#########################################")
-    print("#                                       #")
-  if options["verbose"] >=0 :
-    print("#      TimeAdapt - coalsim.py           # "+str(options["sim"]))
-  if options["verbose"] >=1 :
-    print("#      by Miguel de Navascués           #")
-    print("#      INRAE & Uppsala universitet      #")
-    print("#      miguel.navascues@inrae.fr        #")
-    print("#                                       #")
-    print("#########################################")
+  timeadapt.print_info(sys.argv[0],options["verbose"])
   
   # get recombination map:
   _, _, rates, positions = timeadapt.get_recombination_map(gf = options["genome_file"])

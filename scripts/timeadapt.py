@@ -23,6 +23,19 @@ import math
 import tempfile # for creating temporal files on testing
 import pytest
 
+def print_info(script_name,verbose):
+  if verbose >=1 :
+    print("#########################################")
+  if verbose >=0 :
+    print("TimeAdapt - "+script_name)
+  if verbose >=1 :
+    print("by Miguel de Navascués")
+    print("INRAE & Uppsala universitet")
+    print("miguel.navascues@inrae.fr")
+    print("#########################################")
+
+
+
 def get_project_options(proj_options_file):
   proj_options = configparser.ConfigParser()
   proj_options.read(proj_options_file)
