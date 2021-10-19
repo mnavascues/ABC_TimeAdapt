@@ -78,22 +78,7 @@ def get_options(proj_options_file,sim_options_file):
 
 ### READ SAMPLE INFO FILE .........
 def read_sample_info(sample_info_file):
-    """
-    Read text file with information on sample. Format of the file:
-    --------------------------------------------------------------------------
-    sampleID           age14C  age14Cerror  year  coverage  damageRepair  groups
-    B_Ju_hoan_North-4  NA      NA           2010  40.57     TRUE          00
-    S_Ju_hoan_North-1  NA      NA           2010  46.49     TRUE          00
-    BallitoBayA        1980    20           NA    12.94     FALSE         11
-    BallitoBayB        2110    30           NA    1.25      TRUE          12
-    --------------------------------------------------------------------------
-
-    :param sample_info_file: path of file
-    :return:
-    """
-    # TODO : change damageRepair for ancientDamage (which should be more intuitive)
     # TODO : make it work with only ancient data (i.e. no year column)
-
     info = pd.read_table(filepath_or_buffer=sample_info_file, sep=r'\s+',
                          converters={'groups': lambda x: str(x)})
 
@@ -124,27 +109,8 @@ def read_sample_info(sample_info_file):
 
     return sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
            sample_size, group_levels, groups
-def test_read_sample_info():
-    _, temporary_file_name = tempfile.mkstemp()
-    with open(temporary_file_name, 'w') as f:
-        f.write("sampleID age14C age14Cerror year coverage damageRepair groups\n")
-        f.write("modern   NA     NA          2010 30.03    TRUE         0\n")
-        f.write("ancient  1980   20          NA   10.01    TRUE         1\n")
-    sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
-    sample_size, group_levels, \
-    groups = read_sample_info(sample_info_file=temporary_file_name)
-    assert sample_id[0] == "modern"
-    assert sample_id[1] == "ancient"
-    assert coverage[0] == 30.03
-    assert is_ancient[0] is False
-    assert is_ancient[1] is True
-    assert is_modern[0] is True
-    assert is_modern[1] is False
-    assert is_dr[0]
-    assert is_dr[1]
-    assert total_ancient == 1
-    assert sample_size == 2
-    assert group_levels == 1
+
+
 ### end READ SAMPLE INFO FILE .........
 
 ### GET GENOME MAP ····································································

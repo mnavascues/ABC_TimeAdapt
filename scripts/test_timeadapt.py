@@ -19,6 +19,8 @@ import tempfile # for creating temporal files on testing
 import allel
 import pytest
 
+# TEST GET OPTIONS #############################################################################################
+
 _, temp_config_file_1 = tempfile.mkstemp()
 with open(temp_config_file_1, 'w') as f:
   f.write("[Settings]\n")
@@ -76,14 +78,11 @@ result_config_2_sim_1 = {"project":"test", "batch":"1", "sim":"1",
                          "ttratio":2, "seq_error":0.005,
                          "seed_coal":106, "seed_mut":408}
 
-test_input_files = [pytest.param(temp_config_file_1, temp_sim_file_1, result_config_1_sim_1, id="1_1"),
-                    pytest.param(temp_config_file_2, temp_sim_file_1, result_config_2_sim_1, id="2_1")]
+test_config_files = [pytest.param(temp_config_file_1, temp_sim_file_1, result_config_1_sim_1, id="1_1"),
+                     pytest.param(temp_config_file_2, temp_sim_file_1, result_config_2_sim_1, id="2_1")]
 
-@pytest.mark.parametrize("temp_config_file,temp_sim_file,expected_result", test_input_files)
+@pytest.mark.parametrize("temp_config_file,temp_sim_file,expected_result", test_config_files)
 def test_get_options(temp_config_file,temp_sim_file,expected_result):
-  #project, batch, sim, genome_file, sample_file, verbose, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut = \
-  #         timeadapt.get_options(proj_options_file = temp_config_file, sim_options_file = temp_sim_file)
-  
   options = timeadapt.get_options(proj_options_file = temp_config_file, sim_options_file = temp_sim_file)
   
   assert type(options["project"]) is str
@@ -118,3 +117,38 @@ def test_get_options(temp_config_file,temp_sim_file,expected_result):
   assert options["seed_coal"] == expected_result["seed_coal"]
   assert type(options["seed_mut"]) is int
   assert options["seed_mut"] == expected_result["seed_mut"]
+
+# TEST READ SAMPLE INFO #############################################################################################
+
+_, temp_sample_file_1 = tempfile.mkstemp()
+with open(temp_sample_file_1, 'w') as f:
+  f.write("sampleID age14C age14Cerror year coverage damageRepair groups\n")
+  f.write("modern   NA     NA          2010 30.03    TRUE         0\n")
+  f.write("ancient  1980   20          NA   10.01    TRUE         1\n")
+
+result_sample_1 = {"sample_id":["modern","ancient"],
+                   "coverage":[30.03,10.01],
+                   "is_ancient":[False,True],
+                   "is_modern":[True,False],
+                   "is_dr":[True,True],
+                   "total_ancient":1,
+                   "sample_size":2,
+                   "group_levels":1}
+
+test_sample_files = [pytest.param(temp_sample_file_1, result_sample_1, id="1")]
+
+@pytest.mark.parametrize("sample_file,expected_result", test_sample_files)
+def test_read_sample_info(sample_file,expected_result):
+  sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
+  sample_size, group_levels, \
+  groups = timeadapt.read_sample_info(sample_info_file=sample_file)
+  assert list(sample_id) == expected_result["sample_id"]
+  assert list(coverage) == expected_result["coverage"]
+  assert list(is_ancient) == expected_result["is_ancient"]
+  assert list(is_modern) == expected_result["is_modern"]
+  assert list(is_dr) == expected_result["is_dr"]
+  assert total_ancient == expected_result["total_ancient"]
+  assert sample_size == expected_result["sample_size"]
+  assert group_levels == expected_result["group_levels"]
+
+
