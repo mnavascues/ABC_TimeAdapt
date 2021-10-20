@@ -50,13 +50,20 @@ def get_project_options(proj_options_file):
   num_of_sims  = proj_options.getint('Settings','num_of_sims')
   seed         = proj_options.getint('Settings','seed')
   
+  generations_forward = proj_options.getint('Model','generations_forward')
+  periods_forward = proj_options.getint('Model','periods_forward')
+  step = int(generations_forward/periods_forward)
+  times_of_change_forw = range(step, generations_forward-1, step)
+
   return {"project":project,
           "batch":batch,
           "genome_file":genome_file, 
           "sample_file":sample_file, 
           "verbose":verbose,
           "num_of_sims":num_of_sims,
-          "seed":seed}
+          "seed":seed,
+          "generations_forward":generations_forward,
+          "times_of_change_forw":times_of_change_forw}
 
 def get_sim_options(sim_options_file):
   sim_options = configparser.ConfigParser()

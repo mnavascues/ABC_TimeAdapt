@@ -31,6 +31,11 @@ with open(temp_config_file_1, 'w') as f:
   f.write("genome_file = data/genome.txt\n")
   f.write("num_of_sims = 10000\n")
   f.write("seed = 1234567\n")
+  f.write("[Model]\n")
+  f.write("generations_forward = 400\n")
+  f.write("periods_forward = 8\n")
+
+  
 
 _, temp_config_file_2 = tempfile.mkstemp()
 with open(temp_config_file_2, 'w') as f:
@@ -42,6 +47,9 @@ with open(temp_config_file_2, 'w') as f:
   f.write("genome_file = data/genome.txt\n")
   f.write("num_of_sims = 10\n")
   f.write("seed = 987654\n")
+  f.write("[Model]\n")
+  f.write("generations_forward = 100\n")
+  f.write("periods_forward = 3\n")
 
 _, temp_sim_file_1 = tempfile.mkstemp()
 with open(temp_sim_file_1, 'w') as f:
@@ -62,10 +70,12 @@ with open(temp_sim_file_1, 'w') as f:
 
 result_config_1 = {"project":"test", "batch":"1", "sim":"1",
                    "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
-                   "verbose":0, "num_of_sims":10000, "seed":1234567}
+                   "verbose":0, "num_of_sims":10000, "seed":1234567,
+                   "generations_forward":400,"times_of_change_forw":range(50, 399, 50)}
 result_config_2 = {"project":"test", "batch":"1", "sim":"1",
                    "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
-                   "verbose":1, "num_of_sims":10, "seed":987654}
+                   "verbose":1, "num_of_sims":10, "seed":987654,
+                   "generations_forward":100,"times_of_change_forw":range(33, 99, 33)}
 result_sim_1 = {"ss":[4,1,1,1,1,1,1,1,1,1,1,1,1,1],
                 "chrono_order":[0,1,2,3,10,9,4,8,6,5,7,12,13,16,11,15,14],
                 "N":[11,85,200,200,200,37,10,30,71],
@@ -118,6 +128,8 @@ def test_get_options(temp_config_file,temp_sim_file,expected_result):
   assert options["seed_mut"] == expected_result["seed_mut"]
   assert type(options["seed"]) is int
   assert options["seed"] == expected_result["seed"]
+  assert options["times_of_change_forw"] == expected_result["times_of_change_forw"]
+  assert options["generations_forward"] == expected_result["generations_forward"]
 
 # TEST READ SAMPLE INFO #############################################################################################
 

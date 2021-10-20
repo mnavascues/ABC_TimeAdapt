@@ -48,6 +48,20 @@ def main():
            sample_size, group_levels, groups = timeadapt.read_sample_info(options["sample_file"])
   nchr, chr_ends, rates, positions = timeadapt.get_recombination_map(options["genome_file"])
 
+  # number of generations to simulate in forward (in SLiM)
+  if options["verbose"] >=0 : print("generations_forward:"+str(options["generations_forward"]))
+  if options["verbose"] >=0 : print("times_of_change_forw:"+str(options["times_of_change_forw"]))
+
+
+
+#times_of_change_forw     <- as.integer(seq(from = options$Model$generations_forward/options$Model$periods_forward,
+#                                           to   = options$Model$generations_forward-1,
+#                                           by   = options$Model$generations_forward/options$Model$periods_forward))
+#if (options$Settings$verbose>=4) {cat("Periods in forward:\n");(times_of_change_forw)}
+
+
+
+
 
   for sim in sims:
     if options["verbose"] >=0 : print("simulation "+str(sim))
