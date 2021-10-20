@@ -17,6 +17,9 @@
 import timeadapt
 import tempfile # for creating temporal files on testing
 import allel
+import numpy as np
+import pandas as pd
+import math
 import pytest
 
 # TEST GET OPTIONS #############################################################################################
@@ -140,28 +143,89 @@ with open(temp_sample_file_1, 'w') as f:
   f.write("ancient  1980   20          NA   10.01    TRUE         1\n")
 
 result_sample_1 = {"sample_id":["modern","ancient"],
+                   "age14C":[np.nan,1980],
+                   "age14Cerror":[np.nan,20],
+                   "ageBCAD":[2010,np.nan],
+                   "t0":2010,
                    "coverage":[30.03,10.01],
                    "is_ancient":[False,True],
                    "is_modern":[True,False],
                    "is_dr":[True,True],
                    "total_ancient":1,
                    "sample_size":2,
-                   "group_levels":1}
+                   "group_levels":1,
+                   "groups":np.array([0,1])}
 
 test_sample_files = [pytest.param(temp_sample_file_1, result_sample_1, id="1")]
 
 @pytest.mark.parametrize("sample_file,expected_result", test_sample_files)
 def test_read_sample_info(sample_file,expected_result):
-  sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
-  sample_size, group_levels, \
-  groups = timeadapt.read_sample_info(sample_info_file=sample_file)
-  assert list(sample_id) == expected_result["sample_id"]
-  assert list(coverage) == expected_result["coverage"]
-  assert list(is_ancient) == expected_result["is_ancient"]
-  assert list(is_modern) == expected_result["is_modern"]
-  assert list(is_dr) == expected_result["is_dr"]
-  assert total_ancient == expected_result["total_ancient"]
-  assert sample_size == expected_result["sample_size"]
-  assert group_levels == expected_result["group_levels"]
+  sample_info = timeadapt.read_sample_info(sample_info_file=sample_file)
+  assert list(sample_info["sample_id"]) == expected_result["sample_id"]
+  assert list(sample_info["age14C"]) == pytest.approx(expected_result["age14C"],nan_ok=True)
+  assert list(sample_info["age14Cerror"]) == pytest.approx(expected_result["age14Cerror"],nan_ok=True)
+  assert list(sample_info["ageBCAD"]) == pytest.approx(expected_result["ageBCAD"],nan_ok=True)
+  assert sample_info["t0"] == expected_result["t0"]
+  assert list(sample_info["coverage"]) == expected_result["coverage"]
+  assert list(sample_info["is_ancient"]) == expected_result["is_ancient"]
+  assert list(sample_info["is_modern"]) == expected_result["is_modern"]
+  assert list(sample_info["is_dr"]) == expected_result["is_dr"]
+  assert sample_info["total_ancient"] == expected_result["total_ancient"]
+  assert sample_info["sample_size"] == expected_result["sample_size"]
+  assert sample_info["group_levels"] == expected_result["group_levels"]
+  assert (sample_info["groups"] == expected_result["groups"]).all()
+
+# TEST READ GENOME INFO #############################################################################################
+
+_, temp_genome_file_1 = tempfile.mkstemp()
+with open(temp_genome_file_1, 'w') as f:
+  f.write("Chromosome	Position	Recombination_rate\n")
+  f.write("1	 1000000	1E-08\n")
+  f.write("1	 2000000	1E-07\n")
+  f.write("1	10000000	1E-08\n")
+  f.write("2	 1000000	1E-08\n")
+  f.write("2	 2000000	1E-10\n")
+  f.write("2	10000000	1E-07\n")
+  f.write("3	 2000000	1E-08\n")
+  f.write("3	 4000000	1E-09\n")
+  f.write("3	10000000	1E-08\n")
+  f.write("4	 3000000	1E-08\n")
+  f.write("4	 5000000	1E-10\n")
+  f.write("4	10000000	1E-07\n")
+
+_, temp_genome_file_2 = tempfile.mkstemp()
+with open(temp_genome_file_2, 'w') as f:
+  f.write("Chromosome	Position	Recombination_rate\n")
+  f.write("1	 100000	1E-08\n")
+  f.write("1	 200000	1E-07\n")
+  f.write("1	1000000	1E-08\n")
+
+result_genome_1 = {"nchr":4,
+                   "chr_ends":[10000000,20000000,30000000,40000000],
+                   "msprime_r_map":{"rates":[1E-08,1E-07,1E-08,math.log(2),
+                                             1E-08,1E-10,1E-07,math.log(2),
+                                             1E-08,1E-09,1E-08,math.log(2),
+                                             1E-08,1E-10,1E-07],
+                                    "positions":[       0, 1000000, 2000000,10000000,
+                                                 10000001,11000000,12000000,20000000,
+                                                 20000001,22000000,24000000,30000000,
+                                                 30000001,33000000,35000000,40000000]}}
+
+result_genome_2 = {"nchr":1,
+                   "chr_ends":1000000,
+                   "msprime_r_map":{"rates":[1E-08,1E-07,1E-08],
+                                    "positions":[0, 1000000, 2000000,10000000]}}
+
+
+test_genome_files = [pytest.param(temp_genome_file_1, result_genome_1, id="1"),
+                     pytest.param(temp_genome_file_2, result_genome_2, id="2")]
+
+@pytest.mark.parametrize("genome_file,expected_result", test_genome_files)
+def test_get_genome_info(genome_file,expected_result):
+    genome_info = timeadapt.get_genome_info(genome_file)
+    assert genome_info["nchr"]==genome_info["nchr"]
+    assert genome_info["chr_ends"]==genome_info["chr_ends"]
+    assert genome_info["msprime_r_map"]["rates"]==genome_info["msprime_r_map"]["rates"]
+    assert genome_info["msprime_r_map"]["positions"]==genome_info["msprime_r_map"]["positions"]
 
 

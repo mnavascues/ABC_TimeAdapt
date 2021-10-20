@@ -25,7 +25,7 @@ def main():
   sims        = range(1,options["num_of_sims"]+1)
 
   # print program name
-  timeadapt.print_info(sys.argv[0],options["verbose"])
+  timeadapt.print_info(sys.argv[0],options["verbose"],batch=options["batch"])
 
   # set seed for RNG
   np.random.seed(options["seed"])
@@ -44,22 +44,12 @@ def main():
     if options["verbose"] >=0 : print("{} folder already exists".format(batch_dir))
 
   # read sample and genome information files
-  sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
-           sample_size, group_levels, groups = timeadapt.read_sample_info(options["sample_file"])
+  sample_info = timeadapt.read_sample_info(sample_info_file=options["sample_file"])
   nchr, chr_ends, rates, positions = timeadapt.get_recombination_map(options["genome_file"])
 
   # number of generations to simulate in forward (in SLiM)
   if options["verbose"] >=0 : print("generations_forward:"+str(options["generations_forward"]))
   if options["verbose"] >=0 : print("times_of_change_forw:"+str(options["times_of_change_forw"]))
-
-
-
-#times_of_change_forw     <- as.integer(seq(from = options$Model$generations_forward/options$Model$periods_forward,
-#                                           to   = options$Model$generations_forward-1,
-#                                           by   = options$Model$generations_forward/options$Model$periods_forward))
-#if (options$Settings$verbose>=4) {cat("Periods in forward:\n");(times_of_change_forw)}
-
-
 
 
 

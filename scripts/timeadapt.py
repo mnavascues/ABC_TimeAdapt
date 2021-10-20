@@ -23,19 +23,25 @@ import math
 import tempfile # for creating temporal files on testing
 import pytest
 
-def print_info(script_name,verbose):
+### PRINT INFO ######################################################################################
+def print_info(script_name,verbose,batch=None,sim=None):
   if verbose >=1 :
     print("#########################################")
   if verbose >=0 :
-    print("TimeAdapt - {}".format(script_name))
+    if sim is not None :
+      batch=None
+      print("TimeAdapt - %s - simulation %s" %(script_name,sim) )
+    elif batch is not None :
+      print("TimeAdapt - %s - batch %s" %(script_name,batch) )
+    else :
+      print("TimeAdapt - %s" %script_name )
   if verbose >=1 :
     print("by Miguel de Navascués")
     print("INRAE & Uppsala universitet")
     print("miguel.navascues@inrae.fr")
     print("#########################################")
 
-
-
+### GET PROJECT OPTIONS ###############################################################################
 def get_project_options(proj_options_file):
   proj_options = configparser.ConfigParser()
   proj_options.read(proj_options_file)
@@ -65,6 +71,7 @@ def get_project_options(proj_options_file):
           "generations_forward":generations_forward,
           "times_of_change_forw":times_of_change_forw}
 
+### GET SIM OPTIONS ######################################################################################
 def get_sim_options(sim_options_file):
   sim_options = configparser.ConfigParser()
   sim_options.read(sim_options_file)
@@ -92,60 +99,65 @@ def get_sim_options(sim_options_file):
           "seed_coal":seed_coal, 
           "seed_mut":seed_mut}
 
+### GET OPTIONS ######################################################################################
 def get_options(proj_options_file,sim_options_file):
   options = get_project_options(proj_options_file)
   options.update(get_sim_options(sim_options_file))
   return options
 
-
-### READ SAMPLE INFO FILE .........
+### READ SAMPLE INFO ######################################################################################
 def read_sample_info(sample_info_file):
-    # TODO : make it work with only ancient data (i.e. no year column)
-    info = pd.read_table(filepath_or_buffer=sample_info_file, sep=r'\s+',
-                         converters={'groups': lambda x: str(x)})
+  # TODO : make it work with only ancient data (i.e. no year column) or no ancient data (no age14C)
+  info = pd.read_table(filepath_or_buffer=sample_info_file, sep=r'\s+',
+                       converters={'groups': lambda x: str(x)})
+  # check header of file
+  header = set(info.columns.values)
+  expected_header = set(["sampleID","age14C","age14Cerror","year","coverage","damageRepair","groups"])
+  assert header==expected_header, "Sample file does not have the expected column names"
+  
+  sample_size = len(info)
+  group_levels = len(info["groups"][1])
+  groups = np.full((group_levels, sample_size), 0, "int")
+  is_ancient = []
+  is_modern = []
+  total_ancient = 0
+  for i, row in info.iterrows():
+      if len(row["groups"]) != group_levels:
+          print("Error: verify that all individuals are assigned to groups")
+          # TODO : interrupt program here
+      if np.isnan(row["year"]):
+          is_ancient.append(True)
+          is_modern.append(False)
+          total_ancient = total_ancient + 1
+      else:
+          is_ancient.append(False)
+          is_modern.append(True)
+      for level in range(0, group_levels):
+          groups[level, i] = row["groups"][level]
+  t0 = info["year"].max()
 
-    sample_id = info["sampleID"]
-    coverage = info["coverage"]
-    is_dr = info["damageRepair"]
+  return {"sample_id":info["sampleID"],
+          "age14C":info["age14C"],
+          "age14Cerror":info["age14Cerror"],
+          "ageBCAD":info["year"],
+          "t0":info["year"].max(skipna=True),
+          "coverage":info["coverage"],
+          "is_ancient":is_ancient, 
+          "is_modern":is_modern,
+          "is_dr":info["damageRepair"], 
+          "total_ancient":total_ancient,
+          "sample_size":sample_size,
+          "group_levels":group_levels, 
+          "groups":groups}
 
-    sample_size = len(info)
-    group_levels = len(info["groups"][1])
+### READ GENOME INFO ######################################################################################
+def get_genome_info(genome_info_file):
+  table = pd.read_table(filepath_or_buffer=genome_info_file, sep=r'\s+')
+  # check header of file
+  header = set(table.columns.values)
+  expected_header = set(["Chromosome","Position","Recombination_rate"])
+  assert header==expected_header, "Genome file does not have the expected column names"
 
-    groups = np.full((group_levels, sample_size), 0, "int")
-    is_ancient = []
-    is_modern = []
-    total_ancient = 0
-    for i, row in info.iterrows():
-        if len(row["groups"]) != group_levels:
-            print("Error: verify that all individuals are assigned to groups")
-            # TODO : interrupt program here
-        if np.isnan(row["year"]):
-            is_ancient.append(True)
-            is_modern.append(False)
-            total_ancient = total_ancient + 1
-        else:
-            is_ancient.append(False)
-            is_modern.append(True)
-        for level in range(0, group_levels):
-            groups[level, i] = row["groups"][level]
-
-    return sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
-           sample_size, group_levels, groups
-
-
-### end READ SAMPLE INFO FILE .........
-
-### GET GENOME MAP ····································································
-def get_genome_map(gf):
-  table = pd.read_table(filepath_or_buffer=gf, sep=r'\s+')
-  nchr = max(table["Chromosome"])
-  rates = table["Recombination_rate"]
-  lengths = table["Length"]
-  ends = pd.Series(lengths).cumsum()
-  return nchr, rates, ends
-
-def get_recombination_map(gf):
-  table = pd.read_table(filepath_or_buffer=gf, sep=r'\s+')
   nchr = max(table["Chromosome"])
   chromosomes = list(table["Chromosome"])
   rates = list(table["Recombination_rate"])
@@ -165,69 +177,26 @@ def get_recombination_map(gf):
     positions.insert(chr_ends_index[chromo]+1+chromo,positions[chr_ends_index[chromo]+chromo]+1)
     rates.insert(chr_ends_index[chromo]+1+chromo,math.log(2))
   positions.insert(0,0) # insert first position
-  return nchr, chr_ends, rates, positions
 
-def test_get_recombination_map():
-    _, temporary_file_name = tempfile.mkstemp()
-    with open(temporary_file_name, 'w') as f:
-      f.write("Chromosome	Position	Recombination_rate\n")
-      f.write("1	 1000000	1E-08\n")
-      f.write("1	 2000000	1E-07\n")
-      f.write("1	10000000	1E-08\n")
-      f.write("2	 1000000	1E-08\n")
-      f.write("2	 2000000	1E-10\n")
-      f.write("2	10000000	1E-07\n")
-      f.write("3	 2000000	1E-08\n")
-      f.write("3	 4000000	1E-09\n")
-      f.write("3	10000000	1E-08\n")
-      f.write("4	 3000000	1E-08\n")
-      f.write("4	 5000000	1E-10\n")
-      f.write("4	10000000	1E-07\n")
-    num_of_chr, chr_ends, rates, positions = get_recombination_map(temporary_file_name)
-    assert num_of_chr==4
-    assert (chr_ends == [10000000,20000000,30000000,40000000])
-    assert (rates == [1E-08,1E-07,1E-08,math.log(2),
-                      1E-08,1E-10,1E-07,math.log(2),
-                      1E-08,1E-09,1E-08,math.log(2),
-                      1E-08,1E-10,1E-07])
-    assert (positions == [       0, 1000000, 2000000,10000000,
-                          10000001,11000000,12000000,20000000,
-                          20000001,22000000,24000000,30000000,
-                          30000001,33000000,35000000,40000000])
-def test_get_genome_map():
-  num_of_chr, chrom_rates, chrom_ends = get_genome_map(gf="tests/input/human_genome.txt")
-  assert num_of_chr == 22
-  assert (chrom_rates == [1.14856E-08,1.10543E-08,1.12796E-08,1.12312E-08,1.12809E-08,
-                   1.12229E-08,1.17646E-08,1.14785E-08,1.17807E-08,1.33651E-08,
-                   1.17193E-08,1.30502E-08,1.09149E-08,1.11973E-08,1.38358E-08,
-                   1.48346E-08,1.58249E-08,1.5076E-08,1.82201E-08,1.71783E-08,
-                   1.30452E-08,1.4445E-08]).all()
-  assert (chrom_ends == [248956422,491149951,689445510,879660065,1061198324,
-                   1232004303,1391350276,1536488912,1674883629,1808681051,
-                   1943767673,2077042982,2191407310,2298451028,2400442217,
-                   2490780562,2574038003,2654411288,2713028904,2777473071,
-                   2824183054,2875001522]).all()
-### end GET GENOME MAP ································································
+  return {"nchr":nchr,
+          "chr_ends":chr_ends,
+          "msprime_r_map":{"rates":rates, "positions":positions}}
 
-### MAKE RECOMBINATION MAP ····························································
-def make_rec_map(nchr, c_rates, c_ends):
-  pos = [0]
-  rat = []
-  for i in range(nchr-1):
-    # print(i)
-    pos.append(c_ends[i])
-    pos.append(c_ends[i]+1)
-    rat.append(c_rates[i])
-    rat.append(math.log(2))
-  pos.append(c_ends[nchr-1])
-  rat.append(c_rates[nchr-1])
-  return pos, rat
 
-def test_make_rec_map():
-  positions, rates = make_rec_map(nchr=3, c_rates=[1e-8,2e-8,3e-8], c_ends=[10,20,30])
-  assert positions == [0,10,11,20,21,30]
-  assert rates ==  pytest.approx([1e-8,math.log(2),2e-8,math.log(2),3e-8])
-### end MAKE RECOMBINATION MAP ························································
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### MAKE EMPTY GENOTYPE ARRAY ····························································
 def empty_genotype_array(n_loci, n_samples, ploidy=2, allele=-1):

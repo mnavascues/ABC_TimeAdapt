@@ -25,7 +25,7 @@ def main():
   sims        = range(1,options["num_of_sims"]+1)
 
   # print program name
-  timeadapt.print_info(sys.argv[0],options["verbose"])
+  timeadapt.print_info(sys.argv[0],options["verbose"],batch=options["batch"])
   
   reference_table = pd.DataFrame()
     

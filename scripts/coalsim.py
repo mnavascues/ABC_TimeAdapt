@@ -27,11 +27,12 @@ def main():
   options = timeadapt.get_options(proj_options_file = sys.argv[1], sim_options_file = sys.argv[2])
 
   # print program name
-  timeadapt.print_info(sys.argv[0],options["verbose"])
+  timeadapt.print_info(sys.argv[0],options["verbose"],sim=options["sim"])
   
   # get recombination map:
-  _, _, rates, positions = timeadapt.get_recombination_map(gf = options["genome_file"])
-  rate_map = msprime.RateMap(position = positions, rate = rates) 
+  genome_info = timeadapt.get_genome_info(options["genome_file"])
+  rate_map = msprime.RateMap(position = genome_info["msprime_r_map"]["positions"],
+                             rate = genome_info["msprime_r_map"]["rates"]) 
 
   # simulate with msprime
   # https://tskit.dev/msprime/docs/latest/intro.html
