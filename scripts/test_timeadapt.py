@@ -37,8 +37,8 @@ with open(temp_config_file_1, 'w') as f:
   f.write("[Model]\n")
   f.write("generations_forward = 400\n")
   f.write("periods_forward = 8\n")
-
-  
+  f.write("[Priors]\n")
+  f.write("gen_len_min = 29\n")
 
 _, temp_config_file_2 = tempfile.mkstemp()
 with open(temp_config_file_2, 'w') as f:
@@ -53,6 +53,8 @@ with open(temp_config_file_2, 'w') as f:
   f.write("[Model]\n")
   f.write("generations_forward = 100\n")
   f.write("periods_forward = 3\n")
+  f.write("[Priors]\n")
+  f.write("gen_len_min = 20\n")
 
 _, temp_sim_file_1 = tempfile.mkstemp()
 with open(temp_sim_file_1, 'w') as f:
@@ -74,11 +76,13 @@ with open(temp_sim_file_1, 'w') as f:
 result_config_1 = {"project":"test", "batch":"1", "sim":"1",
                    "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
                    "verbose":0, "num_of_sims":10000, "seed":1234567,
-                   "generations_forward":400,"times_of_change_forw":range(50, 399, 50)}
+                   "generations_forward":400,"times_of_change_forw":range(50, 399, 50),
+                   "gen_len_min":29}
 result_config_2 = {"project":"test", "batch":"1", "sim":"1",
                    "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
                    "verbose":1, "num_of_sims":10, "seed":987654,
-                   "generations_forward":100,"times_of_change_forw":range(33, 99, 33)}
+                   "generations_forward":100,"times_of_change_forw":range(33, 99, 33),
+                   "gen_len_min":20}
 result_sim_1 = {"ss":[4,1,1,1,1,1,1,1,1,1,1,1,1,1],
                 "chrono_order":[0,1,2,3,10,9,4,8,6,5,7,12,13,16,11,15,14],
                 "N":[11,85,200,200,200,37,10,30,71],
@@ -209,12 +213,22 @@ result_genome_1 = {"nchr":4,
                                     "positions":[       0, 1000000, 2000000,10000000,
                                                  10000001,11000000,12000000,20000000,
                                                  20000001,22000000,24000000,30000000,
-                                                 30000001,33000000,35000000,40000000]}}
+                                                 30000001,33000000,35000000,40000000]},
+                   "slim_r_map":{"rates":[1E-08,1E-07,1E-08,0.5,
+                                          1E-08,1E-10,1E-07,0.5,
+                                          1E-08,1E-09,1E-08,0.5,
+                                          1E-08,1E-10,1E-07],
+                                 "positions":[           999999, 1999999, 9999999,
+                                              10000000,10999999,11999999,19999999,
+                                              20000000,21999999,23999999,29999999,
+                                              30000000,32999999,34999999,39999999]}}
 
 result_genome_2 = {"nchr":1,
                    "chr_ends":1000000,
                    "msprime_r_map":{"rates":[1E-08,1E-07,1E-08],
-                                    "positions":[0, 1000000, 2000000,10000000]}}
+                                    "positions":[0, 1000000, 2000000,10000000]},
+                   "slim_r_map":{"rates":[1E-08,1E-07,1E-08],
+                                 "positions":[999999, 1999999,9999999]}}
 
 
 test_genome_files = [pytest.param(temp_genome_file_1, result_genome_1, id="1"),
@@ -227,5 +241,7 @@ def test_get_genome_info(genome_file,expected_result):
     assert genome_info["chr_ends"]==genome_info["chr_ends"]
     assert genome_info["msprime_r_map"]["rates"]==genome_info["msprime_r_map"]["rates"]
     assert genome_info["msprime_r_map"]["positions"]==genome_info["msprime_r_map"]["positions"]
+    assert genome_info["slim_r_map"]["rates"]==genome_info["slim_r_map"]["rates"]
+    assert genome_info["slim_r_map"]["positions"]==genome_info["slim_r_map"]["positions"]
 
 

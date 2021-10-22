@@ -23,6 +23,11 @@ import math
 import tempfile # for creating temporal files on testing
 import pytest
 
+# Using R package rcarbon through rpy2
+from rpy2.robjects.packages import importr
+import rpy2.robjects as robjects
+rcarbon = importr("rcarbon")
+
 ### PRINT INFO ######################################################################################
 def print_info(script_name,verbose,batch=None,sim=None):
   if verbose >=1 :
@@ -45,6 +50,7 @@ def print_info(script_name,verbose,batch=None,sim=None):
 def get_project_options(proj_options_file):
   proj_options = configparser.ConfigParser()
   proj_options.read(proj_options_file)
+  # Settings
   project      = proj_options.get('Settings','project')
   batch        = proj_options.get('Settings','batch')
   try:
@@ -55,11 +61,14 @@ def get_project_options(proj_options_file):
   sample_file  = proj_options.get('Settings','sample_file')
   num_of_sims  = proj_options.getint('Settings','num_of_sims')
   seed         = proj_options.getint('Settings','seed')
-  
+  # Model
   generations_forward = proj_options.getint('Model','generations_forward')
   periods_forward = proj_options.getint('Model','periods_forward')
   step = int(generations_forward/periods_forward)
   times_of_change_forw = range(step, generations_forward-1, step)
+  # Priors
+  gen_len_min = proj_options.getfloat('Priors','gen_len_min')
+  # Statistics
 
   return {"project":project,
           "batch":batch,
@@ -69,7 +78,8 @@ def get_project_options(proj_options_file):
           "num_of_sims":num_of_sims,
           "seed":seed,
           "generations_forward":generations_forward,
-          "times_of_change_forw":times_of_change_forw}
+          "times_of_change_forw":times_of_change_forw,
+          "gen_len_min":gen_len_min}
 
 ### GET SIM OPTIONS ######################################################################################
 def get_sim_options(sim_options_file):
@@ -172,15 +182,47 @@ def get_genome_info(genome_info_file):
     if (i in chr_ends_index):
       chromo += 1
   chr_ends = list(map(positions.__getitem__,chr_ends_index))
+  L=chr_ends[-1]-1
   # insert recombination rate between chromosomes
+  slim_rates = rates[:]
   for chromo in range(0,nchr-1):
     positions.insert(chr_ends_index[chromo]+1+chromo,positions[chr_ends_index[chromo]+chromo]+1)
     rates.insert(chr_ends_index[chromo]+1+chromo,math.log(2))
+    slim_rates.insert(chr_ends_index[chromo]+1+chromo,0.5)
+  slim_positions = [x-1 for x in positions]
   positions.insert(0,0) # insert first position
 
   return {"nchr":nchr,
           "chr_ends":chr_ends,
-          "msprime_r_map":{"rates":rates, "positions":positions}}
+          "L":L,
+          "msprime_r_map":{"rates":rates, "positions":positions},
+          "slim_r_map":{"rates":slim_rates, "positions":slim_positions}}
+
+### GET AGE PDF ######################################################################################
+# wrapper of rcarbon.calibrate, /!\ outputs ages in BCAD not BP
+def get_age_pdf(x,errors,calCurves):
+  try:
+    sample_size = len(x)
+    x = robjects.IntVector(x)
+    errors = robjects.IntVector(errors)
+  except:
+    sample_size = 1
+  res = rcarbon.calibrate(x=x, errors=errors, calCurves=calCurves, verbose=False)
+  age_pdf = []
+  for i in range(0,sample_size):
+    ageBCAD = list(rcarbon.BPtoBCAD(res[1][i][0]))
+    age_pdf.append({"ageBCAD":ageBCAD,"PrDens":list(res[1][i][1])})
+  return age_pdf
+
+
+
+
+
+
+
+
+
+
 
 
 

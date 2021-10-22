@@ -15,6 +15,7 @@ The code has been tested with the following versions (on Ubuntu 20.04):
   - pytest 6.2.4
   - pandas 1.2.4
   - dill 0.3.4
+  - rpy2 3.4.5 ?????????????????????
 - R 3.6.3
   - ini 0.3.1
   - extraDistr 1.8.11
