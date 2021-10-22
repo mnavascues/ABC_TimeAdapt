@@ -51,6 +51,8 @@ def get_project_options(proj_options_file):
   proj_options = configparser.ConfigParser()
   proj_options.read(proj_options_file)
   # Settings
+  assert 'Settings' in proj_options,"Missing [Settings] section in file"
+  assert 'project' in proj_options['Settings'],"Missing 'project' parameter in file"
   project      = proj_options.get('Settings','project')
   batch        = proj_options.get('Settings','batch')
   try:
@@ -62,14 +64,22 @@ def get_project_options(proj_options_file):
   num_of_sims  = proj_options.getint('Settings','num_of_sims')
   seed         = proj_options.getint('Settings','seed')
   # Model
+  assert 'Model' in proj_options,"Missing [Model] section in project options file"
   generations_forward = proj_options.getint('Model','generations_forward')
   periods_forward = proj_options.getint('Model','periods_forward')
   step = int(generations_forward/periods_forward)
   times_of_change_forw = range(step, generations_forward-1, step)
+  periods_coalescence = proj_options.getint('Model','periods_coalescence')
   # Priors
+  assert 'Priors' in proj_options,"Missing [Priors] section in project options file"
+  gen_len_sh1 = proj_options.getfloat('Priors','gen_len_sh1')
+  gen_len_sh2 = proj_options.getfloat('Priors','gen_len_sh2')
   gen_len_min = proj_options.getfloat('Priors','gen_len_min')
+  gen_len_max = proj_options.getfloat('Priors','gen_len_max')
+  pop_size_min = proj_options.getfloat('Priors','pop_size_min')
+  pop_size_max = proj_options.getfloat('Priors','pop_size_max')
   # Statistics
-
+  # TODO
   return {"project":project,
           "batch":batch,
           "genome_file":genome_file, 
@@ -78,8 +88,15 @@ def get_project_options(proj_options_file):
           "num_of_sims":num_of_sims,
           "seed":seed,
           "generations_forward":generations_forward,
+          "periods_forward":periods_forward,
+          "periods_coalescence":periods_coalescence,
           "times_of_change_forw":times_of_change_forw,
-          "gen_len_min":gen_len_min}
+          "gen_len_sh1":gen_len_sh1,
+          "gen_len_sh2":gen_len_sh2,
+          "gen_len_min":gen_len_min,
+          "gen_len_max":gen_len_max,
+          "pop_size_min":pop_size_min,
+          "pop_size_max":pop_size_max}
 
 ### GET SIM OPTIONS ######################################################################################
 def get_sim_options(sim_options_file):
@@ -213,6 +230,17 @@ def get_age_pdf(x,errors,calCurves):
     ageBCAD = list(rcarbon.BPtoBCAD(res[1][i][0]))
     age_pdf.append({"ageBCAD":ageBCAD,"PrDens":list(res[1][i][1])})
   return age_pdf
+
+### SAMPLE PARAMETER TRAJECTORY #######################################################################
+def sample_param_trajectory(times,minimum,maximum,factor=10):
+  trajectory = np.zeros(shape=times)
+  trajectory[0] = st.loguniform.rvs(a=minimum, b=maximum, size=1)
+  for i in range(1,times):
+    trajectory[i] = trajectory[i-1] * st.loguniform.rvs(a=1/factor, b=1*factor, size=1)
+    trajectory[i] = max( min(trajectory[i],maximum) , minimum )
+  return trajectory  
+
+
 
 
 

@@ -17,14 +17,15 @@
 import sys
 import os
 import numpy as np
-import scypy.stats as st
+import pandas as pd
+import scipy.stats as st
 from datetime import date
 import timeadapt
 
 def main():
   # get options for project and simulation:
   options = timeadapt.get_project_options(proj_options_file = sys.argv[1])
-  sims        = range(1,options["num_of_sims"]+1)
+  sims        = range(0,options["num_of_sims"])
 
   # print program name
   timeadapt.print_info(sys.argv[0],options["verbose"],batch=options["batch"])
@@ -81,18 +82,26 @@ def main():
   ###### SAMPLE FROM PRIORS ############################
   # sample generation length (generation time)
   
-  gen_len = st.beta.rvs(a=1, b=1, loc=0, scale=1, size=1, random_state=None)
+  gen_len = st.beta.rvs(a=options["gen_len_sh1"],
+                        b=options["gen_len_sh2"],
+                        loc=options["gen_len_min"],
+                        scale=options["gen_len_max"]-options["gen_len_min"],
+                        size=options["num_of_sims"])
+  if options["verbose"] >=0 : print("gen_len " + str(gen_len))
   
-
+  total_number_of_periods = options["periods_forward"] + options["periods_coalescence"]
 
   
-  
-
-
+  N = [None]*options["num_of_sims"]
   for sim in sims:
-    if options["verbose"] >=0 : print("simulation "+str(sim))
-
+    if options["verbose"] >=0 : print("simulation "+str(sim+1))
+    N[sim] = timeadapt.sample_param_trajectory(times=total_number_of_periods,
+                                               minimum=options["pop_size_min"],
+                                               maximum=options["pop_size_max"]).astype(int)
+    if options["verbose"] >=0 : print("N at present simulation: "+str(N[sim]))
     
+  N = pd.DataFrame(N,columns=["N"+str(x) for x in range(0,total_number_of_periods)])
+  if options["verbose"] >=0 : print(N)
 
 ############################################################################################################
 if __name__ == "__main__":

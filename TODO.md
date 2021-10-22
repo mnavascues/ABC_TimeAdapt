@@ -11,6 +11,8 @@
 ### Statistics
 
 - [ ] *Script to perfomr ABCRF* **high**
+- [ ] *Allow a wider choice of prior distributions*
+- [ ] *Add 3 groups and 4 groups summary statistrics* **low** F3, F4, abba/baba
 - [ ] *Add runs statistics for two populations.* **low** Calculate runs statistics by making random pairs of individuals from each population.
 - [x] ~~*Store RoH distribution as individual values and not as a list within the sumstats dictionary* **high** So that when transforms to pandas dataframe it does not create multiple rows for a single simulation~~
 

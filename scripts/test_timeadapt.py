@@ -37,8 +37,14 @@ with open(temp_config_file_1, 'w') as f:
   f.write("[Model]\n")
   f.write("generations_forward = 400\n")
   f.write("periods_forward = 8\n")
+  f.write("periods_coalescence = 1\n")
   f.write("[Priors]\n")
+  f.write("gen_len_sh1 = 1\n")
+  f.write("gen_len_sh2 = 1\n")
   f.write("gen_len_min = 29\n")
+  f.write("gen_len_max = 30\n")
+  f.write("pop_size_min = 2\n")
+  f.write("pop_size_max = 2000\n")
 
 _, temp_config_file_2 = tempfile.mkstemp()
 with open(temp_config_file_2, 'w') as f:
@@ -53,8 +59,14 @@ with open(temp_config_file_2, 'w') as f:
   f.write("[Model]\n")
   f.write("generations_forward = 100\n")
   f.write("periods_forward = 3\n")
+  f.write("periods_coalescence = 10\n")
   f.write("[Priors]\n")
+  f.write("gen_len_sh1 = 1.5\n")
+  f.write("gen_len_sh2 = 2\n")
   f.write("gen_len_min = 20\n")
+  f.write("gen_len_max = 30\n")
+  f.write("pop_size_min = 20\n")
+  f.write("pop_size_max = 200000\n")
 
 _, temp_sim_file_1 = tempfile.mkstemp()
 with open(temp_sim_file_1, 'w') as f:
@@ -77,12 +89,14 @@ result_config_1 = {"project":"test", "batch":"1", "sim":"1",
                    "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
                    "verbose":0, "num_of_sims":10000, "seed":1234567,
                    "generations_forward":400,"times_of_change_forw":range(50, 399, 50),
-                   "gen_len_min":29}
+                   "gen_len_sh1":1,"gen_len_sh2":1,"gen_len_min":29,"gen_len_max":30,
+                   "pop_size_min":2,"pop_size_max":2000}
 result_config_2 = {"project":"test", "batch":"1", "sim":"1",
                    "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
                    "verbose":1, "num_of_sims":10, "seed":987654,
                    "generations_forward":100,"times_of_change_forw":range(33, 99, 33),
-                   "gen_len_min":20}
+                   "gen_len_sh1":1.5,"gen_len_sh2":2,"gen_len_min":20,"gen_len_max":30,
+                   "pop_size_min":20,"pop_size_max":200000}
 result_sim_1 = {"ss":[4,1,1,1,1,1,1,1,1,1,1,1,1,1],
                 "chrono_order":[0,1,2,3,10,9,4,8,6,5,7,12,13,16,11,15,14],
                 "N":[11,85,200,200,200,37,10,30,71],
@@ -243,5 +257,19 @@ def test_get_genome_info(genome_file,expected_result):
     assert genome_info["msprime_r_map"]["positions"]==genome_info["msprime_r_map"]["positions"]
     assert genome_info["slim_r_map"]["rates"]==genome_info["slim_r_map"]["rates"]
     assert genome_info["slim_r_map"]["positions"]==genome_info["slim_r_map"]["positions"]
+
+### TEST SAMPLE PARAMETER TRAJECTORY #######################################################################
+
+test_sample_trajectory = [pytest.param(10,1,1000,id="1"),
+                          pytest.param(100,50,1000000,id="2")]
+@pytest.mark.parametrize("times,mininum,maximum", test_sample_trajectory)
+def test_sample_param_trajectory(times,mininum,maximum):
+  traj = timeadapt.sample_param_trajectory(times,mininum,maximum)
+  assert all(traj>=mininum)
+  assert all(traj<=maximum)
+  assert np.size(traj)==times
+
+
+
 
 
