@@ -8,7 +8,7 @@ on:
   push:
     branches: [ master, develop ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, develop ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -32,13 +32,7 @@ jobs:
       - name: Install dependencies
         shell: Rscript {0}
         run: |
-          install.packages(c("rcarbon","testthat"))
-
-      - name: Testthat
-        shell: Rscript {0}
-        run: |
-          library(testthat)
-          test_file("scripts/test_timeadapt.R",reporter="fail")
+          install.packages("rcarbon")
 
       - name: Set up Python 3.8.5
         uses: actions/setup-python@v2
