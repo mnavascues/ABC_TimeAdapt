@@ -22,7 +22,8 @@
   - [x] ~~*Pool summary statustics in a dataframe*~~
   - [ ] *Pool parameters and latent variables*
   - [ ] *export reference table as a file*
-- [ ] *Refactor getparams from R to Python.* **low** The only R package that will be kept is rcarbon for simulating age for subfossil samples: use rpy2.
+- [ ] *Use json files instead of ini* **low** SLiM can import parameters from json
+- [x] ~~*Refactor getparams from R to Python.* **low** The only R package that will be kept is rcarbon for simulating age for subfossil samples: use rpy2.~~
 - [x] ~~*Separate function to read project options from simulation options*~~
 
 ### Testing

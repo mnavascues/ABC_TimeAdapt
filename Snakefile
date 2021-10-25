@@ -65,29 +65,15 @@ rule coalsim:
     shell:
         'python {input.script} {options_file} {input.sim_ini}'
 
-
 # read parameters and sample from priors
 rule getparams:
     input:
-        script='scripts/getparams.R'
+        script='scripts/getparams.py'
     output:
         slim_options=expand('results/{p}/{b}/sim_{s}.eidos',p=project,b=batch,s=sims),
         sim_ini=expand('results/{p}/{b}/sim_{s}.ini',p=project,b=batch,s=sims) 
     shell:
-        'Rscript {input.script} {options_file}'
-
-
-# read parameters and sample from priors
-rule getparams2:
-    input:
-        script='scripts/getparams.py'
-    output:
-        #slim_options=expand('results/{p}/{b}/sim_{s}.eidos',p=project,b=batch,s=sims),
-        #sim_ini=expand('results/{p}/{b}/sim_{s}.ini',p=project,b=batch,s=sims) 
-    shell:
         'python {input.script} {options_file}'
-
-
 
 # delete all files in batch directory
 rule clean_batch:
@@ -105,9 +91,6 @@ rule clean_all:
 rule test:
     shell:
         '''
-        echo "----------- RUNNING TESTTHAT (R) ---------------\n"
-        Rscript -e "library(testthat); test_file(\'scripts/test_timeadapt.R\')"
-        echo "\n----------- RUNNING PYTEST (PYTHON) ---------------\n"
         pytest -v scripts/timeadapt.py
         pytest -v scripts/test_timeadapt.py
         '''

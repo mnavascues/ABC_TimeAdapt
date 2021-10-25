@@ -45,6 +45,8 @@ with open(temp_config_file_1, 'w') as f:
   f.write("gen_len_max = 30\n")
   f.write("pop_size_min = 2\n")
   f.write("pop_size_max = 2000\n")
+  f.write("mut_rate_mean = 0.000001\n")
+  f.write("mut_rate_sd = 0.1\n")
 
 _, temp_config_file_2 = tempfile.mkstemp()
 with open(temp_config_file_2, 'w') as f:
@@ -67,6 +69,8 @@ with open(temp_config_file_2, 'w') as f:
   f.write("gen_len_max = 30\n")
   f.write("pop_size_min = 20\n")
   f.write("pop_size_max = 200000\n")
+  f.write("mut_rate_mean = 0.000001\n")
+  f.write("mut_rate_sd = 0.1\n")
 
 _, temp_sim_file_1 = tempfile.mkstemp()
 with open(temp_sim_file_1, 'w') as f:
@@ -160,7 +164,7 @@ with open(temp_sample_file_1, 'w') as f:
   f.write("modern   NA     NA          2010 30.03    TRUE         0\n")
   f.write("ancient  1980   20          NA   10.01    TRUE         1\n")
 
-result_sample_1 = {"sample_id":["modern","ancient"],
+result_sample_1 = {"id":["modern","ancient"],
                    "age14C":[np.nan,1980],
                    "age14Cerror":[np.nan,20],
                    "ageBCAD":[2010,np.nan],
@@ -170,7 +174,7 @@ result_sample_1 = {"sample_id":["modern","ancient"],
                    "is_modern":[True,False],
                    "is_dr":[True,True],
                    "total_ancient":1,
-                   "sample_size":2,
+                   "size":2,
                    "group_levels":1,
                    "groups":np.array([0,1])}
 
@@ -179,7 +183,7 @@ test_sample_files = [pytest.param(temp_sample_file_1, result_sample_1, id="1")]
 @pytest.mark.parametrize("sample_file,expected_result", test_sample_files)
 def test_read_sample_info(sample_file,expected_result):
   sample_info = timeadapt.read_sample_info(sample_info_file=sample_file)
-  assert list(sample_info["sample_id"]) == expected_result["sample_id"]
+  assert list(sample_info["id"]) == expected_result["id"]
   assert list(sample_info["age14C"]) == pytest.approx(expected_result["age14C"],nan_ok=True)
   assert list(sample_info["age14Cerror"]) == pytest.approx(expected_result["age14Cerror"],nan_ok=True)
   assert list(sample_info["ageBCAD"]) == pytest.approx(expected_result["ageBCAD"],nan_ok=True)
@@ -189,7 +193,7 @@ def test_read_sample_info(sample_file,expected_result):
   assert list(sample_info["is_modern"]) == expected_result["is_modern"]
   assert list(sample_info["is_dr"]) == expected_result["is_dr"]
   assert sample_info["total_ancient"] == expected_result["total_ancient"]
-  assert sample_info["sample_size"] == expected_result["sample_size"]
+  assert sample_info["size"] == expected_result["size"]
   assert sample_info["group_levels"] == expected_result["group_levels"]
   assert (sample_info["groups"] == expected_result["groups"]).all()
 

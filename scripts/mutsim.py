@@ -39,7 +39,7 @@ def main():
   np.random.seed(options["seed_mut"])
 
   # read sample and genome info file
-  sample_info = timeadapt.read_sample_info(sample_info_file=options["sample_file"])
+  sample = timeadapt.read_sample_info(sample_info_file=options["sample_file"])
   genome_info = timeadapt.get_genome_info(options["genome_file"])
 
   if options["verbose"]>=100 : print(genome_info["nchr"])
@@ -48,25 +48,25 @@ def main():
   if options["verbose"]>=100 : print(genome_info["msprime_r_map"]["positions"])
 
   # check sample size from sample file equal to simulated sampled size in config file
-  if sum(options["ss"]) != sample_info["sample_size"]:
+  if sum(options["ss"]) != sample["size"]:
     msg = "Number of samples from *.ini file (sum of ss=" + str(sum(options["ss"])) + \
-          ") and number of samples from sample info file (sample_size=" + str(sample_info["sample_size"]) + \
+          ") and number of samples from sample info file (sample size=" + str(sample["size"]) + \
           ") do not match"
     raise ValueError(msg)
 
   # set sample features in chronological order (which can be different for each simulation)
-  chrono_order_coverage = [sample_info["coverage"][i] for i in options["chrono_order"]]
-  chrono_order_is_dr = [sample_info["is_dr"][i] for i in options["chrono_order"]]
-  chrono_order_groups = np.zeros([sample_info["group_levels"], sample_info["sample_size"]], dtype='int')
+  chrono_order_coverage = [sample["coverage"][i] for i in options["chrono_order"]]
+  chrono_order_is_dr = [sample["is_dr"][i] for i in options["chrono_order"]]
+  chrono_order_groups = np.zeros([sample["group_levels"], sample["size"]], dtype='int')
   groups_in_level = {}
   unique_groups = {}
   num_of_pair_comparisons = 0
-  number_of_groups = np.zeros(sample_info["group_levels"], dtype='int')
+  number_of_groups = np.zeros(sample["group_levels"], dtype='int')
   # total_number_of_groups = 0
-  for lev in range(0, sample_info["group_levels"]):
+  for lev in range(0, sample["group_levels"]):
     if options["verbose"]>=100 : print("level "+str(lev))
-    chrono_order_groups[lev] = [sample_info["groups"][lev][i] for i in options["chrono_order"]]
-    number_of_groups[lev] = len(np.unique(sample_info["groups"][lev]))
+    chrono_order_groups[lev] = [sample["groups"][lev][i] for i in options["chrono_order"]]
+    number_of_groups[lev] = len(np.unique(sample["groups"][lev]))
     # total_number_of_groups += number_of_groups[lev]
     num_of_pair_comparisons += int((number_of_groups[lev] * (number_of_groups[lev] - 1)) / 2)
     for g in range(0, number_of_groups[lev]):
@@ -87,7 +87,7 @@ def main():
   # Simulate neutral mutation over the tree sequence
   mut_treesq = msprime.sim_mutations(treesq,
                                      rate = options["mu"],
-                                     random_seed = np.random.randint(1, 2 ^ 32 - 1))
+                                     random_seed = np.random.randint(1, 2**32-1))
   if options["verbose"]>=100 : print("Number of mutations " + str(mut_treesq.num_mutations))
   if options["verbose"]>=100 : print("Number of sites " + str(mut_treesq.num_sites))
 
@@ -102,7 +102,7 @@ def main():
     # TODO: Create empty sumstats
   else:
     geno_data, positions = timeadapt.sequencing(ts = mut_treesq,
-                                                ssize = sample_info["sample_size"],
+                                                ssize = sample["size"],
                                                 ttr = options["ttratio"],
                                                 seq_error = options["seq_error"],
                                                 dr = chrono_order_is_dr,
@@ -117,7 +117,7 @@ def main():
                                      sumstats = ref_table_sumstats,
                                      sep = "")
     # Calculate summary statistics from single group
-    for lev in range(0, sample_info["group_levels"]):
+    for lev in range(0, sample["group_levels"]):
       for g in range(0, number_of_groups[lev]):
         if unique_groups['level'+str(lev)+'group'+str(g)] is True:
           timeadapt.single_sample_sumstats(ga = geno_data[:, groups_in_level['level'+str(lev)+'group'+str(g)]],
@@ -129,7 +129,7 @@ def main():
                                            name = 'l'+str(lev)+'g'+str(g))
 
     # Calculate summary statistics from pair of groups
-    for lev in range(0, sample_info["group_levels"]):
+    for lev in range(0, sample["group_levels"]):
       if options["verbose"]>=100 : print("Level: " + str(lev))
       for g1 in range(0, number_of_groups[lev]):
         for g2 in range(g1+1, number_of_groups[lev]):

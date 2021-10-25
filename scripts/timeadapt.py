@@ -18,6 +18,7 @@ import configparser  # for reading ini files
 import pandas as pd  # for reading "table" files 
 import numpy as np
 import scipy.stats as st
+import random
 import allel
 import math
 import tempfile # for creating temporal files on testing
@@ -76,8 +77,12 @@ def get_project_options(proj_options_file):
   gen_len_sh2 = proj_options.getfloat('Priors','gen_len_sh2')
   gen_len_min = proj_options.getfloat('Priors','gen_len_min')
   gen_len_max = proj_options.getfloat('Priors','gen_len_max')
+  assert gen_len_max>=gen_len_min,"Maximum must be higher than minimum"
   pop_size_min = proj_options.getfloat('Priors','pop_size_min')
   pop_size_max = proj_options.getfloat('Priors','pop_size_max')
+  assert pop_size_max>=pop_size_min,"Maximum must be higher than minimum"
+  mut_rate_mean = proj_options.getfloat('Priors','mut_rate_mean')
+  mut_rate_sd = proj_options.getfloat('Priors','mut_rate_sd')
   # Statistics
   # TODO
   return {"project":project,
@@ -96,7 +101,9 @@ def get_project_options(proj_options_file):
           "gen_len_min":gen_len_min,
           "gen_len_max":gen_len_max,
           "pop_size_min":pop_size_min,
-          "pop_size_max":pop_size_max}
+          "pop_size_max":pop_size_max,
+          "mut_rate_mean":mut_rate_mean,
+          "mut_rate_sd":mut_rate_sd}
 
 ### GET SIM OPTIONS ######################################################################################
 def get_sim_options(sim_options_file):
@@ -163,7 +170,7 @@ def read_sample_info(sample_info_file):
           groups[level, i] = row["groups"][level]
   t0 = info["year"].max()
 
-  return {"sample_id":info["sampleID"],
+  return {"id":info["sampleID"],
           "age14C":info["age14C"],
           "age14Cerror":info["age14Cerror"],
           "ageBCAD":info["year"],
@@ -173,7 +180,7 @@ def read_sample_info(sample_info_file):
           "is_modern":is_modern,
           "is_dr":info["damageRepair"], 
           "total_ancient":total_ancient,
-          "sample_size":sample_size,
+          "size":sample_size,
           "group_levels":group_levels, 
           "groups":groups}
 
@@ -230,6 +237,20 @@ def get_age_pdf(x,errors,calCurves):
     ageBCAD = list(rcarbon.BPtoBCAD(res[1][i][0]))
     age_pdf.append({"ageBCAD":ageBCAD,"PrDens":list(res[1][i][1])})
   return age_pdf
+
+### GET SAMPLE AGES ######################################################################################
+def get_sample_ages(sample,age_pdf,gen_len):
+  sample_ages = [None]*sample["size"]
+  ancient_counter=0
+  for i in range(0,sample["size"]):
+    if sample["is_modern"][i]: sample_ages[i] = sample["ageBCAD"][i]
+    if sample["is_ancient"][i]:
+      sample_ages[i] = random.choices(age_pdf[ancient_counter]["ageBCAD"],
+                                      weights = age_pdf[ancient_counter]["PrDens"])
+      
+      ancient_counter += 1
+    sample_ages[i] = int(abs(sample_ages[i]-sample["t0"])/gen_len)
+  return sample_ages
 
 ### SAMPLE PARAMETER TRAJECTORY #######################################################################
 def sample_param_trajectory(times,minimum,maximum,factor=10):
