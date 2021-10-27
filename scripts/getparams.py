@@ -62,6 +62,8 @@ def main():
     age14Cerror_NAremoved = [x for x in sample["age14Cerror"] if np.isnan(x) == False]
     age_pdf = timeadapt.get_age_pdf(age14C_NAremoved,age14Cerror_NAremoved,'shcal13')
     if options["verbose"] >=100 : print(age_pdf)
+  else:
+    age_pdf=None
     
   # get the oldest possible age of samples and verify that falls within forward time simulation period
   if any(sample["is_modern"]):
