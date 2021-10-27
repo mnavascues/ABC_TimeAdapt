@@ -213,12 +213,12 @@ def get_genome_info(genome_info_file):
     positions.insert(chr_ends_index[chromo]+1+chromo,positions[chr_ends_index[chromo]+chromo]+1)
     rates.insert(chr_ends_index[chromo]+1+chromo,math.log(2))
     slim_rates.insert(chr_ends_index[chromo]+1+chromo,0.5)
-  slim_positions = [x-1 for x in positions]
+  slim_positions = [int(x-1) for x in positions]
   positions.insert(0,0) # insert first position
 
   return {"nchr":nchr,
           "chr_ends":chr_ends,
-          "L":L,
+          "L":int(L),
           "msprime_r_map":{"rates":rates, "positions":positions},
           "slim_r_map":{"rates":slim_rates, "positions":slim_positions}}
 
