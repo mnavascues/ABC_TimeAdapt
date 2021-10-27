@@ -1,7 +1,7 @@
 import configparser
 
 # READ OPTIONS FILE
-options_file = 'tests/config_project.ini'
+options_file = 'tests/bee_config.ini'
 options      = configparser.ConfigParser()
 options.read(options_file)
 

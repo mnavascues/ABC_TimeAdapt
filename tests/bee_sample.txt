@@ -1,0 +1,14 @@
+sampleID age14C  age14Cerror  year  coverage          damageRepair  groups
+SRCD12A	 NA      NA           2014  19.6952877928856  TRUE          0
+SRCD12B	 NA      NA           2014  17.8350976547373  TRUE          0
+SRCD12C	 NA      NA           2014  23.5017445322547  TRUE          0
+SRCD45A	 NA      NA           2014  22.0475827425712  TRUE          0
+SRCD45B	 NA      NA           2014  22.43061555209    TRUE          0
+SRCD53B	 NA      NA           2014  10.6772649457929  TRUE          0
+ap20	 NA      NA           1966  17.938331296557   TRUE          1
+ap22	 NA      NA           1966  17.0902248415737  TRUE          1
+ap29	 NA      NA           1966  10.3553096505482  TRUE          1
+ap30	 NA      NA           1966  10.5689689778424  TRUE          1
+ap31	 NA      NA           1966  23.146256610588   TRUE          1
+SRCD53C	 NA      NA           1966  15.8130149793642  TRUE          1
+

@@ -39,3 +39,25 @@ tail(hapmap)
 hapmap = read.table("data/hapmap/genetic_map_chr22_b36.txt", header=T)
 head(hapmap)
 
+
+# read recombination map from image
+require(digitize)
+cal = ReadAndCal("data/bee_recombination/chromosome10.png")
+rec=DigitData(col="green")
+data = Calibrate(rec, cal, 0.1,5,20,200)# x1, x2, y1, y2
+saveRDS(data,file="data/bee_recombination/chromosome10.rds")
+
+
+data = readRDS(file = paste0("data/bee_recombination/chromosome1.rds"))
+genome <- cbind(Chromosome=rep(1,length(data$x)),
+                Position=round(data$x*1000000),
+                Recombination_rate=data$x*0.01/1000000)
+for (i in 2:16){
+  data = readRDS(file = paste0("data/bee_recombination/chromosome",i,".rds"))
+  print(data$x[length(data$x)]*1000000)
+  genome = rbind(genome, cbind(Chromosome=rep(i,length(data$x)),
+                               Position=round(data$x*1000000),
+                               Recombination_rate=data$x*0.01/1000000))
+}
+
+write.table(genome,file="tests/bee_genome.txt",row.names = F)
