@@ -1,4 +1,4 @@
-## TODO
+## TO DO
 
 ### Model
 
@@ -19,7 +19,7 @@
 ### Software
 
 - [ ] *Script to pool stats and parameters into a single reference table* **high**
-  - [x] ~~*Pool summary statustics in a dataframe*~~
+  - [x] ~~*Pool summary statistics in a dataframe*~~
   - [ ] *Pool parameters and latent variables*
   - [ ] *export reference table as a file*
 - [ ] *Use json files instead of ini* **low** SLiM can import parameters from json
@@ -28,9 +28,11 @@
 
 ### Testing
 
+- [ ] *test that number of periods in forward simulation is compatible with length of forward simulation*
 - [ ] *Set a dataset test from bee example for integration testing* **high**
 - [ ] *Revise and move all test from timeadapt.py to test_timeadapt.py* **low**
 - [ ] *Change how pytest compare numpy arrays* **low** FROM assert (numpy_array == expected_result).all() TO assert list(numpy_array) == expected_result
+- [ ] *make pytest & rpy2 work on github workflow* currently send an error on github but tests pass in local
 
 ### Documentation
 
