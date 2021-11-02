@@ -22,6 +22,7 @@
   - [x] ~~*Pool summary statistics in a dataframe*~~
   - [ ] *Pool parameters and latent variables*
   - [ ] *export reference table as a file*
+- [ ] *write genome map for slim in a single file for the project*
 - [ ] *Use json files instead of ini* **low** SLiM can import parameters from json
 - [x] ~~*Refactor getparams from R to Python.* **low** The only R package that will be kept is rcarbon for simulating age for subfossil samples: use rpy2.~~
 - [x] ~~*Separate function to read project options from simulation options*~~
