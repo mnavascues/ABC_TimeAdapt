@@ -22,7 +22,7 @@ The code has been tested with the following versions (on Ubuntu 20.04):
 
 ### Usage
 
-TimeAdapt is a collection of scripts in R and Pyhton. Here it is described how to use them using a conda environment and a snakemake workflow to run them to perform an analysis.
+TimeAdapt is a collection of scripts in Pyhton. Here it is described how to use them using a conda environment and a snakemake workflow to run them to perform an analysis.
 
 Creation of the environment from scratch:
 ```shell
@@ -32,11 +32,9 @@ conda install scikit-allel
 pip install msprime
 conda install pyslim
 conda install pytest
+conda install rpy2
 conda install dill
 conda install -c r r-rcarbon
-conda install -c r r-ini
-conda install -c r r-extraDistr
-conda install -c r r-testthat
 conda env export > timeadapt.yml
 ```
 
