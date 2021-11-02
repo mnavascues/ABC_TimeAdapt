@@ -91,6 +91,7 @@ rule clean_all:
 rule test:
     shell:
         '''
+        flake8 scripts/timeadapt.py --count --select=E9,F63,F7,F82 --show-source --statistics
         pytest -v scripts/timeadapt.py
         pytest -v scripts/test_timeadapt.py
         '''
