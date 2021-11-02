@@ -15,16 +15,14 @@ The code has been tested with the following versions (on Ubuntu 20.04):
   - pytest 6.2.4
   - pandas 1.2.4
   - dill 0.3.4
+  - rpy2 3.4.5
 - R 3.6.3
-  - ini 0.3.1
-  - extraDistr 1.8.11
   - rcarbon 1.2.0
-  - testthat 2.1.1
 - SLiM 3.6
 
 ### Usage
 
-TimeAdapt is a collection of scripts in R and Pyhton. Here it is described how to use them using a conda environment and a snakemake workflow to run them to perform an analysis.
+TimeAdapt is a collection of scripts in Pyhton. Here it is described how to use them using a conda environment and a snakemake workflow to run them to perform an analysis.
 
 Creation of the environment from scratch:
 ```shell
@@ -34,11 +32,9 @@ conda install scikit-allel
 pip install msprime
 conda install pyslim
 conda install pytest
+conda install rpy2
 conda install dill
 conda install -c r r-rcarbon
-conda install -c r r-ini
-conda install -c r r-extraDistr
-conda install -c r r-testthat
 conda env export > timeadapt.yml
 ```
 
@@ -95,6 +91,7 @@ snakemake clean_all
 | Parameter name | type | description |
 |---|---|---------------|
 |**[Settings]**|||
+| *verbose* | integer | Level of information to output on screen (0 = minimal; 1,2,3,... = increasing detailed output; -1 = none).|
 | *project_name* | string | name of the analysis project, a folder with that name is created in results folder and all output written inside.|
 | *batch* | integer | identifier of a batch of simulations for the project. A folder named with that identifier is created within the project folder and results from the simulations of that bacth written inside.|
 | *sample_file* | string |  path + file name containing sample information (see below)|

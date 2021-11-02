@@ -18,130 +18,180 @@ import configparser  # for reading ini files
 import pandas as pd  # for reading "table" files 
 import numpy as np
 import scipy.stats as st
+import random
 import allel
 import math
 import tempfile # for creating temporal files on testing
 import pytest
 
-### GET OPTIONS ··············································································
-def get_options(proj_options_file,sim_options_file):
+# Using R package rcarbon through rpy2
+from rpy2.robjects.packages import importr
+import rpy2.robjects as robjects
+rcarbon = importr("rcarbon")
+
+### PRINT INFO ######################################################################################
+def print_info(script_name,verbose,batch=None,sim=None):
+  if verbose >=1 :
+    print("#########################################")
+  if verbose >=0 :
+    if sim is not None :
+      batch=None
+      print("TimeAdapt - %s - simulation %s" %(script_name,sim) )
+    elif batch is not None :
+      print("TimeAdapt - %s - batch %s" %(script_name,batch) )
+    else :
+      print("TimeAdapt - %s" %script_name )
+  if verbose >=1 :
+    print("by Miguel de Navascués")
+    print("INRAE & Uppsala universitet")
+    print("miguel.navascues@inrae.fr")
+    print("#########################################")
+
+### GET PROJECT OPTIONS ###############################################################################
+def get_project_options(proj_options_file):
   proj_options = configparser.ConfigParser()
   proj_options.read(proj_options_file)
-  sim_options = configparser.ConfigParser()
-  sim_options.read(sim_options_file)
-
+  # Settings
+  assert 'Settings' in proj_options,"Missing [Settings] section in file"
+  assert 'project' in proj_options['Settings'],"Missing 'project' parameter in file"
   project      = proj_options.get('Settings','project')
   batch        = proj_options.get('Settings','batch')
+  try:
+    verbose    = proj_options.getint('Settings','verbose')
+  except:
+    verbose    = int(proj_options.getfloat('Settings','verbose'))
   genome_file  = proj_options.get('Settings','genome_file')
   sample_file  = proj_options.get('Settings','sample_file')
+  num_of_sims  = proj_options.getint('Settings','num_of_sims')
+  seed         = proj_options.getint('Settings','seed')
+  # Model
+  assert 'Model' in proj_options,"Missing [Model] section in project options file"
+  generations_forward = proj_options.getint('Model','generations_forward')
+  periods_forward = proj_options.getint('Model','periods_forward')
+  step = int(generations_forward/periods_forward)
+  times_of_change_forw = range(step, generations_forward-1, step)
+  periods_coalescence = proj_options.getint('Model','periods_coalescence')
+  # Priors
+  assert 'Priors' in proj_options,"Missing [Priors] section in project options file"
+  gen_len_sh1 = proj_options.getfloat('Priors','gen_len_sh1')
+  gen_len_sh2 = proj_options.getfloat('Priors','gen_len_sh2')
+  gen_len_min = proj_options.getfloat('Priors','gen_len_min')
+  gen_len_max = proj_options.getfloat('Priors','gen_len_max')
+  assert gen_len_max>=gen_len_min,"Maximum must be higher than minimum"
+  pop_size_min = proj_options.getfloat('Priors','pop_size_min')
+  pop_size_max = proj_options.getfloat('Priors','pop_size_max')
+  assert pop_size_max>=pop_size_min,"Maximum must be higher than minimum"
+  mut_rate_mean = proj_options.getfloat('Priors','mut_rate_mean')
+  mut_rate_sd = proj_options.getfloat('Priors','mut_rate_sd')
+  # Statistics
+  # TODO
+  return {"project":project,
+          "batch":batch,
+          "genome_file":genome_file, 
+          "sample_file":sample_file, 
+          "verbose":verbose,
+          "num_of_sims":num_of_sims,
+          "seed":seed,
+          "generations_forward":generations_forward,
+          "periods_forward":periods_forward,
+          "periods_coalescence":periods_coalescence,
+          "times_of_change_forw":times_of_change_forw,
+          "gen_len_sh1":gen_len_sh1,
+          "gen_len_sh2":gen_len_sh2,
+          "gen_len_min":gen_len_min,
+          "gen_len_max":gen_len_max,
+          "pop_size_min":pop_size_min,
+          "pop_size_max":pop_size_max,
+          "mut_rate_mean":mut_rate_mean,
+          "mut_rate_sd":mut_rate_sd}
+
+### GET SIM OPTIONS ######################################################################################
+def get_sim_options(sim_options_file):
+  sim_options = configparser.ConfigParser()
+  sim_options.read(sim_options_file)
   sim          = sim_options.get('Simulation','sim')
   ss           = [int(i) for i in sim_options.get("Sample","ss").split()]
   chrono_order = [int(i) for i in sim_options.get("Sample","chrono_order").split()]
-  N            = [int(i) for i in sim_options.get("Demography","N").split()]   
+  assert sum(ss)==len(chrono_order), "Verify number of samples, inconsistent sample size across simulation options file"
+  N            = [int(i) for i in sim_options.get("Demography","N").split()]
+  for i in N:
+    assert i>0, "Verify population sizes, they can be only positive values (excluding zero)"
   mu           = sim_options.getfloat('Genome','mu')
+  assert mu>=0, "Verify mutation rate, it can be only positive values and zero"
   ttratio      = sim_options.getfloat('Genome','ttratio')
   seq_error    = sim_options.getfloat('Genome','seq_error')
   seed_coal    = sim_options.getint('Seeds','seed_coal')
   seed_mut     = sim_options.getint('Seeds','seed_mut')
 
-  return project, batch, sim, genome_file, sample_file, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut
-def test_get_options():
-  project, batch, sim, genome_file, sample_file, ss, chrono_order, N, mu, ttratio, seq_error, seed_coal, seed_mut = \
-           get_options(proj_options_file = "tests/input/config_project.ini", sim_options_file  = "tests/input/sim_1.ini")
-  assert project == "test"
-  assert batch == "1"
-  assert sim == "1"
-  assert genome_file == "tests/input/test_genome.txt"
-  assert sample_file == "tests/input/test_sample.txt"
-  assert ss == [4,1,1,1,1,1,1,1,1,1,1,1,1,1]
-  assert chrono_order == [0,1,2,3,10,9,4,8,6,5,7,12,13,16,11,15,14]
-  assert N == [11,85,200,200,200,37,10,30,71]
-  assert N[0] == 11
-  assert seed_coal == 1066941363
-  assert seed_mut == 4083239485
-### end GET OPTIONS ··········································································
+  return {"sim":sim,
+          "ss":ss, 
+          "chrono_order":chrono_order, 
+          "N":N, 
+          "mu":mu, 
+          "ttratio":ttratio, 
+          "seq_error":seq_error, 
+          "seed_coal":seed_coal, 
+          "seed_mut":seed_mut}
 
-### READ SAMPLE INFO FILE .........
+### GET OPTIONS ######################################################################################
+def get_options(proj_options_file,sim_options_file):
+  options = get_project_options(proj_options_file)
+  options.update(get_sim_options(sim_options_file))
+  return options
+
+### READ SAMPLE INFO ######################################################################################
 def read_sample_info(sample_info_file):
-    """
-    Read text file with information on sample. Format of the file:
-    --------------------------------------------------------------------------
-    sampleID           age14C  age14Cerror  year  coverage  damageRepair  groups
-    B_Ju_hoan_North-4  NA      NA           2010  40.57     TRUE          00
-    S_Ju_hoan_North-1  NA      NA           2010  46.49     TRUE          00
-    BallitoBayA        1980    20           NA    12.94     FALSE         11
-    BallitoBayB        2110    30           NA    1.25      TRUE          12
-    --------------------------------------------------------------------------
+  # TODO : make it work with only ancient data (i.e. no year column) or no ancient data (no age14C)
+  info = pd.read_table(filepath_or_buffer=sample_info_file, sep=r'\s+',
+                       converters={'groups': lambda x: str(x)})
+  # check header of file
+  header = set(info.columns.values)
+  expected_header = set(["sampleID","age14C","age14Cerror","year","coverage","damageRepair","groups"])
+  assert header==expected_header, "Sample file does not have the expected column names"
+  
+  sample_size = len(info)
+  group_levels = len(info["groups"][1])
+  groups = np.full((group_levels, sample_size), 0, "int")
+  is_ancient = []
+  is_modern = []
+  total_ancient = 0
+  for i, row in info.iterrows():
+      if len(row["groups"]) != group_levels:
+          print("Error: verify that all individuals are assigned to groups")
+          # TODO : interrupt program here
+      if np.isnan(row["year"]):
+          is_ancient.append(True)
+          is_modern.append(False)
+          total_ancient = total_ancient + 1
+      else:
+          is_ancient.append(False)
+          is_modern.append(True)
+      for level in range(0, group_levels):
+          groups[level, i] = row["groups"][level]
+  t0 = info["year"].max()
 
-    :param sample_info_file: path of file
-    :return:
-    """
-    # TODO : change damageRepair for ancientDamage (which should be more intuitive)
-    # TODO : make it work with only ancient data (i.e. no year column)
+  return {"id":info["sampleID"],
+          "age14C":info["age14C"],
+          "age14Cerror":info["age14Cerror"],
+          "ageBCAD":info["year"],
+          "t0":info["year"].max(skipna=True),
+          "coverage":info["coverage"],
+          "is_ancient":is_ancient, 
+          "is_modern":is_modern,
+          "is_dr":info["damageRepair"], 
+          "total_ancient":total_ancient,
+          "size":sample_size,
+          "group_levels":group_levels, 
+          "groups":groups}
 
-    info = pd.read_table(filepath_or_buffer=sample_info_file, sep=r'\s+',
-                         converters={'groups': lambda x: str(x)})
+### READ GENOME INFO ######################################################################################
+def get_genome_info(genome_info_file):
+  table = pd.read_table(filepath_or_buffer=genome_info_file, sep=r'\s+')
+  # check header of file
+  header = set(table.columns.values)
+  expected_header = set(["Chromosome","Position","Recombination_rate"])
+  assert header==expected_header, "Genome file does not have the expected column names"
 
-    sample_id = info["sampleID"]
-    coverage = info["coverage"]
-    is_dr = info["damageRepair"]
-
-    sample_size = len(info)
-    group_levels = len(info["groups"][1])
-
-    groups = np.full((group_levels, sample_size), 0, "int")
-    is_ancient = []
-    is_modern = []
-    total_ancient = 0
-    for i, row in info.iterrows():
-        if len(row["groups"]) != group_levels:
-            print("Error: verify that all individuals are assigned to groups")
-            # TODO : interrupt program here
-        if np.isnan(row["year"]):
-            is_ancient.append(True)
-            is_modern.append(False)
-            total_ancient = total_ancient + 1
-        else:
-            is_ancient.append(False)
-            is_modern.append(True)
-        for level in range(0, group_levels):
-            groups[level, i] = row["groups"][level]
-
-    return sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
-           sample_size, group_levels, groups
-def test_read_sample_info():
-    _, temporary_file_name = tempfile.mkstemp()
-    with open(temporary_file_name, 'w') as f:
-        f.write("sampleID age14C age14Cerror year coverage damageRepair groups\n")
-        f.write("modern   NA     NA          2010 30.03    TRUE         0\n")
-        f.write("ancient  1980   20          NA   10.01    TRUE         1\n")
-    sample_id, coverage, is_ancient, is_modern, is_dr, total_ancient, \
-    sample_size, group_levels, \
-    groups = read_sample_info(sample_info_file=temporary_file_name)
-    assert sample_id[0] == "modern"
-    assert sample_id[1] == "ancient"
-    assert coverage[0] == 30.03
-    assert is_ancient[0] is False
-    assert is_ancient[1] is True
-    assert is_modern[0] is True
-    assert is_modern[1] is False
-    assert is_dr[0]
-    assert is_dr[1]
-    assert total_ancient == 1
-    assert sample_size == 2
-    assert group_levels == 1
-### end READ SAMPLE INFO FILE .........
-
-### GET GENOME MAP ····································································
-def get_genome_map(gf):
-  table = pd.read_table(filepath_or_buffer=gf, sep=r'\s+')
-  nchr = max(table["Chromosome"])
-  rates = table["Recombination_rate"]
-  lengths = table["Length"]
-  ends = pd.Series(lengths).cumsum()
-  return nchr, rates, ends
-def get_recombination_map(gf):
-  table = pd.read_table(filepath_or_buffer=gf, sep=r'\s+')
   nchr = max(table["Chromosome"])
   chromosomes = list(table["Chromosome"])
   rates = list(table["Recombination_rate"])
@@ -156,72 +206,90 @@ def get_recombination_map(gf):
     if (i in chr_ends_index):
       chromo += 1
   chr_ends = list(map(positions.__getitem__,chr_ends_index))
+  L=chr_ends[-1]-1
   # insert recombination rate between chromosomes
+  slim_rates = rates[:]
   for chromo in range(0,nchr-1):
     positions.insert(chr_ends_index[chromo]+1+chromo,positions[chr_ends_index[chromo]+chromo]+1)
     rates.insert(chr_ends_index[chromo]+1+chromo,math.log(2))
+    slim_rates.insert(chr_ends_index[chromo]+1+chromo,0.5)
+  slim_positions = [int(x-1) for x in positions]
+  positions = [int(x) for x in positions]
+  chr_ends = [int(x) for x in chr_ends] 
   positions.insert(0,0) # insert first position
-  return nchr, chr_ends, rates, positions
-def test_get_recombination_map():
-    _, temporary_file_name = tempfile.mkstemp()
-    with open(temporary_file_name, 'w') as f:
-      f.write("Chromosome	Position	Recombination_rate\n")
-      f.write("1	 1000000	1E-08\n")
-      f.write("1	 2000000	1E-07\n")
-      f.write("1	10000000	1E-08\n")
-      f.write("2	 1000000	1E-08\n")
-      f.write("2	 2000000	1E-10\n")
-      f.write("2	10000000	1E-07\n")
-      f.write("3	 2000000	1E-08\n")
-      f.write("3	 4000000	1E-09\n")
-      f.write("3	10000000	1E-08\n")
-      f.write("4	 3000000	1E-08\n")
-      f.write("4	 5000000	1E-10\n")
-      f.write("4	10000000	1E-07\n")
-    num_of_chr, chr_ends, rates, positions = get_recombination_map(temporary_file_name)
-    assert num_of_chr==4
-    assert (chr_ends == [10000000,20000000,30000000,40000000])
-    assert (rates == [1E-08,1E-07,1E-08,math.log(2),
-                      1E-08,1E-10,1E-07,math.log(2),
-                      1E-08,1E-09,1E-08,math.log(2),
-                      1E-08,1E-10,1E-07])
-    assert (positions == [       0, 1000000, 2000000,10000000,
-                          10000001,11000000,12000000,20000000,
-                          20000001,22000000,24000000,30000000,
-                          30000001,33000000,35000000,40000000])
-def test_get_genome_map():
-  num_of_chr, chrom_rates, chrom_ends = get_genome_map(gf="tests/input/human_genome.txt")
-  assert num_of_chr == 22
-  assert (chrom_rates == [1.14856E-08,1.10543E-08,1.12796E-08,1.12312E-08,1.12809E-08,
-                   1.12229E-08,1.17646E-08,1.14785E-08,1.17807E-08,1.33651E-08,
-                   1.17193E-08,1.30502E-08,1.09149E-08,1.11973E-08,1.38358E-08,
-                   1.48346E-08,1.58249E-08,1.5076E-08,1.82201E-08,1.71783E-08,
-                   1.30452E-08,1.4445E-08]).all()
-  assert (chrom_ends == [248956422,491149951,689445510,879660065,1061198324,
-                   1232004303,1391350276,1536488912,1674883629,1808681051,
-                   1943767673,2077042982,2191407310,2298451028,2400442217,
-                   2490780562,2574038003,2654411288,2713028904,2777473071,
-                   2824183054,2875001522]).all()
-### end GET GENOME MAP ································································
 
-### MAKE RECOMBINATION MAP ····························································
-def make_rec_map(nchr, c_rates, c_ends):
-  pos = [0]
-  rat = []
-  for i in range(nchr-1):
-    # print(i)
-    pos.append(c_ends[i])
-    pos.append(c_ends[i]+1)
-    rat.append(c_rates[i])
-    rat.append(math.log(2))
-  pos.append(c_ends[nchr-1])
-  rat.append(c_rates[nchr-1])
-  return pos, rat
-def test_make_rec_map():
-  positions, rates = make_rec_map(nchr=3, c_rates=[1e-8,2e-8,3e-8], c_ends=[10,20,30])
-  assert positions == [0,10,11,20,21,30]
-  assert rates ==  pytest.approx([1e-8,math.log(2),2e-8,math.log(2),3e-8])
-### end MAKE RECOMBINATION MAP ························································
+  return {"nchr":nchr,
+          "chr_ends":chr_ends,
+          "L":int(L),
+          "msprime_r_map":{"rates":rates, "positions":positions},
+          "slim_r_map":{"rates":slim_rates, "positions":slim_positions}}
+
+### GET AGE PDF ######################################################################################
+# wrapper of rcarbon.calibrate, /!\ outputs ages in BCAD not BP
+def get_age_pdf(x,errors,calCurves):
+  try:
+    sample_size = len(x)
+    x = robjects.IntVector(x)
+    errors = robjects.IntVector(errors)
+  except:
+    sample_size = 1
+  res = rcarbon.calibrate(x=x, errors=errors, calCurves=calCurves, verbose=False)
+  age_pdf = []
+  for i in range(0,sample_size):
+    ageBCAD = list(rcarbon.BPtoBCAD(res[1][i][0]))
+    age_pdf.append({"ageBCAD":ageBCAD,"PrDens":list(res[1][i][1])})
+  return age_pdf
+
+### GET SAMPLE AGES ######################################################################################
+def get_sample_ages(sample,age_pdf,gen_len):
+  sample_ages = [None]*sample["size"]
+  ancient_counter=0
+  for i in range(0,sample["size"]):
+    if sample["is_modern"][i]: sample_ages[i] = sample["ageBCAD"][i]
+    if sample["is_ancient"][i]:
+      sample_ages[i] = random.choices(age_pdf[ancient_counter]["ageBCAD"],
+                                      weights = age_pdf[ancient_counter]["PrDens"])
+      
+      ancient_counter += 1
+    sample_ages[i] = int(abs(sample_ages[i]-sample["t0"])/gen_len)
+  return sample_ages
+
+### SAMPLE PARAMETER TRAJECTORY #######################################################################
+def sample_param_trajectory(times,minimum,maximum,factor=10):
+  trajectory = np.zeros(shape=times)
+  trajectory[0] = st.loguniform.rvs(a=minimum, b=maximum, size=1)
+  for i in range(1,times):
+    trajectory[i] = trajectory[i-1] * st.loguniform.rvs(a=1/factor, b=1*factor, size=1)
+    trajectory[i] = max( min(trajectory[i],maximum) , minimum )
+  return trajectory  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### MAKE EMPTY GENOTYPE ARRAY ····························································
 def empty_genotype_array(n_loci, n_samples, ploidy=2, allele=-1):
@@ -342,13 +410,66 @@ def sequencing(ts, ssize, ttr, seq_error, dr, cov):
   # TODO create a ts and some test from it
 ### end SIMULATE SEQUENCING  ····························
 
+### TEST DATA FOR SUMMARY STATISTISCS
+#                                  ind 0   ind 1   ind 2   ind 3  
+test_ga_A = allel.GenotypeArray([[[ 0, 0],[ 0, 0],[ 0, 0],[ 0, 0]], # locus 0
+                                 [[ 0, 1],[ 0, 1],[ 0, 1],[ 1, 1]], # locus 1
+                                 [[-1,-1],[-1,-1],[-1,-1],[-1,-1]], # locus 2
+                                 [[ 1, 1],[ 1, 1],[ 0, 1],[ 1, 1]], # locus 3
+                                 [[ 0, 1],[ 0, 0],[ 0, 1],[ 0,-1]]],# locus 4
+                                 dtype='i1')
+#              0   1   2   3   4
+test_pos_A = (10,123,234,299,340)
+#                                  ind 0   ind 1   ind 2   ind 3  
+test_ga_B = allel.GenotypeArray([[[ 0, 1],[ 0, 1],[ 1, 1],[ 0, 0]], # locus 0
+                                 [[ 0, 1],[ 0, 1],[ 0, 1],[ 1, 1]], # locus 1
+                                 [[ 0, 1],[ 0, 1],[-1,-1],[ 1, 1]], # locus 2
+                                 [[ 0, 1],[ 0, 0],[ 0, 1],[ 1, 1]], # locus 3
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], # locus 4
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], # locus 5
+                                 [[ 1, 1],[ 0, 1],[ 0, 1],[ 1, 1]], # locus 6
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], # locus 7
+                                 [[ 1, 1],[ 0, 1],[ 0, 0],[ 0, 1]], # locus 8
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], # locus 9
+                                 [[ 1, 1],[ 0, 1],[ 0, 1],[ 1, 1]], # locus 10
+                                 [[ 0, 1],[ 0, 1],[ 0, 0],[ 1, 1]], # locus 11
+                                 [[ 0, 0],[ 0, 1],[ 0, 1],[ 0, 1]], # locus 12
+                                 [[-1,-1],[-1,-1],[-1,-1],[ 1, 1]], # locus 13
+                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]], # locus 14
+                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]], # locus 15
+                                 [[ 1, 1],[ 0, 1],[ 0, 0],[ 0, 1]], # locus 16
+                                 [[ 1, 1],[ 1, 1],[ 1, 0],[ 1, 1]], # locus 17
+                                 [[ 1, 1],[ 1, 1],[ 0, 0],[ 1, 1]], # locus 18
+                                 [[ 0, 1],[ 0, 0],[ 0, 1],[-1,-1]]],# locus 19
+                                 dtype='i1')
+#             0  1  2  3  4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+test_pos_B = (4,10,50,77,99,123,134,150,178,201,209,234,256,270,299,311,315,340,358,378)
+
+#                                 ga,        pos, nchr, chr_ends, w_size, expected_S
+testdata_S = [pytest.param(test_ga_A, test_pos_A,    1,    [400],     50,          3, id="A"),
+              pytest.param(test_ga_B, test_pos_B,    1,    [400],     50,         19, id="B")]
+#                                 ga,        pos, nchr, chr_ends, w_size, expected_Pi
+testdata_Pi = [pytest.param(test_ga_A, test_pos_A,    1,    [400],     50, 0.00315476, id="A"),
+               pytest.param(test_ga_B, test_pos_B,    1,    [400],     50, 0.02418452, id="B")]
+#                                 ga,        pos, nchr, chr_ends, w_size,  expected_WT
+testdata_WT = [pytest.param(test_ga_A, test_pos_A,    1,    [400],     50, 0.00289256, id="A"),
+               pytest.param(test_ga_B, test_pos_B,    1,    [400],     50, 0.01831956, id="B")]
+
+
+
+
+
+
+
+### SAVE RESULTS from st.describe() INTO DICT ····························
 def save_moments_2_dict(moments,sumstats,sample_name,sep,stat_name):
-  sumstats[sample_name+sep+"min"+stat_name] = np.ma.getdata(moments[1][0])
-  sumstats[sample_name+sep+"max"+stat_name] = np.ma.getdata(moments[1][1])
-  sumstats[sample_name+sep+"m"+stat_name] = np.ma.getdata(moments[2])
-  sumstats[sample_name+sep+"v"+stat_name] = np.ma.getdata(moments[3])
-  sumstats[sample_name+sep+"s"+stat_name] = np.ma.getdata(moments[4])
-  sumstats[sample_name+sep+"k"+stat_name] = np.ma.getdata(moments[5])
+  sumstats[sample_name+sep+"min"+stat_name] = float(np.ma.getdata(moments[1][0]))
+  sumstats[sample_name+sep+"max"+stat_name] = float(np.ma.getdata(moments[1][1]))
+  sumstats[sample_name+sep+"m"+stat_name] = float(np.ma.getdata(moments[2]))
+  sumstats[sample_name+sep+"v"+stat_name] = float(np.ma.getdata(moments[3]))
+  sumstats[sample_name+sep+"s"+stat_name] = float(np.ma.getdata(moments[4]))
+  sumstats[sample_name+sep+"k"+stat_name] = float(np.ma.getdata(moments[5]))
+### end SAVE RESULTS from st.describe() INTO DICT  ····························
 
 ### CALCULATE SUMMARY STATISTICS : SINGLE SAMPLE  ····························
 def single_sample_sumstats(ga,pos,nchr,chr_ends,w_size,sumstats,name="",sep="_",quiet=True):
@@ -387,7 +508,7 @@ def single_sample_sumstats(ga,pos,nchr,chr_ends,w_size,sumstats,name="",sep="_",
   sumstats[name+sep+"TD"]=total_Taj_D
   w_Taj_D, _, _ = allel.windowed_tajima_d(pos, ac, size=w_size, start=1, stop=chr_ends[0])
   for chromo in range(1,nchr):
-    temp, _, _, _ = allel.windowed_tajima_d(pos, ac, size=w_size, start=1+chr_ends[chromo-1], stop=chr_ends[chromo])
+    temp, _, _ = allel.windowed_tajima_d(pos, ac, size=w_size, start=1+chr_ends[chromo-1], stop=chr_ends[chromo])
     np.append(w_Taj_D,temp)
   Taj_D = st.describe(w_Taj_D, nan_policy='omit')
   save_moments_2_dict(Taj_D,sumstats,name,sep,"TD")
@@ -397,31 +518,39 @@ def single_sample_sumstats(ga,pos,nchr,chr_ends,w_size,sumstats,name="",sep="_",
   roh_distribution = roh_distribution + windowed_distribution_roh(ga, pos, w_size, start=1, stop=chr_ends[0])
   for chromo in range(1,nchr):
     roh_distribution + windowed_distribution_roh(ga, pos, w_size, start=1+chr_ends[chromo-1], stop=chr_ends[chromo])
-  sumstats[name+sep+"RoHD"]=roh_distribution
+  for i in range(0,len(roh_distribution)):
+    sumstats[name+sep+"RoHD"+sep+str(i)]=roh_distribution[i]
   if quiet is False: print("Distribution of Runs of Homozygosity: "+ str(roh_distribution))
   return
-  
+
+@pytest.mark.parametrize("ga,pos,nchr,chr_ends,w_size,expected_S", testdata_S)
+def test_single_sample_sumstats_S(ga,pos,nchr,chr_ends,w_size,expected_S):
+  test_sumstats = {}
+  single_sample_sumstats(ga, pos, nchr, chr_ends, w_size, test_sumstats)
+  assert test_sumstats["_S"] == expected_S
+  assert test_sumstats["_S"] >= 0
+
+@pytest.mark.parametrize("ga,pos,nchr,chr_ends,w_size,expected_Pi", testdata_Pi)
+def test_single_sample_sumstats_Pi(ga,pos,nchr,chr_ends,w_size,expected_Pi):
+  test_sumstats = {}
+  single_sample_sumstats(ga, pos, nchr, chr_ends, w_size, test_sumstats)
+  assert test_sumstats["_Pi"] == pytest.approx(expected_Pi)
+  assert test_sumstats["_Pi"] >= 0
+  assert test_sumstats["_mPi"] == pytest.approx(expected_Pi)
+
+@pytest.mark.parametrize("ga,pos,nchr,chr_ends,w_size,expected_WT", testdata_WT)
+def test_single_sample_sumstats_WT(ga,pos,nchr,chr_ends,w_size,expected_WT):
+  test_sumstats = {}
+  single_sample_sumstats(ga, pos, nchr, chr_ends, w_size, test_sumstats)
+  assert test_sumstats["_mWT"] >= 0
+  assert test_sumstats["_mWT"] == pytest.approx(expected_WT)
+
+
+
 def test_single_sample_sumstats():
-  # 4 individuals (columns), 5 loci (rows)
-  test_ga = allel.GenotypeArray([[[ 0, 0],[ 0, 0],[ 0, 0],[ 0, 0]],
-                                 [[ 0, 1],[ 0, 1],[ 0, 1],[ 1, 1]],
-                                 [[-1,-1],[-1,-1],[-1,-1],[-1,-1]],
-                                 [[ 1, 1],[ 1, 1],[ 0, 1],[ 1, 1]],
-                                 [[ 0, 1],[ 0, 0],[ 0, 1],[ 0,-1]]], dtype='i1')
-  test_pos = (10,123,234,299,340)
   test_nchr = 1
   test_chr_end = [400]
   test_w_s = 50
-  test_sumstats = {}
-  single_sample_sumstats(test_ga, test_pos, test_nchr, test_chr_end, test_w_s, test_sumstats)
-  assert test_sumstats["_S"]==3
-  assert test_sumstats["_Pi"] == pytest.approx(0.003154762)
-  assert test_sumstats["_minPi"] == pytest.approx(0.)
-  assert test_sumstats["_maxPi"] == pytest.approx(0.01071429)
-  assert test_sumstats["_mPi"] == pytest.approx(0.003154762)
-  assert test_sumstats["_minWT"] == pytest.approx(0.)
-  assert test_sumstats["_maxWT"] == pytest.approx(0.0077135)
-  assert test_sumstats["_mWT"] == pytest.approx(0.002892563)
   # 4 individuals (columns), 20 loci (rows)
   test_ga = allel.GenotypeArray([[[ 0, 1],[ 0, 1],[ 1, 1],[ 0, 0]], #  0
                                  [[ 0, 1],[ 0, 1],[ 0, 1],[ 1, 1]], #  1
@@ -450,10 +579,17 @@ def test_single_sample_sumstats():
   test_name = "test"
   single_sample_sumstats(test_ga, test_pos, test_nchr, test_chr_end, test_w_s, test_sumstats, test_name)
   assert test_sumstats["test_maxTD"] == pytest.approx(1.71931236)
-  assert (test_sumstats["test_RoHD"] == [3,8,0]).all()
+  #assert (test_sumstats["test_RoHD"] == [3,8,0]).all()
+  assert test_sumstats["test_RoHD_0"] == 3
+  assert test_sumstats["test_RoHD_1"] == 8
+  assert test_sumstats["test_RoHD_2"] == 0
   test_sumstats = {}
   single_sample_sumstats(test_ga, test_pos, test_nchr, test_chr_end, 390, test_sumstats, test_name)
-  assert (test_sumstats["test_RoHD"] == [3,25,1,0]).all()
+  #assert (test_sumstats["test_RoHD"] == [3,25,1,0]).all()
+  assert test_sumstats["test_RoHD_0"] == 3
+  assert test_sumstats["test_RoHD_1"] == 25
+  assert test_sumstats["test_RoHD_2"] == 1
+  assert test_sumstats["test_RoHD_3"] == 0
 
 
 
@@ -581,4 +717,30 @@ def test_windowed_distribution_roh():
   d_roh = windowed_distribution_roh(test_ga, test_pos, test_size, 1, 20000)
   assert (d_roh == [2,5,3,4,0]).all()
 
+### CALCULATE SUMMARY STATISTICS : TWO SAMPLE  ····························
+def two_samples_sumstats(ga,pair_of_groups,pos,nchr,chr_ends,w_size,sumstats,name="",sep="_"):
+  a, b, c = allel.weir_cockerham_fst(g       = ga,
+                                     subpops = pair_of_groups)
+  fst = np.sum(a) / (np.sum(a) + np.sum(b) + np.sum(c))
+  sumstats[name+sep+"Fst"]=fst
+  fst_per_variant = (np.sum(a, axis=1) / (np.sum(a, axis=1) + np.sum(b, axis=1) + np.sum(c, axis=1)))
+  moments_fst_per_variant = st.describe(fst_per_variant, nan_policy='omit')
+  save_moments_2_dict(moments_fst_per_variant,sumstats,name,sep,"l_Fst")
+  fst_per_window, _, _ = allel.windowed_weir_cockerham_fst(pos     = pos,
+                                                           g       = ga,
+                                                           subpops = pair_of_groups,
+                                                           size    = w_size,
+                                                           start   = 1,
+                                                           stop    = chr_ends[0])
+  for chromo in range(1,nchr):
+    temp, _, _ = allel.windowed_weir_cockerham_fst(pos     = pos,
+                                                   g       = ga,
+                                                   subpops = pair_of_groups,
+                                                   size    = w_size,
+                                                   start   = 1+chr_ends[chromo-1],
+                                                   stop    = chr_ends[chromo])
+    np.append(fst_per_window,temp)
+  moments_fst_per_window = st.describe(fst_per_window)
+  save_moments_2_dict(moments_fst_per_window,sumstats,name,sep,"w_Fst")
+  return
 

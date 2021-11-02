@@ -27,10 +27,23 @@ initialize() {
 	initializeGenomicElement(g1, 0, L);
 	initializeRecombinationRate(rates, ends);
 	initializeTreeSeq();
+	
+	defineConstant("verbose",0);
+  if (verbose >= 1){
+    catn("#########################################");
+    catn("#                                       #");
+  }
+  if (verbose >= 0) catn("#      TimeAdapt - forwsim.slim         #");
+  if (verbose >= 1){
+    catn("#      by Miguel de Navascués           #");
+    catn("#      INRAE & Uppsala universitet      #");
+    catn("#      miguel.navascues@inrae.fr        #");
+    catn("#                                       #");
+    catn("#########################################");
+  }
 }
 1 late() {
-	
-   sim.readFromPopulationFile("results/"+project+"/"+batch+"/coalsim_"+i+".trees");	
+  sim.readFromPopulationFile("results/"+project+"/"+batch+"/coalsim_"+i+".trees");	
 	p0.setSubpopulationSize(N[0]);
 
 	// schedule SAMPLING BLOCK
@@ -116,10 +129,10 @@ s5 999999 late() {
    lenght_periods = c(tc,ts[na])-c(2,tc);
    //catn(lenght_periods);
 	Ne = lenght_periods/sim.getValue("sum_prob_coal")/2;
-	catn("N:");
-	catn(N);
-	catn("Ne:");
-	catn(Ne);
+	if (verbose >= 100) catn("N:");
+	if (verbose >= 100) catn(N);
+	if (verbose >= 100) catn("Ne:");
+	if (verbose >= 100) catn(Ne);
 	writeFile(filePath="results/"+project+"/"+batch+"/Ne.txt", contents=paste(i+" "+paste(Ne)), append=T);
 	sim.simulationFinished();
 }
