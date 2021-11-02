@@ -214,6 +214,8 @@ def get_genome_info(genome_info_file):
     rates.insert(chr_ends_index[chromo]+1+chromo,math.log(2))
     slim_rates.insert(chr_ends_index[chromo]+1+chromo,0.5)
   slim_positions = [int(x-1) for x in positions]
+  positions = [int(x) for x in positions]
+  chr_ends = [int(x) for x in chr_ends] 
   positions.insert(0,0) # insert first position
 
   return {"nchr":nchr,
