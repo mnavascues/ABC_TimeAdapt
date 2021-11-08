@@ -1,7 +1,11 @@
 import configparser
 
 # READ OPTIONS FILE
-options_file = 'tests/bee_config.ini'
+try:
+  config["options_file"]
+except:
+  config["options_file"] = 'tests/bee_config.ini'
+options_file = config["options_file"]
 options      = configparser.ConfigParser()
 options.read(options_file)
 
