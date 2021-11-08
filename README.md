@@ -22,7 +22,7 @@ The code has been tested with the following versions (on Ubuntu 20.04):
 
 ### Usage
 
-TimeAdapt is a collection of scripts in Pyhton. Here it is described how to use them using a conda environment and a snakemake workflow to run them to perform an analysis.
+TimeAdapt is a collection of scripts in Python. Here it is described how to use them using a conda environment and a snakemake workflow to run them to perform an analysis.
 
 Creation of the environment from scratch:
 ```shell
@@ -45,42 +45,43 @@ conda env create -f timeadapt.yml
 
 You need to prepare four files:
 
-*config file*: a ini file with options regarding the Setting, Model, Prior and Statistics to be used in your analysis
+- *config file*: a ini file with options regarding the Setting, Model, Prior and Statistics to be used in your analysis
 
-*sample file*: a text file (in the form of a space separated table) with metadata of your samples (ID, age, sequencing coverage, etc)
+- *sample file*: a text file (in the form of a space separated table) with metadata of your samples (ID, age, sequencing coverage, etc)
 
-*genome file*: a text file with a description of the genome organization (chromosomes, recombination map)
+- *genome file*: a text file with a description of the genome organization (chromosomes, recombination map)
 
-*data file*: a vcf file with the genetic data
+- *data file*: a vcf file with the genetic data
 
-To run different parts of the analysis with snakemake edit snakefile to change the path and name of the file (`options_file`, line 4):
+To run different parts of the analysis with snakemake :
 
-```python
-import configparser
-
-# READ OPTIONS FILE
-options_file = 'path/to/your/config_file.ini'
-...
+```shell
+conda activate timeadapt
+snakemake rule -C options_file='path/to/your/config_file.ini'
 ```
 
-Before running your analysis is highly recommended to performs some tests. Unit tests (using testthat for R, pytest for Python) con be run using:
+Where `rule` is one of the rules defines in the snakefile. For instance, running `snakemake reftable -C options_file='tests/config_project.ini'` will create small reference table using parameters in file `tests/config_project.ini`.
+
+Before running your analysis is highly recommended to performs some tests. Unit tests (using pytest) can be run using:
 
 ```shell
 conda activate timeadapt
 snakemake test
 ```
-As intergration test you can use the distributed snakefile (that is with: `options_file = 'tests/input/config_project.ini'`) to run one batch of simulations with Snakefile and get directed acyclic graph of pipeline:
+(no need to activate Conda environment if it is already activated. Also, no need to specify config file for unit tests)
+
+You can get directed acyclic graph of pipeline:
 
 ```shell
 conda activate timeadapt
-snakemake sim
+snakemake reftable -C options_file='tests/config_project.ini'
 snakemake --dag | dot -Tsvg > results/workflow_dag.svg
 ```
 
 You can remove all files (all projects, all batches) from your results folder, or remove results from your project (all batches) or to remove files from a single batch:
 
 ```shell
-snakemeke clean_batch
+snakemake clean_batch
 snakemake clean_project
 snakemake clean_all
 ```
