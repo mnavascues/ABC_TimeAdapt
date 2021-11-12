@@ -4,37 +4,19 @@ TimeAdapt makes (i.e. will eventually make) a joint inference of demography and 
 
 ### Requirements
 
-The code has been tested with the following versions (on Ubuntu 20.04):
+TimeAdapt is a collection of scripts in Python and SLiM (3.6). They have been tested in an Ubuntu (20.04) machine using a conda environment and using a snakemake workflow to run them. The conda environment was created with the following commands (on 12.Nov.2021):
 
-- Python 3.8.10
-  - scikit-allel 1.3.5
-  - msprime 1.0.2
-  - numpy 1.20.3
-  - pyslim 0.403
-  - scipy 1.5.4
-  - pytest 6.2.4
-  - pandas 1.2.4
-  - dill 0.3.4
-  - rpy2 3.4.5
-- R 3.6.3
-  - rcarbon 1.2.0
-- SLiM 3.6
-
-### Usage
-
-TimeAdapt is a collection of scripts in Python. Here it is described how to use them using a conda environment and a snakemake workflow to run them to perform an analysis.
-
-Creation of the environment from scratch:
 ```shell
 conda create -n timeadapt python==3.8.10 r-base=3.6.3
 conda activate timeadapt
-conda install scikit-allel
-pip install msprime
-conda install pyslim
+pip install msprime==1.0.2
+conda install pyslim=0.403
+conda install scikit-allel=1.3.5
+conda install dill=0.3.4
+conda install rpy2=3.4.5
+conda install -c r r-rcarbon=1.2.0
 conda install pytest
-conda install rpy2
-conda install dill
-conda install -c r r-rcarbon
+conda install flake8
 conda env export > timeadapt.yml
 ```
 
@@ -43,7 +25,9 @@ Creation of the environment via yml file:
 conda env create -f timeadapt.yml
 ```
 
-You need to prepare four files:
+### Usage
+
+Input files:
 
 - *config file*: a ini file with options regarding the Setting, Model, Prior and Statistics to be used in your analysis
 
