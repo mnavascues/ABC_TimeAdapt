@@ -20,15 +20,15 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-      - name: Setup Miniconda
-        uses: goanpeca/setup-miniconda@v1
-        with:
-          auto-update-conda: true
-          auto-activate-base: false
-          miniconda-version: 'latest'
-          python-version: ${{ matrix.python-version }}
-          environment-file: timeadapt.yml
-          activate-environment: timeadapt
+    - name: Setup Miniconda
+      uses: goanpeca/setup-miniconda@v1
+      with:
+        auto-update-conda: true
+        auto-activate-base: false
+        miniconda-version: 'latest'
+        python-version: ${{ matrix.python-version }}
+        environment-file: timeadapt.yml
+        activate-environment: timeadapt
     - name: Lint with flake8
       shell: pwsh
       run: |
