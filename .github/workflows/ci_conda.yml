@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: 
+    - name: Checkout
       uses: actions/checkout@v2
       - name: Setup Miniconda
         uses: goanpeca/setup-miniconda@v1
