@@ -58,16 +58,16 @@ You can get directed acyclic graph of pipeline:
 
 ```shell
 conda activate timeadapt
-snakemake reftable -C options_file='tests/config_project.ini'
+snakemake reftable -C options_file='path/to/your/config_file.ini'
 snakemake --dag | dot -Tsvg > results/workflow_dag.svg
 ```
 
 You can remove all files (all projects, all batches) from your results folder, or remove results from your project (all batches) or to remove files from a single batch:
 
 ```shell
-snakemake clean_batch
-snakemake clean_project
-snakemake clean_all
+snakemake clean_batch -C options_file='path/to/your/config_file.ini'
+snakemake clean_project -C options_file='path/to/your/config_file.ini'
+snakemake clean
 ```
 
 

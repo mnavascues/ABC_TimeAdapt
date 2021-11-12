@@ -100,7 +100,7 @@ rule clean_project:
     shell: 'rm -rf results/'+project
 
 # delete all files in results directory
-rule clean_all:
+rule clean:
     shell: 'rm -rf results/'
 
 # run tests

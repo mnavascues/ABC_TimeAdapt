@@ -33,6 +33,7 @@
 ### Testing
 
 - [ ] *Revise and move all test from timeadapt.py to test_timeadapt.py* **low**
+- [ ] *coverage* learn how to calculate coverage and add it to test workflow
 - [x] ~~*make pytest & rpy2 work on github actions* currently given an error on github but tests pass in local???: this was done by using a conda environment~~
 - [x] ~~*Set a dataset test from bee example for integration testing* **high**~~
 - [x] ~~*Change how pytest compare numpy arrays* **low** FROM assert (numpy_array == expected_result).all() TO assert list(numpy_array) == expected_result~~
