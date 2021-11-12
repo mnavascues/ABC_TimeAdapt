@@ -7,6 +7,7 @@
   - [ ] *Selection on standing variation.* **high**
   - [ ] *Selection on background selection.* **high**
   - [ ] *Selection on new mutation.* **low**
+- [ ] *Admixture* add a (ghost) population as a source of gene flow to focus population
 - [x] ~~*verify that number of periods in forward simulation is compatible with length of forward simulation*~~
 
 
@@ -32,9 +33,9 @@
 ### Testing
 
 - [ ] *Revise and move all test from timeadapt.py to test_timeadapt.py* **low**
-- [ ] *Change how pytest compare numpy arrays* **low** FROM assert (numpy_array == expected_result).all() TO assert list(numpy_array) == expected_result
 - [ ] *make pytest & rpy2 work on github workflow* currently given an error on github but tests pass in local???
 - [x] ~~*Set a dataset test from bee example for integration testing* **high**~~
+- [x] ~~*Change how pytest compare numpy arrays* **low** FROM assert (numpy_array == expected_result).all() TO assert list(numpy_array) == expected_result~~
 
 ### Documentation
 

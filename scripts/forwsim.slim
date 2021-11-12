@@ -51,8 +51,10 @@ initialize() {
 	sim.rescheduleScriptBlock(s1, start=ts[0], end=ts[0]);
 	
 	// schedule DEMOGRAPHY BLOCK
-	sim.setValue("count_demography", 0);
-	sim.rescheduleScriptBlock(s2, start=tc[0], end=tc[0]);
+	if (length(tc)>0){
+	  sim.setValue("count_demography", 0);
+	  sim.rescheduleScriptBlock(s2, start=tc[0], end=tc[0]);
+	}
 	sim.rescheduleScriptBlock(s0, start=2, end=ts[na]);
 	
 	// schedule CALCULATE Ne BLOCK
@@ -94,13 +96,14 @@ s2 999999 early(){
 
 // CALCULATE Ne BLOCK
 s3 999999 late() {
-   previous_generation_N = sim.getValue("previous_generation_N");
+	previous_generation_N = sim.getValue("previous_generation_N");
 
-   rescaledParentIDs = p0.individuals.pedigreeParentIDs-min(p0.individuals.pedigreeParentIDs);
-   k = tabulate(rescaledParentIDs);
-   k = c(k,rep(0, previous_generation_N-size(k)));
+	rescaledParentIDs = p0.individuals.pedigreeParentIDs-min(p0.individuals.pedigreeParentIDs);
+	k = tabulate(rescaledParentIDs);
+	// add zeros for the individuals at the end that do not contribute offspring:
+	k = c(k,rep(0, previous_generation_N-size(k))); 
 
-	prob_coal = sum(k/sum(k)*(k-1)/sum(k)*0.5);// self-compatible hermaphrodite!!
+	prob_coal = sum(k/sum(k)*(k-1)/sum(k)*0.5);// /!\ this is for self-compatible hermaphrodite /!\
 	//Ne = 1/prob_coal/2;
 	//catn("N(t-1)="+previous_generation_N);
 	//catn("N(t)="+p0.individualCount);
@@ -108,13 +111,17 @@ s3 999999 late() {
 	//invNe = (var(k)/mean(k)+mean(k)-1)/(2*p0.individualCount-1);
 	//catn("Ne_var="+1/invNe);
 
-   //catn("generation :"+sim.generation);
-   //count = sim.getValue("count_demography");
-   //catn("count: "+count);
-   period = max(which(sim.generation>c(0,tc)));
-   //catn("period: "+period);
+	//catn("generation :"+sim.generation);
+	//count = sim.getValue("count_demography");
+	//catn("count: "+count);
+	if (length(tc)==0){
+		period = 0;
+	}else{
+		period = max(which(sim.generation>c(0,tc)));
+	}
+	//catn("period: "+period);
    	
-	sum_prob_coal = sim.getValue("sum_prob_coal") ;
+	sum_prob_coal = sim.getValue("sum_prob_coal");
 	sum_prob_coal[period] = prob_coal + sum_prob_coal[period];
 	sim.setValue("sum_prob_coal", sum_prob_coal );
 }
@@ -126,8 +133,8 @@ s4 999999 late() {
 }
 s5 999999 late() {
 	sim.treeSeqOutput(path="results/"+project+"/"+batch+"/forwsim_"+i+".trees");
-   lenght_periods = c(tc,ts[na])-c(2,tc);
-   //catn(lenght_periods);
+  lenght_periods = c(tc,ts[na])-c(2,tc);
+  //catn(lenght_periods);
 	Ne = lenght_periods/sim.getValue("sum_prob_coal")/2;
 	if (verbose >= 100) catn("N:");
 	if (verbose >= 100) catn(N);
