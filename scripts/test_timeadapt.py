@@ -92,13 +92,13 @@ with open(temp_sim_file_1, 'w') as f:
 result_config_1 = {"project":"test", "batch":"1", "sim":"1",
                    "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
                    "verbose":0, "num_of_sims":10000, "seed":1234567,
-                   "generations_forward":400,"times_of_change_forw":range(50, 399, 50),
+                   "generations_forward":400,"times_of_change_forw":[50,100,150,200,250,300,350],
                    "gen_len_sh1":1,"gen_len_sh2":1,"gen_len_min":29,"gen_len_max":30,
                    "pop_size_min":2,"pop_size_max":2000}
 result_config_2 = {"project":"test", "batch":"1", "sim":"1",
                    "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
                    "verbose":1, "num_of_sims":10, "seed":987654,
-                   "generations_forward":100,"times_of_change_forw":range(33, 99, 33),
+                   "generations_forward":100,"times_of_change_forw":[33,66],
                    "gen_len_sh1":1.5,"gen_len_sh2":2,"gen_len_min":20,"gen_len_max":30,
                    "pop_size_min":20,"pop_size_max":200000}
 result_sim_1 = {"ss":[4,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -155,6 +155,13 @@ def test_get_options(temp_config_file,temp_sim_file,expected_result):
   assert options["seed"] == expected_result["seed"]
   assert options["times_of_change_forw"] == expected_result["times_of_change_forw"]
   assert options["generations_forward"] == expected_result["generations_forward"]
+
+# TEST GET TIMES OF CHANGE  ########################################################################################
+
+def test_get_times_of_change():
+    with pytest.raises(ValueError) as e:
+        timeadapt.get_times_of_change(10,10)
+    assert str(e.value) == 'number of periods must be lower than length of simulation' 
 
 # TEST READ SAMPLE INFO #############################################################################################
 

@@ -4,7 +4,7 @@ import configparser
 try:
   config["options_file"]
 except:
-  config["options_file"] = 'tests/bee_config.ini'
+  config["options_file"] = 'tests/config_project.ini'
 options_file = config["options_file"]
 options      = configparser.ConfigParser()
 options.read(options_file)

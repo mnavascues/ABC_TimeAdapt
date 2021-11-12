@@ -4,37 +4,19 @@ TimeAdapt makes (i.e. will eventually make) a joint inference of demography and 
 
 ### Requirements
 
-The code has been tested with the following versions (on Ubuntu 20.04):
+TimeAdapt is a collection of scripts in Python and SLiM (3.6). They have been tested in an Ubuntu (20.04) machine using a conda environment and using a snakemake workflow to run them. The conda environment was created with the following commands (on 12.Nov.2021):
 
-- Python 3.8.10
-  - scikit-allel 1.3.5
-  - msprime 1.0.2
-  - numpy 1.20.3
-  - pyslim 0.403
-  - scipy 1.5.4
-  - pytest 6.2.4
-  - pandas 1.2.4
-  - dill 0.3.4
-  - rpy2 3.4.5
-- R 3.6.3
-  - rcarbon 1.2.0
-- SLiM 3.6
-
-### Usage
-
-TimeAdapt is a collection of scripts in Pyhton. Here it is described how to use them using a conda environment and a snakemake workflow to run them to perform an analysis.
-
-Creation of the environment from scratch:
 ```shell
 conda create -n timeadapt python==3.8.10 r-base=3.6.3
 conda activate timeadapt
-conda install scikit-allel
-pip install msprime
-conda install pyslim
+pip install msprime==1.0.2
+conda install pyslim=0.403
+conda install scikit-allel=1.3.5
+conda install dill=0.3.4
+conda install rpy2=3.4.5
+conda install -c r r-rcarbon=1.2.0
 conda install pytest
-conda install rpy2
-conda install dill
-conda install -c r r-rcarbon
+conda install flake8
 conda env export > timeadapt.yml
 ```
 
@@ -43,44 +25,47 @@ Creation of the environment via yml file:
 conda env create -f timeadapt.yml
 ```
 
-You need to prepare four files:
+### Usage
 
-*config file*: a ini file with options regarding the Setting, Model, Prior and Statistics to be used in your analysis
+Input files:
 
-*sample file*: a text file (in the form of a space separated table) with metadata of your samples (ID, age, sequencing coverage, etc)
+- *config file*: a ini file with options regarding the Setting, Model, Prior and Statistics to be used in your analysis
 
-*genome file*: a text file with a description of the genome organization (chromosomes, recombination map)
+- *sample file*: a text file (in the form of a space separated table) with metadata of your samples (ID, age, sequencing coverage, etc)
 
-*data file*: a vcf file with the genetic data
+- *genome file*: a text file with a description of the genome organization (chromosomes, recombination map)
 
-To run different parts of the analysis with snakemake edit snakefile to change the path and name of the file (`options_file`, line 4):
+- *data file*: a vcf file with the genetic data
 
-```python
-import configparser
+To run different parts of the analysis with snakemake :
 
-# READ OPTIONS FILE
-options_file = 'path/to/your/config_file.ini'
-...
+```shell
+conda activate timeadapt
+snakemake rule -C options_file='path/to/your/config_file.ini'
 ```
 
-Before running your analysis is highly recommended to performs some tests. Unit tests (using testthat for R, pytest for Python) con be run using:
+Where `rule` is one of the rules defines in the snakefile. For instance, running `snakemake reftable -C options_file='tests/config_project.ini'` will create small reference table using parameters in file `tests/config_project.ini`.
+
+Before running your analysis is highly recommended to performs some tests. Unit tests (using pytest) can be run using:
 
 ```shell
 conda activate timeadapt
 snakemake test
 ```
-As intergration test you can use the distributed snakefile (that is with: `options_file = 'tests/input/config_project.ini'`) to run one batch of simulations with Snakefile and get directed acyclic graph of pipeline:
+(no need to activate Conda environment if it is already activated. Also, no need to specify config file for unit tests)
+
+You can get directed acyclic graph of pipeline:
 
 ```shell
 conda activate timeadapt
-snakemake sim
+snakemake reftable -C options_file='tests/config_project.ini'
 snakemake --dag | dot -Tsvg > results/workflow_dag.svg
 ```
 
 You can remove all files (all projects, all batches) from your results folder, or remove results from your project (all batches) or to remove files from a single batch:
 
 ```shell
-snakemeke clean_batch
+snakemake clean_batch
 snakemake clean_project
 snakemake clean_all
 ```

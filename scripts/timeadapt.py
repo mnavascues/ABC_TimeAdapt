@@ -68,8 +68,7 @@ def get_project_options(proj_options_file):
   assert 'Model' in proj_options,"Missing [Model] section in project options file"
   generations_forward = proj_options.getint('Model','generations_forward')
   periods_forward = proj_options.getint('Model','periods_forward')
-  step = int(generations_forward/periods_forward)
-  times_of_change_forw = range(step, generations_forward-1, step)
+  times_of_change_forw = get_times_of_change(generations_forward,periods_forward)
   periods_coalescence = proj_options.getint('Model','periods_coalescence')
   # Priors
   assert 'Priors' in proj_options,"Missing [Priors] section in project options file"
@@ -104,6 +103,22 @@ def get_project_options(proj_options_file):
           "pop_size_max":pop_size_max,
           "mut_rate_mean":mut_rate_mean,
           "mut_rate_sd":mut_rate_sd}
+
+### GET TIMES OF CHANGE ######################################################################################
+def get_times_of_change(total_length,number_of_periods):
+  if total_length<=number_of_periods:
+    raise ValueError('number of periods must be lower than length of simulation')
+  x=total_length/number_of_periods
+  times_of_change = []
+  while x<total_length-1:
+    times_of_change.append(int(x))
+    x = x + total_length/number_of_periods
+  # the next two errors should not happen if total_length>number_of_periods
+  if len(times_of_change)!=number_of_periods-1:
+    raise ValueError('wrong number of times')
+  if len(set(times_of_change))<len(times_of_change):
+    raise ValueError('repeated values in times of change')
+  return times_of_change
 
 ### GET SIM OPTIONS ######################################################################################
 def get_sim_options(sim_options_file):

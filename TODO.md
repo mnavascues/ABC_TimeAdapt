@@ -2,10 +2,13 @@
 
 ### Model
 
+- [ ] *Demography* **high** implement changes of population size in coalescent simulation
 - [ ] *Selection.* **high**
   - [ ] *Selection on standing variation.* **high**
   - [ ] *Selection on background selection.* **high**
   - [ ] *Selection on new mutation.* **low**
+- [ ] *Admixture* add a (ghost) population as a source of gene flow to focus population
+- [x] ~~*verify that number of periods in forward simulation is compatible with length of forward simulation*~~
 
 
 ### Statistics
@@ -19,21 +22,20 @@
 ### Software
 
 - [ ] *Script to pool stats and parameters into a single reference table* **high**
-  - [x] ~~*Pool summary statistics in a dataframe*~~
   - [ ] *Pool parameters and latent variables*
   - [ ] *export reference table as a file*
-- [ ] *write genome map for slim in a single file for the project*
-- [ ] *Use json files instead of ini* **low** SLiM can import parameters from json
+  - [x] ~~*Pool summary statistics in a dataframe*~~
+- [ ] *write genome map for slim in a single file for the project* to be used for all simulations
+- [ ] *Use json files instead of ini* **if** SLiM/Eidos develops a new feature to read json files, switch to json to make all scripts read parameters from the same file
 - [x] ~~*Refactor getparams from R to Python.* **low** The only R package that will be kept is rcarbon for simulating age for subfossil samples: use rpy2.~~
 - [x] ~~*Separate function to read project options from simulation options*~~
 
 ### Testing
 
-- [ ] *test that number of periods in forward simulation is compatible with length of forward simulation*
-- [ ] *Set a dataset test from bee example for integration testing* **high**
 - [ ] *Revise and move all test from timeadapt.py to test_timeadapt.py* **low**
-- [ ] *Change how pytest compare numpy arrays* **low** FROM assert (numpy_array == expected_result).all() TO assert list(numpy_array) == expected_result
-- [ ] *make pytest & rpy2 work on github workflow* currently send an error on github but tests pass in local
+- [ ] *make pytest & rpy2 work on github workflow* currently given an error on github but tests pass in local???
+- [x] ~~*Set a dataset test from bee example for integration testing* **high**~~
+- [x] ~~*Change how pytest compare numpy arrays* **low** FROM assert (numpy_array == expected_result).all() TO assert list(numpy_array) == expected_result~~
 
 ### Documentation
 
