@@ -140,7 +140,7 @@ dependencies:
   - pyflakes=2.4.0=pyhd8ed1ab_0
   - pyparsing=3.0.5=pyhd8ed1ab_0
   - pyrsistent=0.18.0=py38h497a2fe_0
-  - pyslim=0.403=pyh9f0ad1d_0
+  - pyslim=0.600=pyhd8ed1ab_0
   - pytest=6.2.5=py38h578d9bd_1
   - python=3.8.10=hb7a2778_2_cpython
   - python-dateutil=2.8.2=pyhd8ed1ab_0

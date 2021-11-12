@@ -10,7 +10,7 @@ TimeAdapt is a collection of scripts in Python and SLiM (3.6). They have been te
 conda create -n timeadapt python==3.8.10 r-base=3.6.3
 conda activate timeadapt
 pip install msprime==1.0.2
-conda install pyslim=0.403
+conda install pyslim=0.600
 conda install scikit-allel=1.3.5
 conda install dill=0.3.4
 conda install rpy2=3.4.5
