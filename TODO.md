@@ -8,6 +8,7 @@
   - [ ] *Selection on background selection.* **high**
   - [ ] *Selection on new mutation.* **low**
 - [ ] *Admixture* add a (ghost) population as a source of gene flow to focus population
+- [ ] *Age of samples for generation time lower than a year* Modify scripts/input so that organisms with a generation time lower that a year can have multiple sampling times in the same year. As it is done now the minimum possible generation time is 1 year!
 - [x] ~~*verify that number of periods in forward simulation is compatible with length of forward simulation*~~
 
 
