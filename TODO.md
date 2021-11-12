@@ -2,7 +2,6 @@
 
 ### Model
 
-- [ ] *Demography* **high** implement changes of population size in coalescent simulation
 - [ ] *Selection.* **high**
   - [ ] *Selection on standing variation.* **high**
   - [ ] *Selection on background selection.* **high**
@@ -10,6 +9,7 @@
 - [ ] *Admixture* add a (ghost) population as a source of gene flow to focus population
 - [ ] *Age of samples for generation time lower than a year* Modify scripts/input so that organisms with a generation time lower that a year can have multiple sampling times in the same year. As it is done now the minimum possible generation time is 1 year!
 - [x] ~~*verify that number of periods in forward simulation is compatible with length of forward simulation*~~
+- [x] ~~*Demography* **high** implement changes of population size in coalescent simulation~~
 
 
 ### Statistics

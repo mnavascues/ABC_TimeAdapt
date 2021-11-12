@@ -70,6 +70,7 @@ def get_project_options(proj_options_file):
   periods_forward = proj_options.getint('Model','periods_forward')
   times_of_change_forw = get_times_of_change(generations_forward,periods_forward)
   periods_coalescence = proj_options.getint('Model','periods_coalescence')
+  times_of_change_back = get_times_of_change(100000,periods_coalescence,mode="exponential")
   # Priors
   assert 'Priors' in proj_options,"Missing [Priors] section in project options file"
   gen_len_sh1 = proj_options.getfloat('Priors','gen_len_sh1')
@@ -95,6 +96,7 @@ def get_project_options(proj_options_file):
           "periods_forward":periods_forward,
           "periods_coalescence":periods_coalescence,
           "times_of_change_forw":times_of_change_forw,
+          "times_of_change_back":times_of_change_back,
           "gen_len_sh1":gen_len_sh1,
           "gen_len_sh2":gen_len_sh2,
           "gen_len_min":gen_len_min,
@@ -105,14 +107,24 @@ def get_project_options(proj_options_file):
           "mut_rate_sd":mut_rate_sd}
 
 ### GET TIMES OF CHANGE ######################################################################################
-def get_times_of_change(total_length,number_of_periods):
+def get_times_of_change(total_length,number_of_periods,mode="regular",exponent=2):
+  if number_of_periods==1: return None
   if total_length<=number_of_periods:
     raise ValueError('number of periods must be lower than length of simulation')
-  x=total_length/number_of_periods
-  times_of_change = []
-  while x<total_length-1:
-    times_of_change.append(int(x))
-    x = x + total_length/number_of_periods
+  if mode=="exponential":
+    t=total_length/((pow(exponent,number_of_periods-1)-1)/(exponent-1))
+    if t<1:
+      raise ValueError('incompatible value, try less periods or longer simulation')
+    times_of_change = [int(t)]
+    for i in range(1,number_of_periods-1):
+      times_of_change.append( times_of_change[i-1] + int(t*pow(exponent,i)) )
+  else:
+    if mode!="regular":print("Warning: wrong value for mode in get_times_of_change(); using mode='regular' instead")
+    x=total_length/number_of_periods
+    times_of_change = []
+    while x<total_length-1:
+      times_of_change.append(int(x))
+      x = x + total_length/number_of_periods
   # the next two errors should not happen if total_length>number_of_periods
   if len(times_of_change)!=number_of_periods-1:
     raise ValueError('wrong number of times')

@@ -121,25 +121,28 @@ def main():
                                                maximum=options["pop_size_max"]).astype(int)
     if options["verbose"] >=10 : print("N at present simulation: "+str(N[sim]))
     
+    backward_demography=np.flip(N[sim][0:options["periods_coalescence"]])
+    
     sim_config = configparser.ConfigParser()
     sim_config['Simulation'] = {'sim': sim+1}
     sim_config['Sample']     = {'ss':' '.join(map(str, sample_size_per_gen)),
                                 'msprime_ts':' '.join(map(str, sampling_times_msprime)),
                                 'chrono_order':' '.join(map(str, chrono_order))}
-    sim_config['Demography'] = {'N':' '.join(map(str, N[sim])),
-                                'tc':' '.join(map(str, options["times_of_change_forw"]))}
+    sim_config['Demography'] = {'N':' '.join(map(str, backward_demography))}
     sim_config['Genome']     = {'mu':u[sim],
                                 'ttratio':2.0,
-                                'seq_error':0.005} 
+                                'seq_error':0.005}
     sim_config['Seeds']      = {'seed_coal':seed_coal,
                                 'seed_mut':seed_mut}
     with open(batch_dir+'/sim_'+str(sim+1)+'.ini', 'w') as msprime_config_file:
       sim_config.write(msprime_config_file)
 
+    forward_demography = N[sim][total_number_of_periods-options["periods_forward"]:total_number_of_periods]
+
     with open(batch_dir+'/sim_'+str(sim+1)+'.eidos', 'w') as slim_config_file:
       slim_config_file.write('setSeed(' + str(seed_forw) + ');\n')
       slim_config_file.write('defineConstant("L",' + str(genome_info["L"]) + ');\n')
-      slim_config_file.write('defineConstant("N",c(' + str(','.join(map(str, N[sim][len(N[sim])-options["periods_forward"]:len(N[sim])])) ) + '));\n')
+      slim_config_file.write('defineConstant("N",c(' + str(','.join(map(str, forward_demography)) ) + '));\n')
       slim_config_file.write('defineConstant("tc",c(' + str(','.join(map(str, options["times_of_change_forw"])) ) + '));\n')
       slim_config_file.write('defineConstant("ts",c(' + str(','.join(map(str, sampling_times_slim ))) + '));\n')
       slim_config_file.write('defineConstant("ss",c(' + str(','.join(map(str, reversed(sample_size_per_gen) ))) + '));\n')

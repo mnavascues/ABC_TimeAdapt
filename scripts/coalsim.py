@@ -33,12 +33,20 @@ def main():
   genome_info = timeadapt.get_genome_info(options["genome_file"])
   rate_map = msprime.RateMap(position = genome_info["msprime_r_map"]["positions"],
                              rate = genome_info["msprime_r_map"]["rates"]) 
-
+  # get demography
+  demography = msprime.Demography()
+  demography.add_population(name="focal", initial_size=options["N"][0])
+  for i in range(0,len(options["times_of_change_back"])):
+    demography.add_population_parameters_change(time         = options["times_of_change_back"][i],
+                                                initial_size = options["N"][i+1],
+                                                growth_rate  = None,
+                                                population   = "focal")
+  
   # simulate with msprime
   # https://tskit.dev/msprime/docs/latest/intro.html
   msp_ts = msprime.sim_ancestry(samples            = options["N"][0],
-                                population_size    = options["N"][0],
-                                model              = "dtwf",
+                                demography         = demography,
+                                model              = "dtwf", # because sample size = pop size
                                 recombination_rate = rate_map,
                                 random_seed        = options["seed_coal"])
 
