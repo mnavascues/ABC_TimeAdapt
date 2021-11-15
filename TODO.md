@@ -2,6 +2,7 @@
 
 ### Model
 
+- [ ] *Verify calculation of Ne (latent variable) in SLiM* Is it using the right number of generations?
 - [ ] *Selection.* **high**
   - [ ] *Selection on standing variation.* **high**
   - [ ] *Selection on background selection.* **high**

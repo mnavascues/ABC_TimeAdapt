@@ -19,6 +19,7 @@ import os
 import configparser  # for writing ini files
 import numpy as np
 import pandas as pd
+import dill
 import scipy.stats as st
 from datetime import date
 import timeadapt
@@ -55,6 +56,15 @@ def main():
   with open(project_dir+'/recombination_map.eidos', 'w') as rec_map_file:
     rec_map_file.write('defineConstant("ends",c(' + str(','.join(map(str, genome_info["slim_r_map"]["positions"] ))) + '));\n')
     rec_map_file.write('defineConstant("rates",c(' + str(','.join(map(str, genome_info["slim_r_map"]["rates"] ))) + '));\n')
+
+  # create latent variable file with headers
+  latent_variables_file = batch_dir+"/latent_variables.txt"
+  header = "sim"
+  for i in range(0,options["periods_forward"]):
+    header = header + " Ne_" + str(i)
+  header = header+'\n'
+  with open(batch_dir+"/latent_variables.txt", 'w') as latent_variables_file:
+    latent_variables_file.write(header)
 
   # number of generations to simulate in forward (in SLiM)
   if options["verbose"] >=10 : print("generations_forward:"+str(options["generations_forward"]))
@@ -157,15 +167,15 @@ def main():
       slim_config_file.write('defineConstant("batch",' + str(options["batch"]) + ');\n')
       slim_config_file.write('defineConstant("project","' + str(options["project"]) + '");\n')
       slim_config_file.write('source("'+project_dir+'/recombination_map.eidos");\n')
-      
-      
-      #slim_config_file.write('defineConstant("ends",c(' + str(','.join(map(str, genome_info["slim_r_map"]["positions"] ))) + '));\n')
-      #slim_config_file.write('defineConstant("rates",c(' + str(','.join(map(str, genome_info["slim_r_map"]["rates"] ))) + '));\n')
 
-  params = pd.DataFrame(N,columns=["N"+str(x) for x in range(0,total_number_of_periods)])
-  params = params.assign(u=u)
-  params = params.assign(generation_length=gen_len)
-  if options["verbose"] >=10 : print(params)
+  # export reference table: parameters
+  ref_table_params = pd.DataFrame(data    = N,
+                                  index   = range(1,options["num_of_sims"]+1),
+                                  columns = ["N"+str(x) for x in range(0,total_number_of_periods)])
+  ref_table_params = ref_table_params.assign(u=u)
+  ref_table_params = ref_table_params.assign(generation_length=gen_len)
+  if options["verbose"] >=0 : print(ref_table_params)
+  dill.dump(ref_table_params, file = open("results/" + options["project"] + "/" + options["batch"] + "/ref_table_params.pkl", "wb"))
 
 ############################################################################################################
 if __name__ == "__main__":

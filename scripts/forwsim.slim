@@ -138,6 +138,6 @@ s5 999999 late() {
 	if (verbose >= 100) catn(N);
 	if (verbose >= 100) catn("Ne:");
 	if (verbose >= 100) catn(Ne);
-	writeFile(filePath="results/"+project+"/"+batch+"/Ne.txt", contents=paste(i+" "+paste(Ne)), append=T);
+	writeFile(filePath="results/"+project+"/"+batch+"/latent_variables.txt", contents=paste(i+" "+paste(Ne)), append=T);
 	sim.simulationFinished();
 }

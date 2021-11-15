@@ -27,16 +27,28 @@ def main():
   # print program name
   timeadapt.print_info(sys.argv[0],options["verbose"],batch=options["batch"])
   
-  reference_table = pd.DataFrame()
-    
+  # read latent variables file
+  latent_variables_file = "results/"+options["project"]+"/"+options["batch"]+"/latent_variables.txt"
+  ref_table_latent_variables = pd.read_table(filepath_or_buffer=latent_variables_file, index_col="sim", sep=r'\s+')
+  if options["verbose"] >=10 : print(ref_table_latent_variables)    
+  ref_table_latent_variables = ref_table_latent_variables.sort_index(axis=0,ascending=True)
+  if options["verbose"] >=0 : print(ref_table_latent_variables)    
+ 
+  
+  ref_table_sumstats  = pd.DataFrame()
+
   for sim in sims:
     if options["verbose"] >=0 : print("simulation "+str(sim))
-    sumstats_sim = dill.load(file = open("results/"+options["project"]+"/"+options["batch"]+"/sumstats_"+str(sim)+".pkl", "rb"))
+    sumstats_file = "results/"+options["project"]+"/"+options["batch"]+"/sumstats_"+str(sim)+".pkl"
+    sumstats_sim = dill.load(file = open(sumstats_file, "rb"))
     if options["verbose"] >=100 : print(sumstats_sim)
     if options["verbose"] >=100 : print(pd.DataFrame(sumstats_sim,index=[sim]))
-    reference_table = reference_table.append(pd.DataFrame(sumstats_sim,index=[sim]))
-
-  if options["verbose"] >=0 : print(reference_table)    
+    ref_table_sumstats = ref_table_sumstats.append(pd.DataFrame(sumstats_sim,index=[sim]))
+  
+  dill.dump(ref_table_sumstats, file = open("results/" + options["project"] + "/" + options["batch"] + "/ref_table_sumstats.pkl", "wb"))
+  dill.dump(ref_table_latent_variables, file = open("results/" + options["project"] + "/" + options["batch"] + "/ref_table_latent_variables.pkl", "wb"))
+  
+  if options["verbose"] >=0 : print(ref_table_sumstats)    
     
 
 ############################################################################################################
