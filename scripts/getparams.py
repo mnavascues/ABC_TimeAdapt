@@ -51,6 +51,11 @@ def main():
   sample = timeadapt.read_sample_info(sample_info_file=options["sample_file"])
   genome_info = timeadapt.get_genome_info(options["genome_file"])
 
+  # create Eidos file with SLiM recombination map
+  with open(project_dir+'/recombination_map.eidos', 'w') as rec_map_file:
+    rec_map_file.write('defineConstant("ends",c(' + str(','.join(map(str, genome_info["slim_r_map"]["positions"] ))) + '));\n')
+    rec_map_file.write('defineConstant("rates",c(' + str(','.join(map(str, genome_info["slim_r_map"]["rates"] ))) + '));\n')
+
   # number of generations to simulate in forward (in SLiM)
   if options["verbose"] >=10 : print("generations_forward:"+str(options["generations_forward"]))
   if options["verbose"] >=10 : print("times_of_change_forw:"+str(options["times_of_change_forw"]))
@@ -104,17 +109,17 @@ def main():
     seed_coal = np.random.randint(1, 2**32-1)
     seed_forw = np.random.randint(1, 2**32-1)
     seed_mut  = np.random.randint(1, 2**32-1)
-    if options["verbose"] >=0 : print("seeds: "+str(seed_coal)+" -- "+str(seed_forw)+" -- "+str(seed_mut))
+    if options["verbose"] >=10 : print("seeds: "+str(seed_coal)+" -- "+str(seed_forw)+" -- "+str(seed_mut))
     # sample ages in generations
     sample_ages = timeadapt.get_sample_ages(sample,age_pdf,gen_len[sim])
     sampling_times_slim = sorted([options["generations_forward"]-age for age in set(sample_ages)])
     sampling_times_msprime = sorted(set(sample_ages))
-    if options["verbose"] >=0 : print("sample_ages: "+str(sample_ages))
+    if options["verbose"] >=10 : print("sample_ages: "+str(sample_ages))
     # get chronological order of samples and sample size per generation
     chrono_order = sorted(range(len(sample_ages)), key=lambda k: sample_ages[k])
-    if options["verbose"] >=0 : print("chrono_order: "+str(chrono_order))
+    if options["verbose"] >=10 : print("chrono_order: "+str(chrono_order))
     sample_size_per_gen = [sample_ages.count(age) for age in sorted(set(sample_ages))]
-    if options["verbose"] >=0 : print("sample_size_per_gen: "+str(sample_size_per_gen))
+    if options["verbose"] >=10 : print("sample_size_per_gen: "+str(sample_size_per_gen))
     # sample effective population size
     N[sim] = timeadapt.sample_param_trajectory(times=total_number_of_periods,
                                                minimum=options["pop_size_min"],
@@ -151,8 +156,11 @@ def main():
       slim_config_file.write('defineConstant("i",' + str(sim+1) + ');\n')
       slim_config_file.write('defineConstant("batch",' + str(options["batch"]) + ');\n')
       slim_config_file.write('defineConstant("project","' + str(options["project"]) + '");\n')
-      slim_config_file.write('defineConstant("ends",c(' + str(','.join(map(str, genome_info["slim_r_map"]["positions"] ))) + '));\n')
-      slim_config_file.write('defineConstant("rates",c(' + str(','.join(map(str, genome_info["slim_r_map"]["rates"] ))) + '));\n')
+      slim_config_file.write('source("'+project_dir+'/recombination_map.eidos");\n')
+      
+      
+      #slim_config_file.write('defineConstant("ends",c(' + str(','.join(map(str, genome_info["slim_r_map"]["positions"] ))) + '));\n')
+      #slim_config_file.write('defineConstant("rates",c(' + str(','.join(map(str, genome_info["slim_r_map"]["rates"] ))) + '));\n')
 
   params = pd.DataFrame(N,columns=["N"+str(x) for x in range(0,total_number_of_periods)])
   params = params.assign(u=u)
