@@ -1,11 +1,20 @@
 import configparser
 
-# READ OPTIONS FILE
+# check if user specified a config file in command line (normal behaviour except for tests)
 try:
   config["options_file"]
 except:
   config["options_file"] = 'tests/config_project.ini'
 options_file = config["options_file"]
+
+# check if user specified a python path in command line (necessary in -some?- clusters)
+try:
+  config["python_path"]
+except:
+  config["python_path"] = 'python'
+python_path  = config["python_path"]
+
+# READ OPTIONS FILE
 options      = configparser.ConfigParser()
 options.read(options_file)
 
@@ -38,7 +47,7 @@ rule reftable:
     resources:
         runtime_min=10
     shell:
-        'python {input.script} {options_file}'
+        '{python_path} {input.script} {options_file}'
 
 # simulation of mutations with msprime
 rule mutsim:
@@ -51,7 +60,7 @@ rule mutsim:
     resources:
         runtime_min=30
     shell:
-        'python {input.script} {options_file} {input.sim_ini}'
+        '{python_path} {input.script} {options_file} {input.sim_ini}'
 
 
 # simulation with SLiM
@@ -77,7 +86,7 @@ rule coalsim:
     resources:
         runtime_min=120
     shell:
-        'python {input.script} {options_file} {input.sim_ini}'
+        '{python_path} {input.script} {options_file} {input.sim_ini}'
 
 # read parameters and sample from priors
 rule getparams:
@@ -89,7 +98,7 @@ rule getparams:
     resources:
         runtime_min=10
     shell:
-        'python {input.script} {options_file}'
+        '{python_path} {input.script} {options_file}'
 
 # delete all files in batch directory
 rule clean_batch:
