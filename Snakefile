@@ -34,7 +34,7 @@ rule sim:
     input:
         ref_table_file = expand('results/{p}/{b}/reftable.pkl',p=project,b=batch)
     resources:
-        runtime_min=10
+        time_min=10
 
 # pool stats and params in a single reference table
 rule reftable:
@@ -45,7 +45,7 @@ rule reftable:
     output:
         # ref_table_file = expand('results/{p}/{b}/reftable.pkl',p=project,b=batch)
     resources:
-        runtime_min=10
+        time_min=10
     shell:
         '{python_path} {input.script} {options_file}'
 
@@ -58,7 +58,7 @@ rule mutsim:
     output:
         sumstats_files = 'results/{p}/{b}/sumstats_{s}.pkl'
     resources:
-        runtime_min=30
+        time_min=30
     shell:
         '{python_path} {input.script} {options_file} {input.sim_ini}'
 
@@ -72,7 +72,7 @@ rule forwsim:
     output:
         forwsim_trees='results/{p}/{b}/forwsim_{s}.trees'
     resources:
-        runtime_min=30
+        time_min=30
     shell:
         'slim -l 0 -d "option_file=\'{input.slim_options}\'" {input.script}'
 
@@ -84,7 +84,7 @@ rule coalsim:
     output:
         coalsim_trees='results/{p}/{b}/coalsim_{s}.trees'
     resources:
-        runtime_min=120
+        time_min=120
     shell:
         '{python_path} {input.script} {options_file} {input.sim_ini}'
 
@@ -96,7 +96,7 @@ rule getparams:
         slim_options=expand('results/{p}/{b}/sim_{s}.eidos',p=project,b=batch,s=sims),
         sim_ini=expand('results/{p}/{b}/sim_{s}.ini',p=project,b=batch,s=sims) 
     resources:
-        runtime_min=10
+        time_min=10
     shell:
         '{python_path} {input.script} {options_file}'
 
