@@ -1,19 +1,12 @@
 .R*
 .idea/
 results/
-intermediate_files/
 */__pycache__/
 scripts/__pycache__/
-misc_code/Old/__pycache__/
-misc_code/previous_version/python/__pycache__/
-data/hapmap
-data/hapmap/*
+misc_code/
 .Rproj.user
-src/Old/*
-data/Old/*
-README.html
+data/
 .snakemake/
-timeadaptenv.yml
 TimeAdapt.Rproj
 dag.svg
 test*.sh
@@ -21,4 +14,4 @@ timeadapt.tar.gz
 slurm/*
 run_on_UPPMAX.txt
 venv/*
-TODO.html
+*.html
