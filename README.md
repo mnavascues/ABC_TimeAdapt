@@ -20,7 +20,7 @@ conda install flake8
 conda env export > timeadapt.yml
 ```
 
-Creation of the environment via yml file:
+Create the environment via yml file:
 ```shell
 conda env create -f timeadapt.yml
 ```
@@ -40,7 +40,6 @@ Input files:
 To run different parts of the analysis with snakemake :
 
 ```shell
-conda activate timeadapt
 snakemake rule -C options_file='path/to/your/config_file.ini'
 ```
 
@@ -49,7 +48,6 @@ Where `rule` is one of the rules defines in the snakefile. For instance, running
 Before running your analysis is highly recommended to performs some tests. Unit tests (using pytest) can be run using:
 
 ```shell
-conda activate timeadapt
 snakemake test
 ```
 (no need to activate Conda environment if it is already activated. Also, no need to specify config file for unit tests)
@@ -57,15 +55,13 @@ snakemake test
 You can get directed acyclic graph of pipeline:
 
 ```shell
-conda activate timeadapt
 snakemake reftable -C options_file='path/to/your/config_file.ini'
-snakemake --dag | dot -Tsvg > results/workflow_dag.svg
+snakemake --dag -C options_file='path/to/your/config_file.ini | dot -Tsvg > workflow_dag.svg
 ```
 
 You can remove all files (all projects, all batches) from your results folder, or remove results from your project (all batches) or to remove files from a single batch:
 
 ```shell
-snakemake clean_batch -C options_file='path/to/your/config_file.ini'
 snakemake clean_project -C options_file='path/to/your/config_file.ini'
 snakemake clean
 ```
