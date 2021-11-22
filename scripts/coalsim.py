@@ -27,7 +27,7 @@ def main():
   options = timeadapt.get_options(proj_options_file = sys.argv[1], sim_options_file = sys.argv[2])
 
   # print program name
-  timeadapt.print_info(sys.argv[0],options["verbose"],sim=options["sim"])
+  timeadapt.print_info(sys.argv[0],options["verbose"],batch=options["batch"],sim=options["sim"])
   
   # get recombination map:
   genome_info = timeadapt.get_genome_info(options["genome_file"])

@@ -30,15 +30,18 @@ import rpy2.robjects as robjects
 rcarbon = importr("rcarbon")
 
 ### PRINT INFO ######################################################################################
-def print_info(script_name,verbose,batch=None,sim=None):
+def print_info(script_name,verbose,project=None,batch=None,sim=None):
   if verbose >=1 :
     print("#########################################")
   if verbose >=0 :
-    if sim is not None :
-      batch=None
-      print("TimeAdapt - %s - simulation %s" %(script_name,sim) )
-    elif batch is not None :
-      print("TimeAdapt - %s - batch %s" %(script_name,batch) )
+    if batch is not None:
+      project = None
+      if sim is None :
+        print("TimeAdapt - %s - batch %s" %(script_name,batch) )
+      else : 
+        print("TimeAdapt - %s - batch %s - simulation %s" %(script_name,batch,sim) )
+    elif project is not None:
+      print("TimeAdapt - %s - project %s" %(script_name,project) )
     else :
       print("TimeAdapt - %s" %script_name )
   if verbose >=1 :
@@ -54,16 +57,16 @@ def get_project_options(proj_options_file):
   # Settings
   assert 'Settings' in proj_options,"Missing [Settings] section in file"
   assert 'project' in proj_options['Settings'],"Missing 'project' parameter in file"
-  project      = proj_options.get('Settings','project')
-  batch        = proj_options.get('Settings','batch')
+  project        = proj_options.get('Settings','project')
+  num_of_batches = proj_options.getint('Settings','num_of_batches')
   try:
-    verbose    = proj_options.getint('Settings','verbose')
+    verbose      = proj_options.getint('Settings','verbose')
   except:
-    verbose    = int(proj_options.getfloat('Settings','verbose'))
-  genome_file  = proj_options.get('Settings','genome_file')
-  sample_file  = proj_options.get('Settings','sample_file')
-  num_of_sims  = proj_options.getint('Settings','num_of_sims')
-  seed         = proj_options.getint('Settings','seed')
+    verbose      = int(proj_options.getfloat('Settings','verbose'))
+  genome_file    = proj_options.get('Settings','genome_file')
+  sample_file    = proj_options.get('Settings','sample_file')
+  num_of_sims    = proj_options.getint('Settings','num_of_sims')
+  seed           = proj_options.getint('Settings','seed')
   # Model
   assert 'Model' in proj_options,"Missing [Model] section in project options file"
   generations_forward = proj_options.getint('Model','generations_forward')
@@ -86,7 +89,7 @@ def get_project_options(proj_options_file):
   # Statistics
   # TODO
   return {"project":project,
-          "batch":batch,
+          "num_of_batches":num_of_batches,
           "genome_file":genome_file, 
           "sample_file":sample_file, 
           "verbose":verbose,
@@ -137,6 +140,7 @@ def get_sim_options(sim_options_file):
   sim_options = configparser.ConfigParser()
   sim_options.read(sim_options_file)
   sim          = sim_options.get('Simulation','sim')
+  batch        = sim_options.get('Simulation','batch')
   ss           = [int(i) for i in sim_options.get("Sample","ss").split()]
   chrono_order = [int(i) for i in sim_options.get("Sample","chrono_order").split()]
   assert sum(ss)==len(chrono_order), "Verify number of samples, inconsistent sample size across simulation options file"
@@ -151,6 +155,7 @@ def get_sim_options(sim_options_file):
   seed_mut     = sim_options.getint('Seeds','seed_mut')
 
   return {"sim":sim,
+          "batch":batch,
           "ss":ss, 
           "chrono_order":chrono_order, 
           "N":N, 

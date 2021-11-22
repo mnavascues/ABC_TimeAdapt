@@ -29,7 +29,7 @@ with open(temp_config_file_1, 'w') as f:
   f.write("[Settings]\n")
   f.write("verbose = 0\n")
   f.write("project = test\n")
-  f.write("batch = 1\n")
+  f.write("num_of_batches = 3\n")
   f.write("sample_file = data/sample.txt\n")
   f.write("genome_file = data/genome.txt\n")
   f.write("num_of_sims = 10000\n")
@@ -53,7 +53,7 @@ with open(temp_config_file_2, 'w') as f:
   f.write("[Settings]\n")
   f.write("verbose = 1.2\n")
   f.write("project = test\n")
-  f.write("batch = 1\n")
+  f.write("num_of_batches = 2\n")
   f.write("sample_file = data/sample.txt\n")
   f.write("genome_file = data/genome.txt\n")
   f.write("num_of_sims = 10\n")
@@ -76,6 +76,7 @@ _, temp_sim_file_1 = tempfile.mkstemp()
 with open(temp_sim_file_1, 'w') as f:
   f.write("[Simulation]\n")
   f.write("sim=1\n")
+  f.write("batch=2\n")
   f.write("[Sample]\n")
   f.write("ss=4 1 1 1 1 1 1 1 1 1 1 1 1 1\n")
   f.write("chrono_order=0 1 2 3 10 9 4 8 6 5 7 12 13 16 11 15 14\n")
@@ -89,19 +90,21 @@ with open(temp_sim_file_1, 'w') as f:
   f.write("seed_coal=106\n")
   f.write("seed_mut=408\n")
 
-result_config_1 = {"project":"test", "batch":"1", "sim":"1",
+result_config_1 = {"project":"test", "num_of_batches":3, 
                    "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
                    "verbose":0, "num_of_sims":10000, "seed":1234567,
                    "generations_forward":400,"times_of_change_forw":[50,100,150,200,250,300,350],
                    "gen_len_sh1":1,"gen_len_sh2":1,"gen_len_min":29,"gen_len_max":30,
                    "pop_size_min":2,"pop_size_max":2000}
-result_config_2 = {"project":"test", "batch":"1", "sim":"1",
+result_config_2 = {"project":"test", "num_of_batches":2, 
                    "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
                    "verbose":1, "num_of_sims":10, "seed":987654,
                    "generations_forward":100,"times_of_change_forw":[33,66],
                    "gen_len_sh1":1.5,"gen_len_sh2":2,"gen_len_min":20,"gen_len_max":30,
                    "pop_size_min":20,"pop_size_max":200000}
-result_sim_1 = {"ss":[4,1,1,1,1,1,1,1,1,1,1,1,1,1],
+result_sim_1 = {"sim":"1",
+                "batch":"2",
+                "ss":[4,1,1,1,1,1,1,1,1,1,1,1,1,1],
                 "chrono_order":[0,1,2,3,10,9,4,8,6,5,7,12,13,16,11,15,14],
                 "N":[11,85,200,200,200,37,10,30,71],
                 "mu":8.6106e-08,
@@ -123,6 +126,8 @@ def test_get_options(temp_config_file,temp_sim_file,expected_result):
   assert options["project"] == expected_result["project"]
   assert type(options["batch"]) is str
   assert options["batch"] == expected_result["batch"]
+  assert type(options["num_of_batches"]) is int
+  assert options["num_of_batches"] == expected_result["num_of_batches"]
   assert type(options["verbose"]) is int
   assert options["verbose"] ==  expected_result["verbose"]
   assert type(options["genome_file"]) is str

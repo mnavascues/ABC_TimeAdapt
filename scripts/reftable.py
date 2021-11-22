@@ -22,34 +22,34 @@ import timeadapt
 def main():
   # get options for project and simulation:
   options = timeadapt.get_project_options(proj_options_file = sys.argv[1])
-  sims        = range(1,options["num_of_sims"]+1)
+  sims    = range(1,options["num_of_sims"]+1)
+  batch   = sys.argv[2]
 
   # print program name
-  timeadapt.print_info(sys.argv[0],options["verbose"],batch=options["batch"])
+  timeadapt.print_info(sys.argv[0],options["verbose"],batch=batch)
   
   # read latent variables file
-  latent_variables_file = "results/"+options["project"]+"/"+options["batch"]+"/latent_variables.txt"
+  latent_variables_file = "results/"+options["project"]+"/"+str(batch)+"/latent_variables.txt"
   ref_table_latent_variables = pd.read_table(filepath_or_buffer=latent_variables_file, index_col="sim", sep=r'\s+')
   if options["verbose"] >=10 : print(ref_table_latent_variables)    
   ref_table_latent_variables = ref_table_latent_variables.sort_index(axis=0,ascending=True)
   if options["verbose"] >=0 : print(ref_table_latent_variables)    
- 
-  
+
   ref_table_sumstats  = pd.DataFrame()
 
   for sim in sims:
     if options["verbose"] >=0 : print("simulation "+str(sim))
-    sumstats_file = "results/"+options["project"]+"/"+options["batch"]+"/sumstats_"+str(sim)+".pkl"
+    sumstats_file = "results/"+options["project"]+"/"+str(batch)+"/sumstats_"+str(sim)+".pkl"
     sumstats_sim = dill.load(file = open(sumstats_file, "rb"))
     if options["verbose"] >=100 : print(sumstats_sim)
     if options["verbose"] >=100 : print(pd.DataFrame(sumstats_sim,index=[sim]))
     ref_table_sumstats = ref_table_sumstats.append(pd.DataFrame(sumstats_sim,index=[sim]))
-  
-  dill.dump(ref_table_sumstats, file = open("results/" + options["project"] + "/" + options["batch"] + "/ref_table_sumstats.pkl", "wb"))
-  dill.dump(ref_table_latent_variables, file = open("results/" + options["project"] + "/" + options["batch"] + "/ref_table_latent_variables.pkl", "wb"))
-  
+
+  dill.dump(ref_table_sumstats, file = open("results/" + options["project"] + "/" + str(batch) + "/ref_table_sumstats.pkl", "wb"))
+  dill.dump(ref_table_latent_variables, file = open("results/" + options["project"] + "/" + str(batch) + "/ref_table_latent_variables.pkl", "wb"))
+
   if options["verbose"] >=0 : print(ref_table_sumstats)    
-    
+  
 
 ############################################################################################################
 if __name__ == "__main__":
