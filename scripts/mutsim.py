@@ -85,10 +85,12 @@ def main():
   treesq = pyslim.load("results/"+options["project"]+"/"+options["batch"]+"/forwsim_"+options["sim"]+".trees")
 
   # Simulate neutral mutation over the tree sequence
+  test_seed = np.random.randint(1, 2**32-1)
+  print("SEED: " + str(test_seed) )
   mut_treesq = msprime.sim_mutations(treesq,
                                      rate = options["mu"],
-                                     random_seed = np.random.randint(1, 2**32-1))
-  if options["verbose"]>=100 : print("Number of mutations " + str(mut_treesq.num_mutations))
+                                     random_seed = test_seed)
+  if options["verbose"]>=0 : print("Number of mutations " + str(mut_treesq.num_mutations))
   if options["verbose"]>=100 : print("Number of sites " + str(mut_treesq.num_sites))
 
 

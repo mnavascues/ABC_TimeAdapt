@@ -18,6 +18,7 @@ import sys
 import os
 import configparser  # for writing ini files
 import numpy as np
+import random
 import pandas as pd
 import dill
 import scipy.stats as st
@@ -34,8 +35,9 @@ def main():
   timeadapt.print_info(sys.argv[0],options["verbose"],batch=batch)
 
   # set seed for RNG
-  np.random.seed(options["seed"])
-  
+  np.random.seed(int(sys.argv[3]))
+  random.seed(np.random.randint(1, 2**32-1)) # necessary for replicable sampling of ages
+
   # create results directory and project/batch subdirectories
   try : os.mkdir("results")
   except FileExistsError : 
@@ -92,13 +94,13 @@ def main():
   total_number_of_periods = options["periods_forward"] + options["periods_coalescence"]
 
   # create latent variable file with headers
-  latent_variables_file = batch_dir+"/latent_variables.txt"
-  header = "sim"
-  for i in range(0,options["periods_forward"]):
-    header = header + " Ne_" + str(i)
-  header = header+'\n'
-  with open(batch_dir+"/latent_variables.txt", 'w') as latent_variables_file:
-    latent_variables_file.write(header)
+  #latent_variables_file = batch_dir+"/latent_variables.txt"
+  #header = "sim"
+  #for i in range(0,options["periods_forward"]):
+  #  header = header + " Ne_" + str(i)
+  #header = header+'\n'
+  #with open(batch_dir+"/latent_variables.txt", 'w') as latent_variables_file:
+  #  latent_variables_file.write(header)
 
   ###### SAMPLE FROM PRIORS ############################
   # sample generation length (generation time)

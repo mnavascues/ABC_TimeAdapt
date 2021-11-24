@@ -29,16 +29,21 @@ def main():
   timeadapt.print_info(sys.argv[0],options["verbose"],batch=batch)
   
   # read latent variables file
-  latent_variables_file = "results/"+options["project"]+"/"+str(batch)+"/latent_variables.txt"
-  ref_table_latent_variables = pd.read_table(filepath_or_buffer=latent_variables_file, index_col="sim", sep=r'\s+')
-  if options["verbose"] >=10 : print(ref_table_latent_variables)    
-  ref_table_latent_variables = ref_table_latent_variables.sort_index(axis=0,ascending=True)
-  if options["verbose"] >=0 : print(ref_table_latent_variables)    
+  #latent_variables_file = "results/"+options["project"]+"/"+str(batch)+"/latent_variables.txt"
+  #ref_table_latent_variables = pd.read_table(filepath_or_buffer=latent_variables_file, index_col="sim", sep=r'\s+')
+  #if options["verbose"] >=10 : print(ref_table_latent_variables)    
+  #ref_table_latent_variables = ref_table_latent_variables.sort_index(axis=0,ascending=True)
+  #if options["verbose"] >=0 : print(ref_table_latent_variables)    
 
-  ref_table_sumstats  = pd.DataFrame()
+  ref_table_sumstats         = pd.DataFrame()
+  ref_table_latent_variables = pd.DataFrame()
 
   for sim in sims:
     if options["verbose"] >=0 : print("simulation "+str(sim))
+    latent_variables_file = "results/"+options["project"]+"/"+str(batch)+"/latent_variables_"+str(sim)+".txt"
+    latent_variables_sim = pd.read_table(filepath_or_buffer=latent_variables_file, index_col="sim", sep=r'\s+')
+    ref_table_latent_variables = ref_table_latent_variables.append(latent_variables_sim)
+
     sumstats_file = "results/"+options["project"]+"/"+str(batch)+"/sumstats_"+str(sim)+".pkl"
     sumstats_sim = dill.load(file = open(sumstats_file, "rb"))
     if options["verbose"] >=100 : print(sumstats_sim)
@@ -49,6 +54,7 @@ def main():
   dill.dump(ref_table_latent_variables, file = open("results/" + options["project"] + "/" + str(batch) + "/ref_table_latent_variables.pkl", "wb"))
 
   if options["verbose"] >=0 : print(ref_table_sumstats)    
+  if options["verbose"] >=0 : print(ref_table_latent_variables)    
   
 
 ############################################################################################################

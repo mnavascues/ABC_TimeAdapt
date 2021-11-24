@@ -1,10 +1,10 @@
 ## TimeAdapt
 
-TimeAdapt makes (i.e. will eventually make) a joint inference of demography and selection from longitudinal population genomic data. The inference is based on approximate Bayesian computation via random forest. It takes whole genome data and information about the ages of samples to perform simulations (using SLiM + pyslim/msprime).
+TimeAdapt makes (*will eventually make*) a joint inference of demography and selection from longitudinal population genomic data. The inference is based on approximate Bayesian computation via random forest. It takes whole genome data and information about the ages of samples to perform simulations (using SLiM + pyslim/msprime).
 
 ### Requirements
 
-TimeAdapt is a collection of scripts in Python and SLiM (3.6). They have been tested in an Ubuntu (20.04) machine using a conda environment and using a snakemake workflow to run them. The conda environment was created with the following commands (on 12.Nov.2021):
+TimeAdapt is a collection of scripts in Python and SLiM (3.6). They have been tested in an Ubuntu (20.04) machine using a Conda environment and using a Snakemake workflow to run them. The Conda environment was created with the following commands (on 12.Nov.2021):
 
 ```shell
 conda create -n timeadapt python==3.8.10 r-base=3.6.3
@@ -42,24 +42,15 @@ To run different parts of the analysis with snakemake :
 ```shell
 snakemake rule -C options_file='path/to/your/config_file.ini'
 ```
+Where `rule` is one of the rules defines in the snakefile. For instance, running `snakemake reftable -C options_file='tests/config_project.ini'` will create small reference table using parameters in file `tests/config_project.ini`. Typically the user will use rule `reftable` to run simulations and create the reference table (parameters, summary statistics and latent variables), `afforestation` to grow random forests and ...
 
-Where `rule` is one of the rules defines in the snakefile. For instance, running `snakemake reftable -C options_file='tests/config_project.ini'` will create small reference table using parameters in file `tests/config_project.ini`.
+Before running your analysis is highly recommended to performs some tests. Unit tests (using pytest) can be run using `snakemake test`.
 
-Before running your analysis is highly recommended to performs some tests. Unit tests (using pytest) can be run using:
+![Directed acyclic graph for the workflow using the test project configuration (`snakemake --dag | dot -Tsvg > workflow_dag.svg`)](workflow_dag.svg)
 
-```shell
-snakemake test
-```
-(no need to activate Conda environment if it is already activated. Also, no need to specify config file for unit tests)
+#### Cleaning old files
 
-You can get directed acyclic graph of pipeline:
-
-```shell
-snakemake reftable -C options_file='path/to/your/config_file.ini'
-snakemake --dag -C options_file='path/to/your/config_file.ini | dot -Tsvg > workflow_dag.svg
-```
-
-You can remove all files (all projects, all batches) from your results folder, or remove results from your project (all batches) or to remove files from a single batch:
+You can remove all files (from a specific project or from all projects) from your results folder:
 
 ```shell
 snakemake clean_project -C options_file='path/to/your/config_file.ini'
@@ -141,7 +132,7 @@ mut_rate_prior_sd = 0.5
 
 ### How to cite TimeAdapt
 
-TimeAdapt implements the method described by Pavinato et al. (2020). The code puts together several tools that should be acknowledged when using TimeAdapt: SLiM, pyslim, msprime (TODO: add full citation for these)
+TimeAdapt implements the method described by Pavinato *et al.* (2020) with some modifications. The code puts together several tools that should be acknowledged when using TimeAdapt: SLiM, pyslim, msprime (TODO: add full citation for these)
 
 
 ### Funding

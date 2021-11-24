@@ -132,12 +132,17 @@ s4 999999 late() {
 s5 999999 late() {
 	sim.treeSeqOutput(path="results/"+project+"/"+batch+"/forwsim_"+i+".trees");
   lenght_periods = c(tc,ts[na])-c(2,tc);
-  //catn(lenght_periods);
+  if (verbose >= 100) catn(lenght_periods);
 	Ne = lenght_periods/sim.getValue("sum_prob_coal")/2;
 	if (verbose >= 100) catn("N:");
 	if (verbose >= 100) catn(N);
 	if (verbose >= 100) catn("Ne:");
 	if (verbose >= 100) catn(Ne);
-	writeFile(filePath="results/"+project+"/"+batch+"/latent_variables.txt", contents=paste(i+" "+paste(Ne)), append=T);
+	header="sim";
+	for (p in 1:np){
+	  header = paste(header,paste0("Ne",p));
+	}
+	writeFile(filePath="results/"+project+"/"+batch+"/latent_variables_"+i+".txt", contents=header, append=F);
+	writeFile(filePath="results/"+project+"/"+batch+"/latent_variables_"+i+".txt", contents=paste(i+" "+paste(Ne)), append=T);
 	sim.simulationFinished();
 }

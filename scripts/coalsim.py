@@ -19,9 +19,6 @@ import msprime
 import pyslim
 import timeadapt
 
-## how to run:
-#  python scripts/coalsim.py tests/input/config_project.ini tests/input/sim_1.ini
-
 def main():
   # get options for project and simulation:
   options = timeadapt.get_options(proj_options_file = sys.argv[1], sim_options_file = sys.argv[2])

@@ -16,6 +16,7 @@
 #
 
 import configparser
+import numpy as np
 
 # check if user specified a config file in command line (normal behaviour except for tests)
 try:
@@ -43,7 +44,9 @@ num_of_sims    = options.getint('Settings','num_of_sims')
 sims           = range(1,num_of_sims+1)
 sample_file    = options.get('Settings','sample_file')
 genome_file    = options.get('Settings','genome_file')
-seed           = options.get('Settings','seed')
+seed           = options.getint('Settings','seed')
+np.random.seed(seed)
+seeds = np.random.randint(1, 2**32-1, num_of_batches)
 
 # run simulations
 rule afforestation:
@@ -65,7 +68,7 @@ rule reftable_batch:
     input:
         script = 'scripts/reftable.py',
         sumstats_files = expand('results/{{p}}/{{b}}/sumstats_{s}.pkl',s=sims),
-        latent_variables_file = 'results/{p}/{b}/latent_variables.txt'
+        latent_variables_files = expand('results/{{p}}/{{b}}/latent_variables_{s}.txt',s=sims)
     output:
         ref_table_sumstats = 'results/{p}/{b}/ref_table_sumstats.pkl',
         ref_table_latent_variables = 'results/{p}/{b}/ref_table_latent_variables.pkl'
@@ -97,7 +100,8 @@ rule forwsim:
         slim_options='results/{p}/{b}/sim_{s}.eidos',
         coalsim_trees='results/{p}/{b}/coalsim_{s}.trees'
     output:
-        forwsim_trees=temp('results/{p}/{b}/forwsim_{s}.trees')
+        forwsim_trees = temp('results/{p}/{b}/forwsim_{s}.trees'),
+        latent_variables_file = temp('results/{p}/{b}/latent_variables_{s}.txt')
     resources:
         runtime_min=30
     shell:
@@ -127,15 +131,16 @@ rule getparams:
 rule getparams_batch:
     input:
         script = 'scripts/getparams.py'
+    params:
+        seed = lambda wildcards, seeds=seeds: seeds[int(wildcards.b)-1]
     output:
         slim_options = temp(expand('results/{{p}}/{{b}}/sim_{s}.eidos',s=sims)),
         sim_ini = temp(expand('results/{{p}}/{{b}}/sim_{s}.ini',s=sims)),
-        ref_table_params = 'results/{p}/{b}/ref_table_params.pkl',
-        latent_variables_file = temp('results/{p}/{b}/latent_variables.txt')
+        ref_table_params = 'results/{p}/{b}/ref_table_params.pkl'
     resources:
         runtime_min=10
     shell:
-        '{python_path} {input.script} {options_file} {wildcards.b}'
+        '{python_path} {input.script} {options_file} {wildcards.b} {params.seed}'
     
 # delete all files in project directory
 rule clean_project:

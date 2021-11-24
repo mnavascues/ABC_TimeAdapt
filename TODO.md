@@ -27,12 +27,11 @@
   - [ ] *Pool parameters and latent variables*
   - [ ] *export reference table as a file*
   - [x] ~~*Pool summary statistics in a dataframe*~~
-- [ ] *output latent variables for each simulation in a separate file* instead of writing all simulation on the same file. This should be more robust and make Snakemake workflow more linear
-- [ ] *Use json files instead of ini* **if** SLiM/Eidos develops a new feature to read json files, switch to json to make all scripts read parameters from the same file
 - [x] ~~*write genome map for slim in a single file for the project* to be used for all simulations~~
   - [ ] *verify the existence of the recombination map created by a previous batch* **low**
 - [x] ~~*Refactor getparams from R to Python.* **low** The only R package that will be kept is rcarbon for simulating age for subfossil samples: use rpy2.~~
 - [x] ~~*Separate function to read project options from simulation options*~~
+- [x] ~~*output latent variables for each simulation in a separate file* instead of writing all simulation on the same file. This should be more robust and make Snakemake workflow more linear~~
 
 ### Testing
 
