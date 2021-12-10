@@ -30,15 +30,18 @@ import rpy2.robjects as robjects
 rcarbon = importr("rcarbon")
 
 ### PRINT INFO ######################################################################################
-def print_info(script_name,verbose,batch=None,sim=None):
+def print_info(script_name,verbose,project=None,batch=None,sim=None):
   if verbose >=1 :
     print("#########################################")
   if verbose >=0 :
-    if sim is not None :
-      batch=None
-      print("TimeAdapt - %s - simulation %s" %(script_name,sim) )
-    elif batch is not None :
-      print("TimeAdapt - %s - batch %s" %(script_name,batch) )
+    if batch is not None:
+      project = None
+      if sim is None :
+        print("TimeAdapt - %s - batch %s" %(script_name,batch) )
+      else : 
+        print("TimeAdapt - %s - batch %s - simulation %s" %(script_name,batch,sim) )
+    elif project is not None:
+      print("TimeAdapt - %s - project %s" %(script_name,project) )
     else :
       print("TimeAdapt - %s" %script_name )
   if verbose >=1 :
@@ -54,57 +57,43 @@ def get_project_options(proj_options_file):
   # Settings
   assert 'Settings' in proj_options,"Missing [Settings] section in file"
   assert 'project' in proj_options['Settings'],"Missing 'project' parameter in file"
-  project      = proj_options.get('Settings','project')
-  batch        = proj_options.get('Settings','batch')
+  project        = proj_options.get('Settings','project')
   try:
-    verbose    = proj_options.getint('Settings','verbose')
+    verbose      = proj_options.getint('Settings','verbose')
   except:
-    verbose    = int(proj_options.getfloat('Settings','verbose'))
-  genome_file  = proj_options.get('Settings','genome_file')
-  sample_file  = proj_options.get('Settings','sample_file')
-  num_of_sims  = proj_options.getint('Settings','num_of_sims')
-  seed         = proj_options.getint('Settings','seed')
+    verbose      = int(proj_options.getfloat('Settings','verbose'))
+    #project_dir    = proj_options.get('Settings','project_dir')
   # Model
   assert 'Model' in proj_options,"Missing [Model] section in project options file"
-  generations_forward = proj_options.getint('Model','generations_forward')
-  periods_forward = proj_options.getint('Model','periods_forward')
-  times_of_change_forw = get_times_of_change(generations_forward,periods_forward)
-  periods_coalescence = proj_options.getint('Model','periods_coalescence')
-  times_of_change_back = get_times_of_change(100000,periods_coalescence,mode="exponential")
-  # Priors
-  assert 'Priors' in proj_options,"Missing [Priors] section in project options file"
-  gen_len_sh1 = proj_options.getfloat('Priors','gen_len_sh1')
-  gen_len_sh2 = proj_options.getfloat('Priors','gen_len_sh2')
-  gen_len_min = proj_options.getfloat('Priors','gen_len_min')
-  gen_len_max = proj_options.getfloat('Priors','gen_len_max')
-  assert gen_len_max>=gen_len_min,"Maximum must be higher than minimum"
-  pop_size_min = proj_options.getfloat('Priors','pop_size_min')
-  pop_size_max = proj_options.getfloat('Priors','pop_size_max')
-  assert pop_size_max>=pop_size_min,"Maximum must be higher than minimum"
-  mut_rate_mean = proj_options.getfloat('Priors','mut_rate_mean')
-  mut_rate_sd = proj_options.getfloat('Priors','mut_rate_sd')
-  # Statistics
+  periods_coalescence  = proj_options.getint('Model','periods_coalescence')
+  times_of_change_back = [int(i) for i in proj_options.get("Model","times_of_change_back").split()]
+  # Sample
+  assert 'Sample' in proj_options,"Missing [Model] section in project options file"
+  total_sample_size = proj_options.getint('Sample','size')
+  coverage     = [float(i)    for i in proj_options.get("Sample","coverage").split()]  
+  is_damaged   = [(i=="TRUE") for i in proj_options.get("Sample","is_damaged").split()]
+  group_levels = proj_options.getint('Sample','group_levels')
+  groups       = [i for i in proj_options.get("Sample","groups").split()]  
+  # Genome
+  assert 'Genome' in proj_options,"Missing [Model] section in project options file"
+  nchr = proj_options.getint('Genome','nchr')
+  chr_ends = [int(i) for i in proj_options.get("Genome","chr_ends").split()]
+  msprime_r_map_positions  = [int(i) for i in proj_options.get("Genome","msprime_r_map_positions").split()]
+  msprime_r_map_rates = [float(i) for i in proj_options.get("Genome","msprime_r_map_rates").split()]
   # TODO
-  return {"project":project,
-          "batch":batch,
-          "genome_file":genome_file, 
-          "sample_file":sample_file, 
-          "verbose":verbose,
-          "num_of_sims":num_of_sims,
-          "seed":seed,
-          "generations_forward":generations_forward,
-          "periods_forward":periods_forward,
-          "periods_coalescence":periods_coalescence,
-          "times_of_change_forw":times_of_change_forw,
-          "times_of_change_back":times_of_change_back,
-          "gen_len_sh1":gen_len_sh1,
-          "gen_len_sh2":gen_len_sh2,
-          "gen_len_min":gen_len_min,
-          "gen_len_max":gen_len_max,
-          "pop_size_min":pop_size_min,
-          "pop_size_max":pop_size_max,
-          "mut_rate_mean":mut_rate_mean,
-          "mut_rate_sd":mut_rate_sd}
+  return {"project" : project,
+          "verbose" : verbose,
+          "periods_coalescence" : periods_coalescence,
+          "times_of_change_back" : times_of_change_back,
+          "nchr" : nchr,
+          "chr_ends" : chr_ends,
+          "msprime_r_map" : {"positions" : msprime_r_map_positions,
+                             "rates" : msprime_r_map_rates},
+          "total_sample_size" : total_sample_size,
+          "coverage" : coverage,
+          "is_damaged" : is_damaged,
+          "group_levels" : group_levels,
+          "groups" : groups}
 
 ### GET TIMES OF CHANGE ######################################################################################
 def get_times_of_change(total_length,number_of_periods,mode="regular",exponent=2):
@@ -136,9 +125,10 @@ def get_times_of_change(total_length,number_of_periods,mode="regular",exponent=2
 def get_sim_options(sim_options_file):
   sim_options = configparser.ConfigParser()
   sim_options.read(sim_options_file)
-  sim          = sim_options.get('Simulation','sim')
-  ss           = [int(i) for i in sim_options.get("Sample","ss").split()]
-  chrono_order = [int(i) for i in sim_options.get("Sample","chrono_order").split()]
+  sim          = sim_options.get('Simulation', 'sim')
+  batch        = sim_options.get('Simulation', 'batch')
+  ss           = [int(i)   for i in sim_options.get("Sample", "ss").split()]
+  chrono_order = [int(i)   for i in sim_options.get("Sample", "chrono_order").split()]
   assert sum(ss)==len(chrono_order), "Verify number of samples, inconsistent sample size across simulation options file"
   N            = [int(i) for i in sim_options.get("Demography","N").split()]
   for i in N:
@@ -149,8 +139,8 @@ def get_sim_options(sim_options_file):
   seq_error    = sim_options.getfloat('Genome','seq_error')
   seed_coal    = sim_options.getint('Seeds','seed_coal')
   seed_mut     = sim_options.getint('Seeds','seed_mut')
-
   return {"sim":sim,
+          "batch":batch,
           "ss":ss, 
           "chrono_order":chrono_order, 
           "N":N, 
@@ -339,7 +329,7 @@ def test_empty_genotype_array():
 ### end MAKE EMPTY GENOTYPE ARRAY ····························································
 
 ### SNP CALLING FROM SIMULATED READS (WITH SEQUENCING ERROR)  ····························
-def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=8, score_th=10, ratio_th=3, dr=True, transversion=True):
+def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=8, score_th=10, ratio_th=3, damage=False, transversion=True):
     """
     snp_calling function takes perfect simulated data from one locus of one 
     diploid individual and adds missing data and error according to the number 
@@ -358,7 +348,7 @@ def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=8, score_
     :param transversion:
     :return:
     """
-    if dr is False and transversion is False:
+    if damage is True and transversion is False:
         genotype_call = [-1, -1]
     elif f_num_reads >= reads_th:
         derived_count = sum(true_genotype)
@@ -388,15 +378,15 @@ def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=8, score_
 def test_snp_calling():
   np.random.seed(1234)
   genotype_call = snp_calling( [0, 1], 100, error_rate=0.005, reads_th=1,
-                score_th=10, ratio_th=3, dr=True, transversion=True)
+                score_th=10, ratio_th=3, damage=False, transversion=True)
   assert genotype_call == [0,1]
   genotype_call = snp_calling( [0, 1], 1, error_rate=0.005, reads_th=10,
-                score_th=10, ratio_th=3, dr=True, transversion=True)
+                score_th=10, ratio_th=3, damage=False, transversion=True)
   assert genotype_call == [-1,-1]
 ### end SNP CALLING FROM SIMULATED READS (WITH SEQUENCING ERROR)  ····························
 
 ### SIMULATE SEQUENCING  ····························
-def sequencing(ts, ssize, ttr, seq_error, dr, cov):
+def sequencing(ts, ssize, ttr, seq_error, damage, cov):
   if len(cov) != ssize:
     msg = "Number of coverage values (length=" + str(len(cov)) + \
           ") and number of samples (ssize=" + str(ssize) + \
@@ -424,7 +414,7 @@ def sequencing(ts, ssize, ttr, seq_error, dr, cov):
         genotype_call = snp_calling(true_genotype=var_genotypes[i:(i + 2)],
                                                   f_num_reads=num_reads[int(i / 2)],
                                                   error_rate=seq_error,
-                                                  dr=dr[int(i / 2)],
+                                                  damage=damage[int(i / 2)],
                                                   transversion=transversion_snp)
       else:
         genotype_call = [-1, -1] # this removes all SNP with more than two alleles

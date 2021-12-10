@@ -1,4 +1,22 @@
+#    TimeAdapt: joint inference of demography and selection
+#    Copyright (C) 2021  Miguel de Navascués, Uppsala universitet, INRAE
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
 import configparser
+import numpy as np
 
 # check if user specified a config file in command line (normal behaviour except for tests)
 try:
@@ -19,94 +37,143 @@ options      = configparser.ConfigParser()
 options.read(options_file)
 
 # SETTINGS
-project     = options.get('Settings','project')
-batch       = options.get('Settings','batch')
-seed        = options.get('Settings','seed')
-sample_file = options.get('Settings','sample_file')
-genome_file = options.get('Settings','genome_file')
-num_of_sims = options.getint('Settings','num_of_sims')
-sims        = range(1,num_of_sims+1)
+project        = options.get('Settings','project')
+num_of_batches = options.getint('Settings','num_of_batches')
+batches        = range(1,num_of_batches+1)
+num_of_sims    = options.getint('Settings','num_of_sims')
+sims           = range(1,num_of_sims+1)
+sample_file    = options.get('Settings','sample_file')
+genome_file    = options.get('Settings','genome_file')
+seed           = options.getint('Settings','seed')
+#np.random.seed(seed)
+#seeds = np.random.randint(1, 2**32-1, num_of_batches)
+keep_files     = True
 
-# localrules: sim, reftable, getparams, clean, clean_project, clean_batch, test
 
 # run simulations
-rule sim:
+rule abc:
     input:
-        ref_table_file = expand('results/{p}/{b}/reftable.pkl',p=project,b=batch)
+        ref_table_sumstats         = expand('results/{p}/{b}/ref_table_sumstats.RDS',         p = project, b = batches),
+        ref_table_latent_variables = expand('results/{p}/{b}/ref_table_latent_variables.RDS', p = project, b = batches),
+        ref_table_params           = expand('results/{p}/{b}/ref_table_params.RDS',           p = project, b = batches)
+    output:
+        forest_file = touch('afforestation.done')
     resources:
-        time_min=10
+        runtime_min = 10
 
-# pool stats and params in a single reference table
+# pool stats and latent variables in a single reference table (per batch)
 rule reftable:
     input:
-        script = 'scripts/reftable.py',
-        sumstats_files = expand('results/{p}/{b}/sumstats_{s}.pkl',p=project,b=batch,s=sims)
-        # params_files = ????
-    output:
-        # ref_table_file = expand('results/{p}/{b}/reftable.pkl',p=project,b=batch)
+        ref_table_sumstats         = expand('results/{p}/{b}/ref_table_sumstats.RDS',         p = project, b = batches),
+        ref_table_latent_variables = expand('results/{p}/{b}/ref_table_latent_variables.RDS', p = project, b = batches)
     resources:
-        time_min=10
+        runtime_min = 10
+rule reftable_batch:
+    input:
+        script                 = 'scripts/reftable.R',
+        options_RDS            = 'results/{p}/project_options.RDS',
+        sumstats_files         = expand('results/{{p}}/{{b}}/sumstats_{s}.txt',         s = sims),
+        latent_variables_files = expand('results/{{p}}/{{b}}/latent_variables_{s}.txt', s = sims)
+    output:
+        ref_table_sumstats         = 'results/{p}/{b}/ref_table_sumstats.RDS',
+        ref_table_latent_variables = 'results/{p}/{b}/ref_table_latent_variables.RDS'
+    resources:
+        runtime_min = 10
     shell:
-        '{python_path} {input.script} {options_file}'
+        'Rscript {input.script} {input.options_RDS} {wildcards.b}'
+
+# all simulations
+rule simulate:
+    input:
+        sumstats_files        = expand('results/{p}/{b}/sumstats_{s}.txt',         p = project, b = batches, s = sims),
+        latent_variables_file = expand('results/{p}/{b}/latent_variables_{s}.txt', p = project, b = batches, s = sims)
 
 # simulation of mutations with msprime
 rule mutsim:
     input:
-        script = 'scripts/mutsim.py',
-        sim_ini = 'results/{p}/{b}/sim_{s}.ini',
+        script        = 'scripts/mutsim.py',
+        sim_ini       = 'results/{p}/{b}/sim_{s}.ini',
+        project_ini   = 'results/{p}/project_options.ini',
         forwsim_trees = 'results/{p}/{b}/forwsim_{s}.trees'
     output:
-        sumstats_files = 'results/{p}/{b}/sumstats_{s}.pkl'
+        #sumstats_files = temp('results/{p}/{b}/sumstats_{s}.txt')
+        sumstats_files = 'results/{p}/{b}/sumstats_{s}.txt'
     resources:
-        time_min=30
+        runtime_min = 30
     shell:
-        '{python_path} {input.script} {options_file} {input.sim_ini}'
+        '{python_path} {input.script} {input.project_ini} {input.sim_ini}'
 
 
 # simulation with SLiM
 rule forwsim:
     input:
-        script='scripts/forwsim.slim',
-        slim_options='results/{p}/{b}/sim_{s}.eidos',
-        coalsim_trees='results/{p}/{b}/coalsim_{s}.trees'
+        script        = 'scripts/forwsim.slim',
+        slim_options  = 'results/{p}/{b}/sim_{s}.eidos',
+        coalsim_trees = 'results/{p}/{b}/coalsim_{s}.trees'
     output:
-        forwsim_trees='results/{p}/{b}/forwsim_{s}.trees'
+        #forwsim_trees         = temp('results/{p}/{b}/forwsim_{s}.trees'),
+        #latent_variables_file = temp('results/{p}/{b}/latent_variables_{s}.txt')
+        forwsim_trees         = 'results/{p}/{b}/forwsim_{s}.trees',
+        latent_variables_file = 'results/{p}/{b}/latent_variables_{s}.txt'
     resources:
-        time_min=30
+        runtime_min = 30
     shell:
         'slim -l 0 -d "option_file=\'{input.slim_options}\'" {input.script}'
 
 # simulation of tree sequence with msprime
 rule coalsim:
     input:
-        script='scripts/coalsim.py',
-        sim_ini='results/{p}/{b}/sim_{s}.ini'
+        script      = 'scripts/coalsim.py',
+        sim_ini     = 'results/{p}/{b}/sim_{s}.ini',
+        project_ini = 'results/{p}/project_options.ini'
     output:
-        coalsim_trees='results/{p}/{b}/coalsim_{s}.trees'
+        #coalsim_trees = temp('results/{p}/{b}/coalsim_{s}.trees')
+        coalsim_trees = 'results/{p}/{b}/coalsim_{s}.trees'
     resources:
-        time_min=120
+        runtime_min = 120
     shell:
-        '{python_path} {input.script} {options_file} {input.sim_ini}'
+        '{python_path} {input.script} {input.project_ini} {input.sim_ini}'
 
 # read parameters and sample from priors
 rule getparams:
     input:
-        script='scripts/getparams.py'
-    output:
-        slim_options=expand('results/{p}/{b}/sim_{s}.eidos',p=project,b=batch,s=sims),
-        sim_ini=expand('results/{p}/{b}/sim_{s}.ini',p=project,b=batch,s=sims) 
+        ref_table_params = expand('results/{p}/{b}/ref_table_params.RDS', p = project, b = batches),
+        slim_options     = expand('results/{p}/{b}/sim_{s}.eidos',        p = project, b = batches, s = sims),
+        sim_ini          = expand('results/{p}/{b}/sim_{s}.ini',          p = project, b = batches, s = sims)
     resources:
-        time_min=10
+        runtime_min = 10
+rule getparams_batch:
+    input:
+        script      = 'scripts/getparams.R',
+        options_RDS = 'results/{p}/project_options.RDS'
+    output:
+        #slim_options     = temp(expand('results/{{p}}/{{b}}/sim_{s}.eidos', s = sims)),
+        #sim_ini          = temp(expand('results/{{p}}/{{b}}/sim_{s}.ini',   s = sims)),
+        #ref_table_params = 'results/{p}/{b}/ref_table_params.RDS'
+        slim_options     = expand('results/{{p}}/{{b}}/sim_{s}.eidos', s = sims),
+        sim_ini          = expand('results/{{p}}/{{b}}/sim_{s}.ini',   s = sims),
+        ref_table_params = 'results/{p}/{b}/ref_table_params.RDS'
+    resources:
+        runtime_min = 10
     shell:
-        '{python_path} {input.script} {options_file}'
+        'Rscript {input.script} {input.options_RDS} {wildcards.b}'
 
-# delete all files in batch directory
-rule clean_batch:
-    shell: 'rm -rf results/'+project+'/'+str(batch)
+# read project parameters
+rule setproject:
+    input:
+        script = 'scripts/setproject.R',
+        options_file = options_file
+    output:
+        expand('results/{p}/project_options.RDS', p = project),
+        expand('results/{p}/project_options.ini', p = project)
+    resources:
+        runtime_min = 10
+    shell:
+        'Rscript {input.script} {input.options_file}'
 
 # delete all files in project directory
 rule clean_project:
-    shell: 'rm -rf results/'+project
+    shell: 'rm -rf results/' + project
 
 # delete all files in results directory
 rule clean:
@@ -116,7 +183,11 @@ rule clean:
 rule test:
     shell:
         '''
+        echo "\n----------- RUNNING TESTTHAT (R) ------------------\n"
+        Rscript -e "library(testthat); test_file(\'scripts/test_timeadapt.R\')"
+        echo "\n----------- RUNNING FLAKE8 (PYTHON) ---------------\n"
         flake8 scripts/timeadapt.py --count --select=E9,F63,F7,F82 --show-source --statistics
+        echo "\n----------- RUNNING PYTEST (PYTHON) ---------------\n"
         pytest -v scripts/timeadapt.py
         pytest -v scripts/test_timeadapt.py
         '''

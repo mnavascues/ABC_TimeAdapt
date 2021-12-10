@@ -18,6 +18,7 @@ import sys
 import os
 import configparser  # for writing ini files
 import numpy as np
+import random
 import pandas as pd
 import dill
 import scipy.stats as st
@@ -27,25 +28,27 @@ import timeadapt
 def main():
   # get options for project and simulation:
   options = timeadapt.get_project_options(proj_options_file = sys.argv[1])
-  sims        = range(0,options["num_of_sims"])
-
+  sims  = range(0,options["num_of_sims"])
+  batch = sys.argv[2]
+  
   # print program name
-  timeadapt.print_info(sys.argv[0],options["verbose"],batch=options["batch"])
+  timeadapt.print_info(sys.argv[0],options["verbose"],batch=batch)
 
   # set seed for RNG
-  np.random.seed(options["seed"])
-  
+  np.random.seed(int(sys.argv[3]))
+  random.seed(np.random.randint(1, 2**32-1)) # necessary for replicable sampling of ages
+
   # create results directory and project/batch subdirectories
   try : os.mkdir("results")
-  except FileExistsError: 
+  except FileExistsError : 
     if options["verbose"] >=1 : print("results folder already exists")
   project_dir = "results/"+options["project"]  
   try : os.mkdir(project_dir)
-  except FileExistsError: 
+  except FileExistsError : 
     if options["verbose"] >=1 : print("{} folder already exists".format(project_dir))
-  batch_dir = project_dir+"/"+options["batch"]  
+  batch_dir = project_dir+"/"+str(batch)
   try : os.mkdir(batch_dir)
-  except FileExistsError: 
+  except FileExistsError : 
     if options["verbose"] >=1 : print("{} folder already exists".format(batch_dir))
 
   # read sample and genome information files
@@ -56,15 +59,6 @@ def main():
   with open(project_dir+'/recombination_map.eidos', 'w') as rec_map_file:
     rec_map_file.write('defineConstant("ends",c(' + str(','.join(map(str, genome_info["slim_r_map"]["positions"] ))) + '));\n')
     rec_map_file.write('defineConstant("rates",c(' + str(','.join(map(str, genome_info["slim_r_map"]["rates"] ))) + '));\n')
-
-  # create latent variable file with headers
-  latent_variables_file = batch_dir+"/latent_variables.txt"
-  header = "sim"
-  for i in range(0,options["periods_forward"]):
-    header = header + " Ne_" + str(i)
-  header = header+'\n'
-  with open(batch_dir+"/latent_variables.txt", 'w') as latent_variables_file:
-    latent_variables_file.write(header)
 
   # number of generations to simulate in forward (in SLiM)
   if options["verbose"] >=10 : print("generations_forward:"+str(options["generations_forward"]))
@@ -98,7 +92,7 @@ def main():
   if options["verbose"] >=10 : print("generations_forward " + str(options["generations_forward"]))
 
   total_number_of_periods = options["periods_forward"] + options["periods_coalescence"]
-  
+
   ###### SAMPLE FROM PRIORS ############################
   # sample generation length (generation time)
   gen_len = st.beta.rvs(a=options["gen_len_sh1"],
@@ -139,16 +133,17 @@ def main():
     backward_demography=np.flip(N[sim][0:options["periods_coalescence"]])
     
     sim_config = configparser.ConfigParser()
-    sim_config['Simulation'] = {'sim': sim+1}
-    sim_config['Sample']     = {'ss':' '.join(map(str, sample_size_per_gen)),
-                                'msprime_ts':' '.join(map(str, sampling_times_msprime)),
-                                'chrono_order':' '.join(map(str, chrono_order))}
-    sim_config['Demography'] = {'N':' '.join(map(str, backward_demography))}
-    sim_config['Genome']     = {'mu':u[sim],
-                                'ttratio':2.0,
-                                'seq_error':0.005}
-    sim_config['Seeds']      = {'seed_coal':seed_coal,
-                                'seed_mut':seed_mut}
+    sim_config['Simulation'] = {'sim'          : sim+1,
+                                'batch'        : batch}
+    sim_config['Sample']     = {'ss'           : ' '.join(map(str, sample_size_per_gen)),
+                                'msprime_ts'   : ' '.join(map(str, sampling_times_msprime)),
+                                'chrono_order' : ' '.join(map(str, chrono_order))}
+    sim_config['Demography'] = {'N'            : ' '.join(map(str, backward_demography))}
+    sim_config['Genome']     = {'mu'           : u[sim],
+                                'ttratio'      : 2.0,
+                                'seq_error'    : 0.005}
+    sim_config['Seeds']      = {'seed_coal'    : seed_coal,
+                                'seed_mut'     : seed_mut}
     with open(batch_dir+'/sim_'+str(sim+1)+'.ini', 'w') as msprime_config_file:
       sim_config.write(msprime_config_file)
 
@@ -164,7 +159,7 @@ def main():
       slim_config_file.write('defineConstant("np",' + str(options["periods_forward"]) + ');\n')
       slim_config_file.write('defineConstant("na",' + str(len(sampling_times_slim)-1) + ');\n')
       slim_config_file.write('defineConstant("i",' + str(sim+1) + ');\n')
-      slim_config_file.write('defineConstant("batch",' + str(options["batch"]) + ');\n')
+      slim_config_file.write('defineConstant("batch",' + str(batch) + ');\n')
       slim_config_file.write('defineConstant("project","' + str(options["project"]) + '");\n')
       slim_config_file.write('source("'+project_dir+'/recombination_map.eidos");\n')
 
@@ -175,7 +170,7 @@ def main():
   ref_table_params = ref_table_params.assign(u=u)
   ref_table_params = ref_table_params.assign(generation_length=gen_len)
   if options["verbose"] >=0 : print(ref_table_params)
-  dill.dump(ref_table_params, file = open("results/" + options["project"] + "/" + options["batch"] + "/ref_table_params.pkl", "wb"))
+  dill.dump(ref_table_params, file = open("results/" + options["project"] + "/" + str(batch) + "/ref_table_params.pkl", "wb"))
 
 ############################################################################################################
 if __name__ == "__main__":
