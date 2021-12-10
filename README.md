@@ -15,6 +15,10 @@ conda install scikit-allel=1.3.5
 conda install dill=0.3.4
 conda install rpy2=3.4.5
 conda install -c r r-rcarbon=1.2.0
+conda install -c r r-reticulate=1.12
+conda install -c r r-ini
+conda install -c r r-extraDistr
+conda install -c r r-testthat
 conda install pytest
 conda install flake8
 conda env export > timeadapt.yml
@@ -40,9 +44,9 @@ Input files:
 To run different parts of the analysis with snakemake :
 
 ```shell
-snakemake rule -C options_file='path/to/your/config_file.ini'
+snakemake RULE -C options_file='PATH/TO/YOUR/CONFIG_FILE.ini'
 ```
-Where `rule` is one of the rules defines in the snakefile. For instance, running `snakemake reftable -C options_file='tests/config_project.ini'` will create small reference table using parameters in file `tests/config_project.ini`. Typically the user will use rule `reftable` to run simulations and create the reference table (parameters, summary statistics and latent variables), `afforestation` to grow random forests and ...
+Where `RULE` is one of the rules defines in the snakefile. For instance, running `snakemake reftable -C options_file='tests/config_project.ini'` will create small reference table using parameters in file `tests/config_project.ini`. Typically the user will use rule `reftable` to run simulations and create the reference table (parameters, summary statistics and latent variables) and `abc` to grow random forests and perform approximate Bayesian computation inferences (rule `abc` will call `reftable` if there is no reference table; there is no need to do it in two steps but it can be usful in many cases).
 
 Before running your analysis is highly recommended to performs some tests. Unit tests (using pytest) can be run using `snakemake test`.
 

@@ -93,15 +93,6 @@ def main():
 
   total_number_of_periods = options["periods_forward"] + options["periods_coalescence"]
 
-  # create latent variable file with headers
-  #latent_variables_file = batch_dir+"/latent_variables.txt"
-  #header = "sim"
-  #for i in range(0,options["periods_forward"]):
-  #  header = header + " Ne_" + str(i)
-  #header = header+'\n'
-  #with open(batch_dir+"/latent_variables.txt", 'w') as latent_variables_file:
-  #  latent_variables_file.write(header)
-
   ###### SAMPLE FROM PRIORS ############################
   # sample generation length (generation time)
   gen_len = st.beta.rvs(a=options["gen_len_sh1"],

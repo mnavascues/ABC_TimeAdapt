@@ -27,9 +27,8 @@ def main():
   timeadapt.print_info(sys.argv[0],options["verbose"],batch=options["batch"],sim=options["sim"])
   
   # get recombination map:
-  genome_info = timeadapt.get_genome_info(options["genome_file"])
-  rate_map = msprime.RateMap(position = genome_info["msprime_r_map"]["positions"],
-                             rate = genome_info["msprime_r_map"]["rates"]) 
+  rate_map = msprime.RateMap(position = options["msprime_r_map"]["positions"],
+                             rate = options["msprime_r_map"]["rates"]) 
   # get demography
   demography = msprime.Demography()
   demography.add_population(name="focal", initial_size=options["N"][0])

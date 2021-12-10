@@ -1,18 +1,18 @@
-sampleID      age14C  age14Cerror  year  coverage  damageRepair  groups
-modern_4      NA      NA           2010  40.57     TRUE          000
-modern_1      NA      NA           2010  46.49     TRUE          000
-modern_2      NA      NA           2010  34.22     TRUE          000
-modern_3      NA      NA           2010  37.24     TRUE          000
-ancient_BBA   1980    20           NA    12.94     TRUE          111
-ancient_BBB   2110    30           NA    1.25      TRUE          112
-ancient_Doon  2110    50           NA    0.01      FALSE         112
-ancient_StH   2330    25           NA    1.1       FALSE         112
-ancient_Fara  2000    50           NA    2.3       FALSE         112
-ancient_Kast  1310    50           NA    0.8       FALSE         111
-ancient_vaa   500     40           NA    1         FALSE         111
-ancient_f1    6990    30           NA    11.09647  TRUE          123
-ancient_f2    2970    60           NA    0.227619  FALSE         112
-ancient_f3    3570    50           NA    11.58128  TRUE          122
-ancient_f6    9020    30           NA    4.998657  TRUE          123
-ancient_f10   7295    32           NA    0.130293  FALSE         123
-ancient_f11   4860    30           NA    22.19364  TRUE          123
+sampleID      age14C  age14Cerror  calCurves  year  coverage  damaged  groups
+modern_4      NA      NA           NA         2010  40.57     FALSE    aaa
+modern_1      NA      NA           NA         2010  46.49     FALSE    aaa
+modern_2      NA      NA           NA         2010  34.22     FALSE    aaa
+modern_3      NA      NA           NA         2010  37.24     FALSE    aaa
+ancient_BBA   1980    20           shcal13    NA    12.94     FALSE    bbb
+ancient_BBB   2110    30           shcal13    NA    1.25      FALSE    bbc
+ancient_Doon  2110    50           shcal13    NA    0.01      TRUE     bbc
+ancient_StH   2330    25           shcal13    NA    1.1       TRUE     bbc
+ancient_Fara  2000    50           shcal13    NA    2.3       TRUE     bbc
+ancient_Kast  1310    50           shcal13    NA    0.8       TRUE     bbb
+ancient_vaa   500     40           shcal13    NA    1         TRUE     bbb
+ancient_f1    6990    30           shcal13    NA    11.09647  FALSE    bcd
+ancient_f2    2970    60           shcal13    NA    0.227619  TRUE     bbc
+ancient_f3    3570    50           shcal13    NA    11.58128  FALSE    bcc
+ancient_f6    9020    30           shcal13    NA    4.998657  FALSE    bcd
+ancient_f10   7295    32           shcal13    NA    0.130293  TRUE     bcd
+ancient_f11   4860    30           shcal13    NA    22.19364  FALSE    bcd
