@@ -89,7 +89,7 @@ snakemake clean
 
 Example:
 
-```R:tests/config_project.ini
+```:tests/config_project.ini
 
 ```
 
