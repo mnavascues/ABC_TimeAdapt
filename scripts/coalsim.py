@@ -19,6 +19,9 @@ import msprime
 import pyslim
 import timeadapt
 
+# import scripts.timeadapt as timeadapt
+# options = timeadapt.get_options('results/test/project_options.ini', 'results/test/1/sim_1.ini')
+
 def main():
   # get options for project and simulation:
   options = timeadapt.get_options(proj_options_file = sys.argv[1], sim_options_file = sys.argv[2])
@@ -47,7 +50,7 @@ def main():
                                 random_seed        = options["seed_coal"])
 
   # make tree-sequence a SLiM-tree-sequence
-  slim_ts = pyslim.annotate_defaults(msp_ts, model_type="WF", slim_generation=1)
+  slim_ts = pyslim.annotate_defaults(msp_ts, model_type = "WF", slim_generation = 1)
   
   # save tree
   slim_ts.dump("results/"+options["project"]+"/"+options["batch"]+"/coalsim_"+options["sim"]+".trees")
