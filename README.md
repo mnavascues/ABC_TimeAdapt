@@ -7,19 +7,27 @@ TimeAdapt makes (*will eventually make*) a joint inference of demography and sel
 TimeAdapt is a collection of scripts in Python and SLiM. They have been tested in an Ubuntu (20.04) machine using a Conda environment and using a Snakemake workflow to run them. The Conda environment was created with the following commands (see file `timeadapt.yml` to get version number of each package):
 
 ```shell
-conda create -n timeadapt python r-base
+conda create -n timeadapt python==3.8.10 r-base=3.6.3
 conda activate timeadapt
-pip install msprime
-conda install pyslim
-conda install slim
-conda install scikit-allel
-conda install -c r r-rcarbon
+pip install tskit==0.3.7
+pip install msprime==1.0.2
+pip install pyslim==0.600
+pip install scikit-allel==1.3.5
+pip install pandas
+pip install scipy
+pip install pytest
+pip install flake8
+conda install slim=3.6
+conda install -c r r-rcarbon=1.2.0
 conda install -c r r-ini
 conda install -c r r-extraDistr
 conda install -c r r-testthat
-conda install pytest
-conda install flake8
 conda list -e > requirements.txt
+```
+
+Reminder for creating environment from file:
+```
+conda create -n timeadapt --file requirements.txt
 ```
 
 Install `abcrf` in R via `install.packages()` with appropriate path:
