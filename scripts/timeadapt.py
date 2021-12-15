@@ -24,11 +24,6 @@ import math
 import tempfile # for creating temporal files on testing
 import pytest
 
-# Using R package rcarbon through rpy2
-from rpy2.robjects.packages import importr
-import rpy2.robjects as robjects
-rcarbon = importr("rcarbon")
-
 ### PRINT INFO ######################################################################################
 def print_info(script_name,verbose,project=None,batch=None,sim=None):
   if verbose >=1 :
