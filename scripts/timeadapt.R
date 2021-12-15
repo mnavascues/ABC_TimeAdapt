@@ -98,12 +98,13 @@ read_sample_info = function(file){
   expected_header = c("sampleID", "age14C", "age14Cerror", "calCurves", "year", "coverage", "damaged", "groups")
   header_check = check_file_header(expected_header, file_header = colnames(info))
   if(header_check$ok){
-    if(all(is.character(info$sampleID),
-           is.numeric(info$age14C),
-           is.numeric(info$age14Cerror),
-           is.numeric(info$year),
+    if(all(all(is.na(info$age14C)) | is.numeric(info$age14C),
+           all(is.na(info$age14Cerror)) | is.numeric(info$age14Cerror),
+           all(is.na(info$calCurves)) | is.character(info$calCurves),
+           all(is.na(info$year)) | is.numeric(info$year),
            is.numeric(info$coverage),
-           is.logical(info$damaged))){
+           !any(is.na(info$damaged)) & is.logical(info$damaged),
+           is.character(info$groups))){
       return( list(id            = info$sampleID,
                    age14C        = info$age14C,
                    age14Cerror   = info$age14Cerror,
