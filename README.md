@@ -22,12 +22,12 @@ conda install -c r r-rcarbon=1.2.0
 conda install -c r r-ini
 conda install -c r r-extraDistr
 conda install -c r r-testthat
-conda list -e > requirements.txt
+conda env export > timeadapt.yml
 ```
 
 Reminder for creating environment from file:
 ```
-conda create -n timeadapt --file requirements.txt
+conda env create -f timeadapt.yml
 ```
 
 Install `abcrf` in R via `install.packages()` with appropriate path:
