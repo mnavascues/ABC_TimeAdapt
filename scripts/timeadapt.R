@@ -105,13 +105,14 @@ read_sample_info = function(file){
            is.numeric(info$coverage),
            !any(is.na(info$damaged)) & is.logical(info$damaged),
            is.character(info$groups))){
+      if (any(is.na(info$year) == is.na(info$age14C))) stop("Samples with undefined ages")
       return( list(id            = info$sampleID,
                    age14C        = info$age14C,
                    age14Cerror   = info$age14Cerror,
                    calCurves     = info$calCurves,
                    ageBCAD       = info$year, 
                    coverage      = info$coverage,
-                   is_modern     = !is.na(info$year), 
+                   # is_modern     = !is.na(info$year), 
                    is_ancient    = !is.na(info$age14C),
                    is_damaged    = info$damaged,
                    total_ancient = sum(!is.na(info$age14C)),
@@ -175,7 +176,7 @@ read_genome_info = function(file){
 }
 
 ### GET AGE PDF ######################################################################################
-get_age_pdf = function(Sample,calCurves){
+get_age_pdf = function(Sample){
   age_pdf = vector("list",Sample$size)
   if(any(Sample$is_ancient)){
     for (i in which(Sample$is_ancient)){
@@ -193,21 +194,21 @@ get_age_pdf = function(Sample,calCurves){
 ### GET SAMPLE AGE INTERVAL ######################################################################################
 get_sample_age_interval = function(Sample){
   oldest_sample_age = as.integer(format(Sys.Date(), "%Y"))
-  if (any(Sample$is_modern)){
+  if (any(!Sample$is_ancient)){
     oldest_sample_age = min(c(oldest_sample_age,Sample$ageBCAD), na.rm = TRUE)
   }
   if (any(Sample$is_ancient)){
     for (i in which(Sample$is_ancient)){
-      oldest_sample_age = min(c(oldest_sample_age, age_pdf[[i]]$ageBCAD), na.rm = TRUE)
+      oldest_sample_age = min(c(oldest_sample_age, Sample$age_pdf[[i]]$ageBCAD), na.rm = TRUE)
     }
   }
   youngest_sample_age = oldest_sample_age
-  if (any(Sample$is_modern)){
+  if (any(!Sample$is_ancient)){
     youngest_sample_age = max(c(youngest_sample_age,Sample$ageBCAD), na.rm = TRUE)
   }
   if (any(Sample$is_ancient)){
     for (i in which(Sample$is_ancient)){
-      youngest_sample_age = max(c(youngest_sample_age, age_pdf[[i]]$ageBCAD), na.rm = TRUE)
+      youngest_sample_age = max(c(youngest_sample_age, Sample$age_pdf[[i]]$ageBCAD), na.rm = TRUE)
     }
   }
   return(list(oldest_sample_age   = oldest_sample_age,
@@ -231,7 +232,7 @@ sample_param_trajectory = function(num_of_periods,
 get_sample_ages = function(Sample, gen_len){
   sample_ages = rep(NA,Sample$size)
   for (i in seq_len(Sample$size)){
-    if (Sample$is_modern[i]) sample_ages[i] = Sample$ageBCAD[i]
+    if (!Sample$is_ancient[i]) sample_ages[i] = Sample$ageBCAD[i]
     if (Sample$is_ancient[i]){
       sample_ages[i] = sample(Sample$age_pdf[[i]]$ageBCAD, 1, prob = Sample$age_pdf[[i]]$PrDens)
     } 
