@@ -236,21 +236,6 @@ def get_genome_info(genome_info_file):
           "msprime_r_map":{"rates":rates, "positions":positions},
           "slim_r_map":{"rates":slim_rates, "positions":slim_positions}}
 
-### GET AGE PDF ######################################################################################
-# wrapper of rcarbon.calibrate, /!\ outputs ages in BCAD not BP
-def get_age_pdf(x,errors,calCurves):
-  try:
-    sample_size = len(x)
-    x = robjects.IntVector(x)
-    errors = robjects.IntVector(errors)
-  except:
-    sample_size = 1
-  res = rcarbon.calibrate(x=x, errors=errors, calCurves=calCurves, verbose=False)
-  age_pdf = []
-  for i in range(0,sample_size):
-    ageBCAD = list(rcarbon.BPtoBCAD(res[1][i][0]))
-    age_pdf.append({"ageBCAD":ageBCAD,"PrDens":list(res[1][i][1])})
-  return age_pdf
 
 ### GET SAMPLE AGES ######################################################################################
 def get_sample_ages(sample,age_pdf,gen_len):

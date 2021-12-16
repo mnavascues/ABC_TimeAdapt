@@ -14,7 +14,11 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-import timeadapt
+import importlib.util
+spec = importlib.util.spec_from_file_location("timeadapt", "scripts/timeadapt.py")
+timeadapt = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(timeadapt)
+# import timeadapt
 import tempfile # for creating temporal files on testing
 import allel
 import numpy as np
@@ -27,96 +31,74 @@ import pytest
 _, temp_config_file_1 = tempfile.mkstemp()
 with open(temp_config_file_1, 'w') as f:
   f.write("[Settings]\n")
-  f.write("verbose = 0\n")
-  f.write("project = test\n")
-  f.write("num_of_batches = 3\n")
-  f.write("sample_file = data/sample.txt\n")
-  f.write("genome_file = data/genome.txt\n")
-  f.write("num_of_sims = 10000\n")
-  f.write("seed = 1234567\n")
+  f.write("project=test\n")
+  f.write("verbose=0\n")
+  f.write("project_dir=results/test\n")
   f.write("[Model]\n")
-  f.write("generations_forward = 400\n")
-  f.write("periods_forward = 8\n")
-  f.write("periods_coalescence = 1\n")
-  f.write("[Priors]\n")
-  f.write("gen_len_sh1 = 1\n")
-  f.write("gen_len_sh2 = 1\n")
-  f.write("gen_len_min = 29\n")
-  f.write("gen_len_max = 30\n")
-  f.write("pop_size_min = 2\n")
-  f.write("pop_size_max = 2000\n")
-  f.write("mut_rate_mean = 0.000001\n")
-  f.write("mut_rate_sd = 0.1\n")
-
-_, temp_config_file_2 = tempfile.mkstemp()
-with open(temp_config_file_2, 'w') as f:
-  f.write("[Settings]\n")
-  f.write("verbose = 1.2\n")
-  f.write("project = test\n")
-  f.write("num_of_batches = 2\n")
-  f.write("sample_file = data/sample.txt\n")
-  f.write("genome_file = data/genome.txt\n")
-  f.write("num_of_sims = 10\n")
-  f.write("seed = 987654\n")
-  f.write("[Model]\n")
-  f.write("generations_forward = 100\n")
-  f.write("periods_forward = 3\n")
-  f.write("periods_coalescence = 10\n")
-  f.write("[Priors]\n")
-  f.write("gen_len_sh1 = 1.5\n")
-  f.write("gen_len_sh2 = 2\n")
-  f.write("gen_len_min = 20\n")
-  f.write("gen_len_max = 30\n")
-  f.write("pop_size_min = 20\n")
-  f.write("pop_size_max = 200000\n")
-  f.write("mut_rate_mean = 0.000001\n")
-  f.write("mut_rate_sd = 0.1\n")
+  f.write("periods_coalescence=10\n")
+  f.write("times_of_change_back=196 587 1370 2935 6067 12329 24853 49902 100000\n")
+  f.write("[Sample]\n")
+  f.write("size=17\n")
+  f.write("coverage=40.57 46.49 34.22 37.24 12.94 1.25 0.01 1.1 2.3 0.8 1 11.09647 0.227619 11.58128 4.998657 0.130293 22.19364\n")
+  f.write("is_damaged=FALSE FALSE FALSE FALSE FALSE FALSE TRUE TRUE TRUE TRUE TRUE FALSE TRUE FALSE FALSE TRUE FALSE\n")
+  f.write("group_levels=3\n")
+  f.write("groups=aaa aaa aaa aaa bbb bbc bbc bbc bbc bbb bbb bcd bbc bcc bcd bcd bcd\n")
+  f.write("[Genome]\n")
+  f.write("nchr=4\n")
+  f.write("chr_ends=10000000 20000000 30000000 40000000\n")
+  f.write("msprime_r_map_positions=0 1000000 2000000 3000000 4000000 10000000 10000001 11000000 12000000 14000000 18000000 20000000 20000001 22000000 24000000 26000000 30000000 30000001 33000000 35000000 37000000 40000000\n")
+  f.write("msprime_r_map_rates=1e-08 1e-07 1e-08 1e-09 1e-08 0.693147180559945 1e-08 1e-10 1e-09 1e-08 1e-07 0.693147180559945 1e-08 1e-09 1e-08 1e-09 0.693147180559945 1e-08 1e-10 1e-08 1e-07\n")
 
 _, temp_sim_file_1 = tempfile.mkstemp()
 with open(temp_sim_file_1, 'w') as f:
   f.write("[Simulation]\n")
+  f.write("batch=1\n")
   f.write("sim=1\n")
-  f.write("batch=2\n")
   f.write("[Sample]\n")
-  f.write("ss=4 1 1 1 1 1 1 1 1 1 1 1 1 1\n")
+  f.write("ss=4 1 1 2 1 1 1 1 1 1 1 1 1\n")
+  f.write("msprime_ts=0 18 41 68 71 72 82 106 134 193 267 278 343\n")
   f.write("chrono_order=0 1 2 3 10 9 4 8 6 5 7 12 13 16 11 15 14\n")
   f.write("[Demography]\n")
-  f.write("N=11 85 200 200 200 37 10 30 71\n")
+  f.write("N=58 33 12 37 200 136 130 174 46 12\n")
   f.write("[Genome]\n")
-  f.write("mu=8.6106e-08\n")
+  f.write("mu=1.53224247401956e-07\n")
   f.write("ttratio=2\n")
   f.write("seq_error=0.005\n")
   f.write("[Seeds]\n")
-  f.write("seed_coal=106\n")
-  f.write("seed_mut=408\n")
+  f.write("seed_coal=1543026934\n")
+  f.write("seed_mut=1939636257\n")
 
-result_config_1 = {"project":"test", "num_of_batches":3, 
-                   "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
-                   "verbose":0, "num_of_sims":10000, "seed":1234567,
-                   "generations_forward":400,"times_of_change_forw":[50,100,150,200,250,300,350],
-                   "gen_len_sh1":1,"gen_len_sh2":1,"gen_len_min":29,"gen_len_max":30,
-                   "pop_size_min":2,"pop_size_max":2000}
-result_config_2 = {"project":"test", "num_of_batches":2, 
-                   "genome_file":"data/genome.txt", "sample_file":"data/sample.txt",
-                   "verbose":1, "num_of_sims":10, "seed":987654,
-                   "generations_forward":100,"times_of_change_forw":[33,66],
-                   "gen_len_sh1":1.5,"gen_len_sh2":2,"gen_len_min":20,"gen_len_max":30,
-                   "pop_size_min":20,"pop_size_max":200000}
-result_sim_1 = {"sim":"1",
-                "batch":"2",
-                "ss":[4,1,1,1,1,1,1,1,1,1,1,1,1,1],
-                "chrono_order":[0,1,2,3,10,9,4,8,6,5,7,12,13,16,11,15,14],
-                "N":[11,85,200,200,200,37,10,30,71],
-                "mu":8.6106e-08,
-                "ttratio":2, "seq_error":0.005,
-                "seed_coal":106, "seed_mut":408}
+result_config_1 = {"project" : "test",
+                   "verbose" : 0,
+                   "periods_coalescence" : 10,
+                   "times_of_change_back" : [196, 587, 1370, 2935, 6067, 12329, 24853, 49902, 100000],
+                   "nchr" : 4,
+                   "chr_ends" : [10000000, 20000000, 30000000, 40000000],
+                   "msprime_r_map" : {"positions" : [0, 1000000, 2000000, 3000000, 4000000, 10000000, 10000001, 11000000, 12000000, 14000000, 18000000, 20000000, 20000001, 22000000, 24000000, 26000000, 30000000, 30000001, 33000000, 35000000, 37000000, 40000000],
+                                      "rates" : [1e-08, 1e-07, 1e-08, 1e-09, 1e-08, 0.693147180559945, 1e-08, 1e-10, 1e-09, 1e-08, 1e-07, 0.693147180559945, 1e-08, 1e-09, 1e-08, 1e-09, 0.693147180559945, 1e-08, 1e-10, 1e-08, 1e-07]},
+                   "total_sample_size" : 17,
+                   "coverage" : [40.57, 46.49, 34.22, 37.24, 12.94, 1.25, 0.01, 1.1, 2.3, 0.8, 1, 11.09647, 0.227619, 11.58128, 4.998657, 0.130293, 22.19364],
+                   "is_damaged" : [False, False, False, False, False, False, True, True, True, True, True, False, True, False, False, True, False],
+                   "group_levels" : 3,
+                   "groups" : ["aaa", "aaa", "aaa", "aaa", "bbb", "bbc", "bbc", "bbc", "bbc", "bbb", "bbb", "bcd", "bbc", "bcc", "bcd", "bcd", "bcd"]}
+
+result_sim_1 = {"sim" : "1",
+                "batch" : "1",
+                "ss" : [4, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+                "chrono_order" : [0, 1, 2, 3, 10, 9, 4, 8, 6, 5, 7, 12, 13, 16, 11, 15, 14], 
+                "N" : [58, 33, 12, 37, 200, 136, 130, 174, 46, 12], 
+                "mu" : 1.53224247401956e-07, 
+                "ttratio" : 2, 
+                "seq_error" : 0.005, 
+                "seed_coal" : 1543026934, 
+                "seed_mut" : 1939636257}
+
 result_config_1_sim_1 = dict(result_config_1)
 result_config_1_sim_1.update(result_sim_1)
-result_config_2_sim_1 = dict(result_config_2)
-result_config_2_sim_1.update(result_sim_1)
 
-test_config_files = [pytest.param(temp_config_file_1, temp_sim_file_1, result_config_1_sim_1, id="1_1"),
-                     pytest.param(temp_config_file_2, temp_sim_file_1, result_config_2_sim_1, id="2_1")]
+test_config_files = [pytest.param(temp_config_file_1, temp_sim_file_1, result_config_1_sim_1, id = "1_1")]
+#test_config_files = [pytest.param(temp_config_file_1, temp_sim_file_1, result_config_1_sim_1, id="1_1"),
+#                     pytest.param(temp_config_file_2, temp_sim_file_1, result_config_2_sim_1, id="2_1")]
 
 @pytest.mark.parametrize("temp_config_file,temp_sim_file,expected_result", test_config_files)
 def test_get_options(temp_config_file,temp_sim_file,expected_result):
@@ -126,18 +108,10 @@ def test_get_options(temp_config_file,temp_sim_file,expected_result):
   assert options["project"] == expected_result["project"]
   assert type(options["batch"]) is str
   assert options["batch"] == expected_result["batch"]
-  assert type(options["num_of_batches"]) is int
-  assert options["num_of_batches"] == expected_result["num_of_batches"]
-  assert type(options["verbose"]) is int
-  assert options["verbose"] ==  expected_result["verbose"]
-  assert type(options["genome_file"]) is str
-  assert options["genome_file"] == expected_result["genome_file"]
-  assert type(options["sample_file"]) is str
-  assert options["sample_file"] == expected_result["sample_file"]
-  assert type(options["num_of_sims"]) is int
-  assert options["num_of_sims"] ==  expected_result["num_of_sims"]
   assert type(options["sim"]) is str
   assert options["sim"] == expected_result["sim"]
+  assert type(options["verbose"]) is int
+  assert options["verbose"] ==  expected_result["verbose"]
   assert type(options["ss"]) is list
   for i in options["ss"]:
     assert type(i) is int
@@ -156,10 +130,8 @@ def test_get_options(temp_config_file,temp_sim_file,expected_result):
   assert options["seed_coal"] == expected_result["seed_coal"]
   assert type(options["seed_mut"]) is int
   assert options["seed_mut"] == expected_result["seed_mut"]
-  assert type(options["seed"]) is int
-  assert options["seed"] == expected_result["seed"]
-  assert options["times_of_change_forw"] == expected_result["times_of_change_forw"]
-  assert options["generations_forward"] == expected_result["generations_forward"]
+  assert options["times_of_change_back"] == expected_result["times_of_change_back"]
+  assert options["periods_coalescence"] == expected_result["periods_coalescence"]
 
 # TEST GET TIMES OF CHANGE  ########################################################################################
 
