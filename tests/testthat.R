@@ -78,6 +78,69 @@ test_that("read_genome_info() gets right values for genome", {
   expect_true(is.double(Genome$msprime_r_map$rates))
 })
 
+context("Sample ages")
+
+# get_age_pdf()
+test_that("get_age_pdf() returns NULL for modern, returns correct size",{
+  Sample = list(is_ancient  = c(FALSE, FALSE, TRUE, TRUE),
+                age14C      = c(NA, NA, 2000, 3000),
+                age14Cerror = c(NA, NA, 20, 50),
+                calCurves   = c("shcal13", "shcal13", "shcal13", "shcal13"),
+                size        = 4)
+  age_pdf = get_age_pdf(Sample)
+  expect_equal(length(age_pdf),4)
+  expect_null(age_pdf[[1]])
+})
+
+# get_sample_age_interval()
+test_that("get_sample_age_interval() gets right values",{
+  Sample = list(is_ancient  = c(FALSE, FALSE, TRUE),
+                ageBCAD     = c(2010, 2010, NA),
+                age_pdf     = list(NULL, NULL, data.frame(ageBCAD=c(-1500,-1499),
+                                                          PrDens=c(0.5,0.5))),
+                size        = 3)
+  expect_equal(get_sample_age_interval(Sample),list(oldest_sample_age=-1500,
+                                                    youngest_sample_age=2010))
+})
+
+
+# get_sample_ages()
+test_that("get_sample_ages()",{
+  Sample = list(is_ancient  = c(FALSE, FALSE, TRUE),
+                ageBCAD     = c(2010, 2010, NA),
+                age_pdf     = list(NULL, NULL, data.frame(ageBCAD=c(-1500,-1499),
+                                                          PrDens=c(0.5,0.5))),
+                size        = 3,
+                t0          = 2010)
+  expect_equal(length(get_sample_ages(Sample, 30)), Sample$size)
+  expect_true(any((get_sample_ages(Sample, 30) == 0)))
+})
+
+context("Set/sample parameters")
+
+# get_times_of_change()
+test_that("get_times_of_change() returns an error for incompatible values",{
+  expect_error(get_times_of_change(10,10),
+               "number of periods must be lower than length of simulation")
+  expect_error(get_times_of_change(10,9,mode="exponential"),
+               "incompatible value, try less periods or longer simulation")
+  expect_error(get_times_of_change(1000,10,mode="exponential",base=2.5),
+               "incompatible value, try less periods or longer simulation")
+})
+
+# sample_param_trajectory()
+test_that("sample_param_trajectory()",{
+  n  = c(10,1)
+  mn = c(1,0.5)
+  mx = c(1000,2.5)
+  for (i in seq_along(n)){
+    expect_equal(length(sample_param_trajectory(n[i], mn[i], mx[i])), n[i])
+    expect_true(   all((sample_param_trajectory(n[i], mn[i], mx[i]) >= mn[i])))
+    expect_true(   all((sample_param_trajectory(n[i], mn[i], mx[i]) <= mx[i])))
+  }
+})
 
 
 
+# ()
+#test_that("()",{})

@@ -72,7 +72,6 @@ get_times_of_change = function(total_length, number_of_periods, mode = "regular"
   if (number_of_periods == 1) return(NA)
   if (total_length <= number_of_periods) stop("number of periods must be lower than length of simulation")
   if (mode == "exponential"){
-    if (base < 1) stop("base must be higher than 1")
     t0 = total_length / ((base^(number_of_periods - 1) - 1) / (base - 1))
     if (t0 < 1) stop("incompatible value, try less periods or longer simulation")
     times_of_change = round(cumsum(t0 * base^(seq_len(number_of_periods - 1) - 1)))
@@ -221,9 +220,11 @@ sample_param_trajectory = function(num_of_periods,
                                    prior_max){
   trajectory    = array(NA,num_of_periods)
   trajectory[1] = exp(runif(1,log(prior_min),log(prior_max)))
-  for (i in 2:num_of_periods){
-    alpha = runif(1,-1,1)
-    trajectory[i] = 10^max(min(log10(trajectory[i-1])+alpha,log10(prior_max)),log10(prior_min))
+  if (num_of_periods>1){
+    for (i in 2:num_of_periods){
+      alpha = runif(1,-1,1)
+      trajectory[i] = 10^max(min(log10(trajectory[i-1])+alpha,log10(prior_max)),log10(prior_min))
+    }
   }
   return(trajectory)
 }

@@ -184,13 +184,18 @@ rule test:
     shell:
         '''
         echo "\n----------- RUNNING TESTTHAT (R) ------------------\n"
-        Rscript -e "library(testthat); test_file(\'scripts/test_timeadapt.R\')"
+        Rscript -e "library(testthat); test_file(\'tests/testthat.R\')"
+        '''
+
+# run tests
+rule old_test:
+    shell:
+        '''
         echo "\n----------- RUNNING FLAKE8 (PYTHON) ---------------\n"
         flake8 scripts/timeadapt.py --count --select=E9,F63,F7,F82 --show-source --statistics
         echo "\n----------- RUNNING PYTEST (PYTHON) ---------------\n"
         pytest -v scripts/timeadapt.py
         pytest -v scripts/test_timeadapt.py
         '''
-
 
 
