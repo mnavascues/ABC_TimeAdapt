@@ -42,19 +42,14 @@ print_info = function(script_name, verbose, project = NA, batch = NA, sim = NA)
 get_project_options = function(options_file){
   options = read.ini(options_file)
   # SETTINGS
-  #options$Settings$project        = options$Settings$project
-  options$Settings$num_of_batches = as.integer(options$Settings$num_of_batches)
-  #options$Settings$genome_file    = options$Settings$genome_file
-  #options$Settings$sample_file    = options$Settings$sample_file
-  options$Settings$verbose        = as.integer(options$Settings$verbose)
-  options$Settings$num_of_sims    = as.integer(options$Settings$num_of_sims)
-  options$Settings$seed           = as.integer(options$Settings$seed)
+  options$Settings$verbose     = as.integer(options$Settings$verbose)
+  options$Settings$num_of_sims = as.integer(options$Settings$num_of_sims)
+  options$Settings$seed        = as.integer(options$Settings$seed)
   # MODEL
   options$Model$generations_forward     = as.integer(options$Model$generations_forward)
   options$Model$periods_forward         = as.integer(options$Model$periods_forward)
   options$Model$generations_coalescence = as.integer(options$Model$generations_coalescence)
   options$Model$periods_coalescence     = as.integer(options$Model$periods_coalescence)
-  #options$Model$calibration_curve       = options$Model$calibration_curve
   # PRIORS
   options$Priors$gen_len_sh1   = as.numeric(options$Priors$gen_len_sh1)
   options$Priors$gen_len_sh2   = as.numeric(options$Priors$gen_len_sh2)
@@ -191,14 +186,14 @@ get_age_pdf = function(Sample){
 }
 
 ### GET SAMPLE AGE INTERVAL ######################################################################################
-get_sample_age_interval = function(Sample){
+get_sample_age_interval = function(Sample, age_pdf){
   oldest_sample_age = as.integer(format(Sys.Date(), "%Y"))
   if (any(!Sample$is_ancient)){
     oldest_sample_age = min(c(oldest_sample_age,Sample$ageBCAD), na.rm = TRUE)
   }
   if (any(Sample$is_ancient)){
     for (i in which(Sample$is_ancient)){
-      oldest_sample_age = min(c(oldest_sample_age, Sample$age_pdf[[i]]$ageBCAD), na.rm = TRUE)
+      oldest_sample_age = min(c(oldest_sample_age, age_pdf[[i]]$ageBCAD), na.rm = TRUE)
     }
   }
   youngest_sample_age = oldest_sample_age
@@ -207,7 +202,7 @@ get_sample_age_interval = function(Sample){
   }
   if (any(Sample$is_ancient)){
     for (i in which(Sample$is_ancient)){
-      youngest_sample_age = max(c(youngest_sample_age, Sample$age_pdf[[i]]$ageBCAD), na.rm = TRUE)
+      youngest_sample_age = max(c(youngest_sample_age, age_pdf[[i]]$ageBCAD), na.rm = TRUE)
     }
   }
   return(list(oldest_sample_age   = oldest_sample_age,

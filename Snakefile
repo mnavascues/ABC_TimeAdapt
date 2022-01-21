@@ -26,6 +26,14 @@ except:
   config["options_file"] = 'tests/config_project.ini'
 options_file = config["options_file"]
 
+# check if user specified a batch number
+# (specify config file by adding "-C options_file='PATH/TO/YOUR/CONFIG_FILE.ini'" to command line)
+try:
+  config["batch"]
+except:
+  config["batch"] = 1
+batch = config["batch"]
+
 # check if user specified a python path in command line (necessary in -some?- clusters)
 try:
   config["python_path"]
@@ -39,8 +47,6 @@ options.read(options_file)
 
 # SETTINGS
 project        = options.get('Settings','project')
-num_of_batches = options.getint('Settings','num_of_batches')
-batches        = range(1,num_of_batches+1)
 num_of_sims    = options.getint('Settings','num_of_sims')
 sims           = range(1,num_of_sims+1)
 sample_file    = options.get('Settings','sample_file')
@@ -54,9 +60,9 @@ keep_files     = True
 # run simulations
 rule abc:
     input:
-        ref_table_sumstats         = expand('results/{p}/{b}/ref_table_sumstats.RDS',         p = project, b = batches),
-        ref_table_latent_variables = expand('results/{p}/{b}/ref_table_latent_variables.RDS', p = project, b = batches),
-        ref_table_params           = expand('results/{p}/{b}/ref_table_params.RDS',           p = project, b = batches)
+        ref_table_sumstats         = expand('results/{p}/{b}/ref_table_sumstats.RDS',         p = project, b = batch),
+        ref_table_latent_variables = expand('results/{p}/{b}/ref_table_latent_variables.RDS', p = project, b = batch),
+        ref_table_params           = expand('results/{p}/{b}/ref_table_params.RDS',           p = project, b = batch)
     output:
         forest_file = touch('afforestation.done')
     resources:
@@ -65,29 +71,23 @@ rule abc:
 # pool stats and latent variables in a single reference table (per batch)
 rule reftable:
     input:
-        ref_table_sumstats         = expand('results/{p}/{b}/ref_table_sumstats.RDS',         p = project, b = batches),
-        ref_table_latent_variables = expand('results/{p}/{b}/ref_table_latent_variables.RDS', p = project, b = batches)
-    resources:
-        runtime_min = 10
-rule reftable_batch:
-    input:
         script                 = 'scripts/reftable.R',
-        options_RDS            = 'results/{p}/project_options.RDS',
-        sumstats_files         = expand('results/{{p}}/{{b}}/sumstats_{s}.txt',         s = sims),
-        latent_variables_files = expand('results/{{p}}/{{b}}/latent_variables_{s}.txt', s = sims)
+        options_RDS            = expand('results/{p}/project_options.RDS',          p = project),
+        sumstats_files         = expand('results/{p}/{b}/sumstats_{s}.txt',         p = project, b = batch, s = sims),
+        latent_variables_files = expand('results/{p}/{b}/latent_variables_{s}.txt', p = project, b = batch, s = sims)
     output:
-        ref_table_sumstats         = 'results/{p}/{b}/ref_table_sumstats.RDS',
-        ref_table_latent_variables = 'results/{p}/{b}/ref_table_latent_variables.RDS'
+        ref_table_sumstats         = expand('results/{p}/{b}/ref_table_sumstats.RDS',         p = project, b = batch),
+        ref_table_latent_variables = expand('results/{p}/{b}/ref_table_latent_variables.RDS', p = project, b = batch)
     resources:
         runtime_min = 10
     shell:
-        'Rscript {input.script} {input.options_RDS} {wildcards.b}'
+        'Rscript {input.script} {input.options_RDS} {batch}'
 
 # all simulations
 rule simulate:
     input:
-        sumstats_files        = expand('results/{p}/{b}/sumstats_{s}.txt',         p = project, b = batches, s = sims),
-        latent_variables_file = expand('results/{p}/{b}/latent_variables_{s}.txt', p = project, b = batches, s = sims)
+        sumstats_files        = expand('results/{p}/{b}/sumstats_{s}.txt',         p = project, b = batch, s = sims),
+        latent_variables_file = expand('results/{p}/{b}/latent_variables_{s}.txt', p = project, b = batch, s = sims)
 
 # simulation of mutations with msprime
 rule mutsim:
@@ -138,26 +138,18 @@ rule coalsim:
 # read parameters and sample from priors
 rule getparams:
     input:
-        ref_table_params = expand('results/{p}/{b}/ref_table_params.RDS', p = project, b = batches),
-        slim_options     = expand('results/{p}/{b}/sim_{s}.eidos',        p = project, b = batches, s = sims),
-        sim_ini          = expand('results/{p}/{b}/sim_{s}.ini',          p = project, b = batches, s = sims)
-    resources:
-        runtime_min = 10
-rule getparams_batch:
-    input:
         script      = 'scripts/getparams.R',
-        options_RDS = 'results/{p}/project_options.RDS'
+        options_RDS = expand('results/{p}/project_options.RDS', p = project)
     output:
-        #slim_options     = temp(expand('results/{{p}}/{{b}}/sim_{s}.eidos', s = sims)),
-        #sim_ini          = temp(expand('results/{{p}}/{{b}}/sim_{s}.ini',   s = sims)),
-        #ref_table_params = 'results/{p}/{b}/ref_table_params.RDS'
-        slim_options     = expand('results/{{p}}/{{b}}/sim_{s}.eidos', s = sims),
-        sim_ini          = expand('results/{{p}}/{{b}}/sim_{s}.ini',   s = sims),
-        ref_table_params = 'results/{p}/{b}/ref_table_params.RDS'
+        #slim_options     = temp(expand('results/{p}/{b}/sim_{s}.eidos', p = project, b = batch, s = sims)),
+        #sim_ini          = temp(expand('results/{p}/{b}/sim_{s}.ini', p = project,   b = batch, s = sims)),
+        slim_options     = expand('results/{p}/{b}/sim_{s}.eidos', p = project, b = batch, s = sims),
+        sim_ini          = expand('results/{p}/{b}/sim_{s}.ini', p = project, b = batch, s = sims),
+        ref_table_params = expand('results/{p}/{b}/ref_table_params.RDS', p = project, b = batch)
     resources:
         runtime_min = 10
     shell:
-        'Rscript {input.script} {input.options_RDS} {wildcards.b}'
+        'Rscript {input.script} {input.options_RDS} {batch}'
 
 # read project parameters
 rule setproject:

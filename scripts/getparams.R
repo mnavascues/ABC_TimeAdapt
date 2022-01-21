@@ -42,7 +42,7 @@ total_periods = Model$periods_forward+Model$periods_coalescence
 print_info("getparams.R", Settings$verbose, project = Settings$project, batch = batch)
 
 # set seed for random number generator and get seeds for msprime and SLiM
-set.seed(Settings$batch_seeds[batch])
+set.seed(Settings$seed + as.numeric(batch))
 seed_coal = as.integer(round(runif(Settings$num_of_sims, 0, 2^31)))
 seed_forw = as.integer(round(runif(Settings$num_of_sims, 0, 2^31)))
 seed_mut  = as.integer(round(runif(Settings$num_of_sims, 0, 2^31)))

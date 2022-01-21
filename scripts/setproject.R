@@ -36,8 +36,8 @@ print_info("setproject.R", Settings$verbose, project = Settings$project)
 
 # set seed for random number generator
 set.seed(Settings$seed)
-batch_seeds = as.integer(round(runif(Settings$num_of_batches, 0, 2^31)))
-if (Settings$verbose >= 10) write(paste("Seed batch", seq_len(Settings$num_of_batches), ":", batch_seeds), stdout())
+#batch_seeds = as.integer(round(runif(Settings$num_of_batches, 0, 2^31)))
+#if (Settings$verbose >= 10) write(paste("Seed batch", seq_len(Settings$num_of_batches), ":", batch_seeds), stdout())
 
 # create results directory
 dir.create("results", showWarnings = FALSE)
@@ -68,7 +68,7 @@ if (Settings$verbose >= 10){
 age_pdf = get_age_pdf(Sample)
 
 # get the oldest possible age of samples and verify that falls within forward time simulation period
-sample_age_interval = get_sample_age_interval(Sample)
+sample_age_interval = get_sample_age_interval(Sample, age_pdf)
 forward_simulation_rage = 2 + round(abs(sample_age_interval$oldest_sample_age - sample_age_interval$youngest_sample_age) / Priors$gen_len_min)
 if (forward_simulation_rage >= Model$generations_forward){
   stop("Larger period in forward simulation necessary to include oldest sample")
@@ -82,8 +82,7 @@ group_levels = nchar(Sample$groups[1])
 
 
 # save options list in RDS file (for R)
-Settings = modifyList(Settings, list(project_dir          = project_dir,
-                                     batch_seeds          = batch_seeds))
+Settings = modifyList(Settings, list(project_dir          = project_dir))
 Model    = modifyList(Model,    list(times_of_change_forw = times_of_change_forw,
                                      times_of_change_back = times_of_change_back))
 Sample   =  modifyList(Sample,  list(age_pdf              = age_pdf,
