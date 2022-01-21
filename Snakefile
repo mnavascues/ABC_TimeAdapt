@@ -19,6 +19,7 @@ import configparser
 import numpy as np
 
 # check if user specified a config file in command line (normal behaviour except for tests)
+# (specify config file by adding "-C options_file='PATH/TO/YOUR/CONFIG_FILE.ini'" to command line)
 try:
   config["options_file"]
 except:
