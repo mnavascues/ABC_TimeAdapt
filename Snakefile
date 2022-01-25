@@ -65,6 +65,7 @@ rule abc:
         ref_table_params           = expand('results/{p}/{b}/ref_table_params.RDS',           p = project, b = batch)
     output:
         forest_file = touch('afforestation.done')
+    group: "postsimulation"
     resources:
         runtime_min = 10
 
@@ -78,6 +79,7 @@ rule reftable:
     output:
         ref_table_sumstats         = expand('results/{p}/{b}/ref_table_sumstats.RDS',         p = project, b = batch),
         ref_table_latent_variables = expand('results/{p}/{b}/ref_table_latent_variables.RDS', p = project, b = batch)
+    group: "postsimulation"
     resources:
         runtime_min = 10
     shell:
@@ -88,6 +90,7 @@ rule simulate:
     input:
         sumstats_files        = expand('results/{p}/{b}/sumstats_{s}.txt',         p = project, b = batch, s = sims),
         latent_variables_file = expand('results/{p}/{b}/latent_variables_{s}.txt', p = project, b = batch, s = sims)
+    group: "postsimulation"
 
 # simulation of mutations with msprime
 rule mutsim:
@@ -99,6 +102,7 @@ rule mutsim:
     output:
         #sumstats_files = temp('results/{p}/{b}/sumstats_{s}.txt')
         sumstats_files = 'results/{p}/{b}/sumstats_{s}.txt'
+    group: "simulation"
     resources:
         runtime_min = 30
     shell:
@@ -116,6 +120,7 @@ rule forwsim:
         #latent_variables_file = temp('results/{p}/{b}/latent_variables_{s}.txt')
         forwsim_trees         = 'results/{p}/{b}/forwsim_{s}.trees',
         latent_variables_file = 'results/{p}/{b}/latent_variables_{s}.txt'
+    group: "simulation"
     resources:
         runtime_min = 30
     shell:
@@ -130,6 +135,7 @@ rule coalsim:
     output:
         #coalsim_trees = temp('results/{p}/{b}/coalsim_{s}.trees')
         coalsim_trees = 'results/{p}/{b}/coalsim_{s}.trees'
+    group: "simulation"
     resources:
         runtime_min = 120
     shell:
@@ -146,6 +152,7 @@ rule getparams:
         slim_options     = expand('results/{p}/{b}/sim_{s}.eidos', p = project, b = batch, s = sims),
         sim_ini          = expand('results/{p}/{b}/sim_{s}.ini', p = project, b = batch, s = sims),
         ref_table_params = expand('results/{p}/{b}/ref_table_params.RDS', p = project, b = batch)
+    group: "presimulation"
     resources:
         runtime_min = 10
     shell:
@@ -159,6 +166,7 @@ rule setproject:
     output:
         expand('results/{p}/project_options.RDS', p = project),
         expand('results/{p}/project_options.ini', p = project)
+    group: "presimulation"
     resources:
         runtime_min = 10
     shell:
