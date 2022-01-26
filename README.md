@@ -30,7 +30,7 @@ Reminder for creating environment from file:
 conda env create -f timeadapt.yml
 ```
 
-Install `abcrf` in R via `install.packages()` with appropriate path:
+Install `abcrf` in R via `install.packages()` with appropriate path, e.g.:
 
 ```r
 install.packages('abcrf','/home/USER/anaconda3/envs/timeadapt/lib/R/library').
