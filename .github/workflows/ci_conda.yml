@@ -41,7 +41,8 @@ jobs:
       run: |
           pytest tests/test_timeadapt.py
     - name: Test with testthat
-      shell: pwsh
+      shell: Rscript {0}
       run: |
-          Rscript -e "library(testthat); test_file('tests/test_timeadapt.R')"
+          library(testthat)
+          test_file('tests/test_timeadapt.R',reporter="fail")
           
