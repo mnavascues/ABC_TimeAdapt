@@ -64,7 +64,7 @@ rule abc:
         ref_table_latent_variables = expand('results/{p}/{b}/ref_table_latent_variables.RDS', p = project, b = batch),
         ref_table_params           = expand('results/{p}/{b}/ref_table_params.RDS',           p = project, b = batch)
     output:
-        forest_file = touch('afforestation.done')
+        forest_file = touch('results/afforestation.done')
     group: "postsimulation"
     resources:
         runtime_min = 10
