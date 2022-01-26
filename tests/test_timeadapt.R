@@ -96,11 +96,11 @@ test_that("get_age_pdf() returns NULL for modern, returns correct size",{
 test_that("get_sample_age_interval() gets right values",{
   Sample = list(is_ancient  = c(FALSE, FALSE, TRUE),
                 ageBCAD     = c(2010, 2010, NA),
-                age_pdf     = list(NULL, NULL, data.frame(ageBCAD=c(-1500,-1499),
-                                                          PrDens=c(0.5,0.5))),
                 size        = 3)
-  expect_equal(get_sample_age_interval(Sample),list(oldest_sample_age=-1500,
-                                                    youngest_sample_age=2010))
+  age_pdf = list(NULL, NULL, data.frame(ageBCAD=c(-1500,-1499),
+                                        PrDens=c(0.5,0.5)))
+  expect_equal(get_sample_age_interval(Sample,age_pdf),list(oldest_sample_age=-1500,
+                                                            youngest_sample_age=2010))
 })
 
 
