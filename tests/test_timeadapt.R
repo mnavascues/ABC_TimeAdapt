@@ -99,7 +99,7 @@ test_that("get_sample_age_interval() gets right values",{
                 size        = 3)
   age_pdf = list(NULL, NULL, data.frame(ageBCAD=c(-1500,-1499),
                                         PrDens=c(0.5,0.5)))
-  expect_equal(get_sample_age_interval(Sample,age_pdf),list(oldest_sample_age=-1500,
+  expect_equal(get_sample_age_interval(Sample,age_pdf),list(oldest_sample_age=-1503,
                                                             youngest_sample_age=2010))
 })
 
