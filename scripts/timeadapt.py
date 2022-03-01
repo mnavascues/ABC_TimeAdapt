@@ -309,7 +309,7 @@ def test_empty_genotype_array():
 ### end MAKE EMPTY GENOTYPE ARRAY ····························································
 
 ### SNP CALLING FROM SIMULATED READS (WITH SEQUENCING ERROR)  ····························
-def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=8, score_th=10, ratio_th=3, damage=False, transversion=True):
+def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=8, score_th=5, ratio_th=10, damage=False, transversion=True):
     """
     snp_calling function takes perfect simulated data from one locus of one 
     diploid individual and adds missing data and error according to the number 
@@ -335,23 +335,29 @@ def snp_calling(true_genotype, f_num_reads, error_rate=0.005, reads_th=8, score_
         p_derived = derived_count / 2. * (1 - error_rate) + (1 - derived_count / 2.) * error_rate
         derived_reads = st.binom.rvs(f_num_reads, p_derived)
         ancestral_reads = f_num_reads - derived_reads
-        if f_num_reads >= score_th:
+        if f_num_reads >= (score_th*2):
             if derived_reads == 0:
                 genotype_call = [0, 0]
             elif ancestral_reads == 0:
                 genotype_call = [1, 1]
             else:
-                genotype_call = [1, 1]
-                ratio_of_scores = derived_reads / ancestral_reads
-                if (ratio_of_scores >= 1 / ratio_th) & (ratio_of_scores <= ratio_th):
-                    genotype_call = [0, 1]
-                elif derived_reads > ancestral_reads:
+                if (derived_reads >= score_th) & (ancestral_reads < score_th):
+                  genotype_call = [1, 1]
+                elif (derived_reads < score_th) & (ancestral_reads >= score_th):
+                  genotype_call = [0, 0]
+                elif (derived_reads >= score_th) & (ancestral_reads >= score_th):
+                  ratio_of_scores = derived_reads / ancestral_reads
+                  if (ratio_of_scores >= 1 / ratio_th) & (ratio_of_scores <= ratio_th):
+                    if (derived_count == 1):
+                      genotype_call = true_genotype
+                    elif (st.binom.rvs(1, 0.5) == 1):
+                      genotype_call = [0, 1]
+                    else:
+                      genotype_call = [1, 0]
+                  elif derived_reads > ancestral_reads:
                     genotype_call = [1, 1]
-                else:
+                  else:
                     genotype_call = [0, 0]
-        else:
-            random_allele = st.binom.rvs(1, derived_reads / f_num_reads)
-            genotype_call = np.full(2, random_allele)
     else:
         genotype_call = [-1, -1]
     return genotype_call
